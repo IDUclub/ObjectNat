@@ -1,0 +1,354 @@
+{
+ "cells": [
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "# Isochrone Analysis from Points of Interest\n",
+    "This notebook demonstrates how to generate accessibility isochrones from single or multiple points using different methods:\n",
+    "- Simple `radius` and `ways` isochrones\n",
+    "- Stepped isochrones with customizable intervals"
+   ],
+   "id": "fa4563c984470740"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Install required packages (uncomment if needed)\n",
+    "# !pip install objectnat iduedu"
+   ],
+   "id": "9e7d002c63864de6",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Import necessary libraries\n",
+    "from iduedu import get_intermodal_graph, get_4326_boundary\n",
+    "import geopandas as gpd\n",
+    "from shapely import Point\n",
+    "from objectnat import get_accessibility_isochrones, get_accessibility_isochrone_stepped"
+   ],
+   "id": "ebe2025fab286b4e",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 1. Load Intermodal Graph\n",
+    "Load a multimodal transportation graph (roads, public transport, etc.) for a specific region using its OSM ID."
+   ],
+   "id": "494425a561aa50ec"
+  },
+  {
+   "cell_type": "code",
+   "source": [
+    "# Load boundary and graph for a specific region using OSM ID 1114252.\n",
+    "poly = get_4326_boundary(osm_id=1114252)\n",
+    "G_intermodal = get_intermodal_graph(territory=poly, clip_by_territory=True)"
+   ],
+   "metadata": {
+    "collapsed": false
+   },
+   "id": "df20dec8ac67c8da",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 2. Create Points of Interest\n",
+    "Define one or more source points from which isochrones will be generated."
+   ],
+   "id": "917bf19ff192faac"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Define a single point of interest\n",
+    "point = gpd.GeoDataFrame(geometry=[Point(30.27060176, 59.93546846)], crs=4326)"
+   ],
+   "id": "f6045b6fa1bc7c37",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 3. Generate Radius Isochrones\n",
+    "Create circular isochrones using a travel time threshold (e.g. 10 minutes)."
+   ],
+   "id": "7127732b199acab6"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "isochrones_radius, stops_r, routes_r = get_accessibility_isochrones(\n",
+    "    isochrone_type='radius',\n",
+    "    points=point,\n",
+    "    weight_type=\"time_min\",\n",
+    "    weight_value=10,\n",
+    "    nx_graph=G_intermodal\n",
+    ")\n",
+    "\n",
+    "# Visualize\n",
+    "m = isochrones_radius.explore(tiles='CartoDB Positron')\n",
+    "stops_r.explore(m=m)\n",
+    "routes_r.explore(m=m, column='type')"
+   ],
+   "id": "f71a6d15e3dc7eed",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 4. Generate Ways Isochrones\n",
+    "Create road network-based polygons representing reachable areas within a time or distance threshold."
+   ],
+   "id": "1e9a3026b7537291"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "isochrones_ways, stops_w, routes_w = get_accessibility_isochrones(\n",
+    "    isochrone_type='ways',\n",
+    "    points=point,\n",
+    "    weight_type=\"time_min\",\n",
+    "    weight_value=10,\n",
+    "    nx_graph=G_intermodal\n",
+    ")\n",
+    "\n",
+    "# Visualize\n",
+    "m = isochrones_ways.explore(tiles='CartoDB Positron')\n",
+    "stops_w.explore(m=m)\n",
+    "routes_w.explore(m=m, column='type')"
+   ],
+   "id": "b4bd257c0bafea8a",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 5. Compare Isochrone Types\n",
+    "Overlay both types of isochrones to compare coverage."
+   ],
+   "id": "38499d16fdc1991e"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "m = isochrones_radius.explore(tiles='CartoDB Positron', color='blue', name='Radius')\n",
+    "isochrones_ways.explore(m=m, color='red', name='Ways')"
+   ],
+   "id": "3565f5290601d78b",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 6. Generate Stepped Isochrones (Radius)\n",
+    "Create concentric buffer zones with stepped intervals (e.g. every 3 minutes).\n"
+   ],
+   "id": "739b0d17e9be6e02"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "stepped_radius, stops_s1, routes_s1 = get_accessibility_isochrone_stepped(\n",
+    "    isochrone_type='radius',\n",
+    "    point=point,\n",
+    "    weight_type=\"time_min\",\n",
+    "    weight_value=15,\n",
+    "    nx_graph=G_intermodal,\n",
+    "    step=3\n",
+    ")\n",
+    "\n",
+    "stepped_radius.explore(tiles='CartoDB Positron', column='dist')\n"
+   ],
+   "id": "8e0792ac42ed50d4",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 7. Generate Stepped Isochrones (Ways)\n",
+    "Create layered polygons in the road network with custom intervals (e.g. every 3 minutes).\n"
+   ],
+   "id": "5320bc04bdc43135"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "stepped_ways, stops_s2, routes_s2 = get_accessibility_isochrone_stepped(\n",
+    "    isochrone_type='ways',\n",
+    "    point=point,\n",
+    "    weight_type=\"time_min\",\n",
+    "    weight_value=15,\n",
+    "    nx_graph=G_intermodal,\n",
+    "    step=3\n",
+    ")\n",
+    "stepped_ways.explore(tiles='CartoDB Positron', column='dist')"
+   ],
+   "id": "adb0b77046b2301e",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 8. Generate Stepped Isochrones (Separate)\n",
+    "Create distinct buffer rings for each interval."
+   ],
+   "id": "350e096ecc82ec2f"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "stepped_separate, stops_s3, routes_s3 = get_accessibility_isochrone_stepped(\n",
+    "    isochrone_type='separate',\n",
+    "    point=point,\n",
+    "    weight_type=\"time_min\",\n",
+    "    weight_value=10,\n",
+    "    nx_graph=G_intermodal,\n",
+    "    step=2\n",
+    ")\n",
+    "\n",
+    "stepped_separate.explore(tiles='CartoDB Positron', column='dist')"
+   ],
+   "id": "ae3cd6bd7384375e",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "### Key Parameter Summary:\n",
+    "- `isochrone_type`: `'radius'`, `'ways'`, or `'separate'`\n",
+    "- `weight_type`: `'time_min'` (minutes) or `'length_meter'` (meters)\n",
+    "- `weight_value`: total cutoff (e.g. 10 minutes)\n",
+    "- `step`: interval size for stepped isochrones (optional)\n",
+    "- Additional: `buffer_factor`, `road_buffer_size`"
+   ],
+   "id": "5881fcd1fe589d48"
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": "## Animation for stepped isochrones",
+   "id": "dbdc88b0d14ec294"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "from objectnat.methods.utils.graph_utils import graph_to_gdf\n",
+    "import matplotlib.pyplot as plt\n",
+    "from matplotlib.animation import FuncAnimation\n",
+    "from shapely import Point\n",
+    "import geopandas as gpd\n",
+    "from objectnat import get_accessibility_isochrone_stepped\n",
+    "\n",
+    "edges = graph_to_gdf(G_intermodal, nodes=False)\n",
+    "point = gpd.GeoDataFrame(geometry=[Point(30.27060176, 59.93546846)], crs=4326).to_crs(edges.crs)\n",
+    "bbox = gpd.GeoDataFrame(geometry=[poly], crs=4326).to_crs(edges.crs)\n",
+    "\n",
+    "type_colors = {\n",
+    "    'walk': '#a3a3a3',\n",
+    "    'bus': '#1f77b4',\n",
+    "    'trolleybus': '#2ca02c',\n",
+    "    'tram': '#ff7f0e',\n",
+    "    'subway': '#9467bd',\n",
+    "    'boarding': '#8c564b'\n",
+    "}\n",
+    "\n",
+    "edges['color'] = edges['type'].map(type_colors)\n",
+    "\n",
+    "steps = [0.1, 0.5, 1, 2, 3, 4, 5]\n",
+    "\n",
+    "fig, ax = plt.subplots(figsize=(10, 8), dpi=150)\n",
+    "plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)\n",
+    "\n",
+    "edges_plot = edges.plot(ax=ax, color=edges['color'], alpha=0.5, linewidth=0.1, legend=True)\n",
+    "bbox.boundary.plot(ax=ax, color='black', linestyle='--', linewidth=1)\n",
+    "point.plot(ax=ax, color='red', markersize=50)\n",
+    "ax.set_axis_off()\n",
+    "\n",
+    "\n",
+    "def update(step):\n",
+    "    for coll in ax.collections:\n",
+    "        if coll.get_label() == 'isochrone':\n",
+    "            coll.remove()\n",
+    "\n",
+    "    result = get_accessibility_isochrone_stepped(\n",
+    "        isochrone_type='separate',\n",
+    "        point=point,\n",
+    "        weight_type=\"time_min\",\n",
+    "        weight_value=15,\n",
+    "        nx_graph=G_intermodal,\n",
+    "        step=step\n",
+    "    )\n",
+    "    result.plot(ax=ax, alpha=1, label='isochrone', column='dist', legend=False)\n",
+    "    ax.set_title(f'Isochrone with step = {step} minutes')\n",
+    "\n",
+    "\n",
+    "ani = FuncAnimation(\n",
+    "    fig,\n",
+    "    update,\n",
+    "    frames=steps,\n",
+    "    repeat=True,\n",
+    "    interval=2000\n",
+    ")\n",
+    "\n",
+    "ani.save('isochrone_animation.gif', writer='pillow', fps=1)"
+   ],
+   "id": "ac24793342e314e1",
+   "outputs": [],
+   "execution_count": null
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
