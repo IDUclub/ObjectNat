@@ -1,0 +1,250 @@
+{
+ "cells": [
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "# Graph Coverage Analysis for Service Points\n",
+    "\n",
+    "This notebook demonstrates how to calculate coverage zones from service points through a multimodal transportation network using Dijkstra's algorithm and Voronoi diagrams."
+   ],
+   "id": "4dc8b5b9755684aa"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Install required packages (uncomment if needed)\n",
+    "# !pip install iduedu pyarrow objectnat"
+   ],
+   "id": "db56d2861ab407be",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Import dependencies\n",
+    "from iduedu import get_intermodal_graph, get_4326_boundary\n",
+    "import geopandas as gpd\n",
+    "from objectnat import get_graph_coverage,get_stepped_graph_coverage,get_radius_coverage"
+   ],
+   "id": "d568e9b461c6086a",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 1. Load Transportation Network\n",
+    "First, we retrieve the multimodal graph (roads, public transport, etc.) for a specified region using its OSM ID."
+   ],
+   "id": "5084078ebb6beef2"
+  },
+  {
+   "cell_type": "code",
+   "id": "initial_id",
+   "metadata": {
+    "collapsed": true
+   },
+   "source": [
+    "# Get city boundary and transportation network\n",
+    "poly = get_4326_boundary(osm_id=1114252)  # Example OSM ID for a city\n",
+    "G_intermodal = get_intermodal_graph(territory=poly, clip_by_territory=True)"
+   ],
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 2. Load Service Points\n",
+    "These represent locations (e.g., healthcare facilities, schools) for which we want to calculate coverage zones."
+   ],
+   "id": "18c5a199616284b0"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Load service points (replace with your actual data path)\n",
+    "services = gpd.read_parquet('examples_data/services.parquet')"
+   ],
+   "id": "dc4ae5fbd2374af4",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 3. Calculate Coverage by Distance\n",
+    "Creates service areas based on maximum travel distance (800 meters in this example)."
+   ],
+   "id": "9e3ebbd07107a149"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Calculate coverage zones by distance (800m cutoff)\n",
+    "result_length = get_graph_coverage(\n",
+    "    gdf_to=services,\n",
+    "    nx_graph=G_intermodal,\n",
+    "    weight_type=\"length_meter\",\n",
+    "    weight_value_cutoff=800\n",
+    ")\n",
+    "\n",
+    "# Visualize results\n",
+    "result_length.explore(column='name', tiles='CartoDB Positron')"
+   ],
+   "id": "239ae7c0ed8604a1",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 4. Calculate Coverage by Travel Time\n",
+    "Creates service areas based on maximum travel time (10 minutes in this example), clipped to the city boundary."
+   ],
+   "id": "5f8d6888bdbf4716"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Prepare zone boundary\n",
+    "zone = gpd.GeoDataFrame(geometry=[poly], crs=4326)\n",
+    "\n",
+    "# Calculate coverage zones by time (10min cutoff)\n",
+    "result_time = get_graph_coverage(\n",
+    "    gdf_to=services,\n",
+    "    nx_graph=G_intermodal,\n",
+    "    weight_type=\"time_min\",\n",
+    "    weight_value_cutoff=10,\n",
+    "    zone=zone\n",
+    ")\n",
+    "# Visualize results\n",
+    "result_time.explore(column='name', tiles='CartoDB Positron')"
+   ],
+   "id": "3fe99dad99d0c066",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "### Key Parameters Explained:\n",
+    "- `weight_type`: \n",
+    "  - `\"length_meter\"` for distance-based coverage\n",
+    "  - `\"time_min\"` for time-based coverage\n",
+    "- `weight_value_cutoff`: Maximum travel distance/time threshold\n",
+    "- `zone` (optional): Boundary polygon to clip results"
+   ],
+   "id": "ac980132a47eb200"
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 5. Calculate stepped Coverage by Travel Time\n",
+    "This method divides the total travel time threshold into steps (e.g. every 2 minutes), creating incremental zones.\n",
+    "Useful for visualizing service accessibility gradients.\n",
+    "\n",
+    "You can choose the visualization method:\n",
+    "- `\"voronoi\"`: polygons based on proximity to reachable network nodes\n",
+    "- `\"separate\"`: independent buffer zones for each interval\n"
+   ],
+   "id": "f6965db2be4d9e73"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "stepped_cov_voronoi = get_stepped_graph_coverage(\n",
+    "    gdf_to=services,\n",
+    "    nx_graph=G_intermodal,\n",
+    "    weight_type=\"time_min\",\n",
+    "    step_type='voronoi',\n",
+    "    weight_value_cutoff=15,\n",
+    "    step=2,\n",
+    "    zone=zone\n",
+    ")\n",
+    "# Visualize stepped coverage\n",
+    "stepped_cov_voronoi.explore(column='dist', tiles='CartoDB Positron')"
+   ],
+   "id": "4f8d216ed2c9b472",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "stepped_cov_voronoi = get_stepped_graph_coverage(\n",
+    "    gdf_to=services,\n",
+    "    nx_graph=G_intermodal,\n",
+    "    weight_type=\"time_min\",\n",
+    "    step_type='separate',\n",
+    "    weight_value_cutoff=15,\n",
+    "    step=2,\n",
+    ")\n",
+    "# Visualize stepped coverage\n",
+    "stepped_cov_voronoi.explore(column='dist', tiles='CartoDB Positron',vmin=0)"
+   ],
+   "id": "208ee93a136558ac",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 6. Calculate Radius-Based Coverage\n",
+    "If a transport network is unavailable or unnecessary, use simple circular buffers around service points.\n",
+    "\n",
+    "This method creates geometric buffers with specified radius (e.g., 500 meters)."
+   ],
+   "id": "53ecdf19492c5b74"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "radius_cov = get_radius_coverage(gdf_from=services, radius=500)\n",
+    "# Visualize radius coverage\n",
+    "radius_cov.explore(column='name', tiles='CartoDB Positron')"
+   ],
+   "id": "2908f41d0603713f",
+   "outputs": [],
+   "execution_count": null
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

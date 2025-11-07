@@ -1,0 +1,262 @@
+{
+ "cells": [
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "# Line-of-Sight Visibility Analysis\n",
+    "This notebook demonstrates how to compute visible areas from a viewpoint or multiple points using:\n",
+    "- Fast approximate visibility (suitable for quick overviews)\n",
+    "- Accurate visibility analysis (respecting occlusions)\n",
+    "- Parallelized visibility from multiple locations"
+   ],
+   "id": "f4c531a4c9e094ec"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Import necessary libraries\n",
+    "from objectnat import get_visibility, get_visibility_accurate\n",
+    "import geopandas as gpd\n",
+    "from shapely.geometry import Point"
+   ],
+   "id": "7b840bc7edf14b2c",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 1. Load Obstacle Data\n",
+    "Load a building layer representing line-of-sight obstacles. This dataset is used to compute occlusions in the urban environment.\n"
+   ],
+   "id": "1afa4218134b2c84"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Load buildings as obstacles\n",
+    "obstacles = gpd.read_parquet('examples_data/buildings.parquet')"
+   ],
+   "id": "588dc80a1b941474",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 2. Define Viewpoint\n",
+    "Specify the observation point from which visibility will be computed. Coordinates must match the CRS of the obstacles dataset.\n"
+   ],
+   "id": "c7d345277339355a"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Define a single viewpoint in WGS 84\n",
+    "point_from = gpd.GeoDataFrame(geometry=[Point(30.2312112, 59.9482336)], crs=4326)\n",
+    "radius = 500"
+   ],
+   "id": "784128c4f7c5fe89",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 3. Fast Visibility Calculation\n",
+    "Compute visibility using a fast, approximate method. This is suitable for real-time feedback or exploratory analysis.\n",
+    "**Note:** May produce artifacts (e.g., visibility behind walls).\n"
+   ],
+   "id": "a8026dc4e3dfba19"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Fast visibility (less accurate)\n",
+    "result_fast = get_visibility(point_from, obstacles, view_distance=radius)\n",
+    "# Computes visibility polygon from the viewpoint with a 500-meter radius using low-resolution simulation."
+   ],
+   "id": "8797859dfe469ace",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 4. Accurate Visibility Calculation\n",
+    "Use the more precise `get_visibility_accurate()` function, which simulates occlusion and limited sightlines.\n",
+    "This method is slower but produces more reliable results.\n"
+   ],
+   "id": "ebc68021e8caed4f"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Accurate visibility (includes occlusion and bottleneck modeling)\n",
+    "result_accurate = get_visibility_accurate(point_from, obstacles, view_distance=radius)\n",
+    "# Simulates realistic visibility by tracing around buildings and respecting occlusions."
+   ],
+   "id": "4c08935e3e1bf3ca",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 5. Visualization\n",
+    "Visualize obstacles and both visibility methods\n"
+   ],
+   "id": "e1fdf25b75fbe716"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "from shapely import Point\n",
+    "\n",
+    "from shapely import Point\n",
+    "\n",
+    "# Red area = False Positive (Simple method only)\n",
+    "simple_only = gpd.overlay(result_fast, result_accurate, how=\"difference\")\n",
+    "\n",
+    "# Green area = Advantage (Accurate method only)\n",
+    "accurate_only = gpd.overlay(result_accurate, result_fast, how=\"difference\")\n",
+    "\n",
+    "# Blue area = Agreement Area (both methods overlap)\n",
+    "common_area = gpd.overlay(result_fast, result_accurate, how=\"intersection\")\n",
+    "\n",
+    "# Light gray = Obstacles (context layer)\n",
+    "m = common_area.explore(color='blue', tiles='CartoDB positron')\n",
+    "obstacles.explore(m=m, color='lightgray')\n",
+    "simple_only.explore(m=m, color='red')\n",
+    "accurate_only.explore(m=m, color='green')\n"
+   ],
+   "id": "26c72acea424b17",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 6. Visibility from Multiple Viewpoints (Parallelized)\n",
+    "For batch visibility simulation, use `get_visibilities_from_points()` with multiple locations.\n",
+    "The computation is performed in parallel using multiprocessing."
+   ],
+   "id": "e1b243c10ab80704"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "from objectnat import get_visibilities_from_points\n",
+    "\n",
+    "obstacles = gpd.read_parquet('examples_data/buildings.parquet')\n",
+    "points = gpd.GeoDataFrame(\n",
+    "    geometry=[Point(30.27060176, 59.93546846), Point(30.29586657, 59.94410918), Point(30.2312112, 59.9482336)],\n",
+    "    crs=4326)\n",
+    "\n",
+    "local_crs = obstacles.estimate_utm_crs()\n",
+    "obstacles.to_crs(local_crs, inplace=True)\n",
+    "points.to_crs(local_crs, inplace=True)\n",
+    "\n",
+    "result = get_visibilities_from_points(points, obstacles, 500)\n",
+    "# Calculating visibility from each point in the 'points' GeoDataFrame with a view distance of 500 units.\n",
+    "# This method uses multiprocessing for better performance when dealing with multiple points.\n",
+    "\n",
+    "gpd.GeoDataFrame(geometry=result, crs=local_crs).explore()"
+   ],
+   "id": "82bab1238ec83288",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": "## Calculate visibility catchment area (multiprocessing)",
+   "id": "f9aff770aa8f63bb"
+  },
+  {
+   "cell_type": "code",
+   "id": "initial_id",
+   "metadata": {
+    "collapsed": true
+   },
+   "source": [
+    "\n",
+    "import pandas as pd\n",
+    "import geopandas as gpd\n",
+    "from objectnat import calculate_visibility_catchment_area\n",
+    "\n",
+    "# Load data for buildings, points, woods, and bridges\n",
+    "builds = gpd.read_file('builds.geojson').to_crs(32636)\n",
+    "points = gpd.read_file('distributed_points.geojson').to_crs(32636)\n",
+    "woods = gpd.read_file('woods.geojson').to_crs(32636)\n",
+    "bridges = gpd.read_file('bridges.geojson').to_crs(32636)\n",
+    "\n",
+    "view_dist = 1000\n",
+    "# Setting the visibility distance (catchment radius) to 1000 units.\n",
+    "\n",
+    "obstacles = gpd.GeoDataFrame(pd.concat([builds, woods, bridges], ignore_index=True), geometry='geometry',\n",
+    "                             crs=32636)\n",
+    "# Combining the GeoDataFrames for buildings, woods, and bridges into a single GeoDataFrame that serves as obstacles \n",
+    "# to be considered in the visibility calculation.\n",
+    "\n",
+    "res = calculate_visibility_catchment_area(points, obstacles, view_dist)\n",
+    "# Calculating the visibility catchment area for the given points, considering the obstacles and the view distance.\n",
+    "# The result is a GeoDataFrame containing the catchment areas."
+   ],
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "res.explore(\n",
+    "    column=\"factor_normalized\",\n",
+    "    categorical=False,\n",
+    "    cmap=\"plasma\",\n",
+    "    legend=True,\n",
+    ")\n",
+    "# Visualizing the catchment areas on an interactive map, using the 'factor_normalized' column to color the areas\n",
+    "# with a 'plasma' colormap. A legend is displayed to show the range of values."
+   ],
+   "id": "4485c645267fa0ea",
+   "outputs": [],
+   "execution_count": null
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

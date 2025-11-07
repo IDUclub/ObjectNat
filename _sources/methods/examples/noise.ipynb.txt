@@ -1,0 +1,312 @@
+{
+ "cells": [
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "# Noise Propagation Simulation\n",
+    "This section demonstrates how to simulate the propagation of noise in an urban environment using a point source,\n",
+    "obstacles (e.g., buildings), and optional vegetation (e.g., trees). The `simulate_noise` function models the \n",
+    "attenuation of noise based on geometry, absorption, reflections, and environmental parameters.\n"
+   ],
+   "id": "dcd797a362c7bfcc"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Install required packages (uncomment if needed)\n",
+    "# !pip install pyarrow objectnat"
+   ],
+   "id": "1cb78f85e2a4fd16",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Import necessary libraries\n",
+    "import geopandas as gpd\n",
+    "from shapely.geometry import Point\n",
+    "from objectnat import simulate_noise"
+   ],
+   "id": "c9d41c96e9e29d25",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": "## 1. Define Noise Source\n",
+   "id": "d17c9f5c9d0a1e32"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Define the starting point(s) of the noise source, and their parameters \n",
+    "\n",
+    "start_p = gpd.GeoDataFrame(data=[[90, 3000], [80, 200]],\n",
+    "                           geometry=[Point(30.27060176, 59.93546846), Point(30.27213917, 59.93575345)],\n",
+    "                           columns=['source_noise_db', 'geometric_mean_freq_hz'], crs=4326)"
+   ],
+   "id": "26de7874d08a9edc",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 2. Load Obstacle and Tree Data\n",
+    "Load obstacle (building) and tree layers from local files, and project them to the same CRS used for simulation.\n"
+   ],
+   "id": "2b92b561b2fc0613"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Load obstacle geometries (e.g., buildings)\n",
+    "obstacles = gpd.read_parquet('examples_data/buildings.parquet')\n",
+    "\n",
+    "# Load vegetation geometries (e.g., trees)\n",
+    "trees = gpd.read_parquet('examples_data/trees.parquet')"
+   ],
+   "id": "2d28aed860ee113f",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 3. Run Noise Simulation\n",
+    "Simulate the propagation of noise using a point source with specified parameters. The simulation accounts for:\n",
+    "- Obstacles and their absorption\n",
+    "- Tree-based scattering\n",
+    "- Environmental factors like air temperature\n",
+    "- Sound reflection and attenuation with distance\n"
+   ],
+   "id": "cee8754172564e3d"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Run the simulation\n",
+    "noise = simulate_noise(\n",
+    "    source_points=start_p,\n",
+    "    obstacles=obstacles,\n",
+    "    # Alternatively use these args if not specified per-point\n",
+    "    # source_noise_db=90,  # Initial noise level in decibels\n",
+    "    # geometric_mean_freq_hz=2000,  # Frequency of the noise signal\n",
+    "    standart_absorb_ratio=0.05,  # Default absorption coefficient for obstacles\n",
+    "    trees=trees,  # Vegetation data\n",
+    "    tree_resolution=4,  # Resolution of vegetation scattering\n",
+    "    air_temperature=20,  # Air temperature in °C\n",
+    "    target_noise_db=40,  # Simulation stops at this minimum noise level\n",
+    "    db_sim_step=1,  # Step size in decibel for simulation granularity\n",
+    "    reflection_n=2,  # Number of allowed reflections\n",
+    "    dead_area_r=5  # Radius of reflection-free dead zones (in meters)\n",
+    ")\n"
+   ],
+   "id": "39e652ae619945c0",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 4. Visualize the Result\n",
+    "Visualize the noise propagation result on a map using a color scale that reflects noise levels (in dB).\n"
+   ],
+   "id": "7b5484096b6d206d"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Visualize the result using the 'RdYlGn_r' colormap and a fixed lower bound\n",
+    "noise.explore(column='noise_level', cmap='RdYlGn_r', vmin=40, tiles='cartodb positron')"
+   ],
+   "id": "b747a45d091122cd",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 5. Create a Simplified Noise Frame (No Full Simulation)\n",
+    "\n",
+    "This section builds a simplified noise exposure map (noise \"frame\") across a territory using only geometric\n",
+    "visibility and sound decay, without performing full wave-based simulation.\n",
+    "\n",
+    "Here's what happens step-by-step:\n",
+    "\n",
+    "1. A 500-meter buffer area is created around a central point of interest.\n",
+    "2. A drive street graph is downloaded and converted into a GeoDataFrame.\n",
+    "3. From the surrounding buildings, a random subset is sampled to act as noise sources (e.g., noisy buildings).\n",
+    "4. Sound source attributes (noise level and frequency) are assigned to graph edges and buildings.\n",
+    "5. All sources are combined into a single GeoDataFrame and passed to `calculate_simplified_noise_frame`.\n",
+    "6. The result is a noise-level envelope (polygon map), where each area shows the maximum estimated noise level.\n"
+   ],
+   "id": "7e0a2f69cf50e1e6"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Install package for getting drive graph (uncomment if needed)\n",
+    "# !pip install iduedu"
+   ],
+   "id": "60f40c55a890ca69",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "from iduedu import get_drive_graph\n",
+    "from objectnat import graph_to_gdf, calculate_simplified_noise_frame\n",
+    "import pandas as pd\n",
+    "\n",
+    "# Define the center of the area of interest\n",
+    "mid_point = gpd.GeoSeries([Point(30.2706, 59.9354)], crs=4326)\n",
+    "\n",
+    "# Create a 500-meter buffer around the center\n",
+    "area_of_interest = mid_point.to_crs(32636).buffer(500)\n",
+    "\n",
+    "# Get drivable road network and convert it to GeoDataFrame\n",
+    "polygon4326 = area_of_interest.to_crs(4326).iloc[0]\n",
+    "local_drive_graph = get_drive_graph(polygon=polygon4326, retain_all=True)\n",
+    "graph_edges = graph_to_gdf(local_drive_graph, edges=True, nodes=False).to_crs(start_p.crs)\n",
+    "\n",
+    "# Clip buildings to the area and randomly sample 2% of them as \"noisy buildings\"\n",
+    "obstacles_in_area = obstacles.clip(area_of_interest, keep_geom_type=True)\n",
+    "sample_size = max(1, int(0.02 * len(obstacles_in_area)))\n",
+    "obstacles_in_area = obstacles_in_area.sample(n=sample_size, random_state=42).to_crs(start_p.crs)\n",
+    "obstacles_in_area[\"source_noise_db\"] = 90\n",
+    "\n",
+    "# Assign road edges as line sources of noise\n",
+    "graph_edges[\"source_noise_db\"] = 75\n",
+    "\n",
+    "# Combine all sources into one GeoDataFrame\n",
+    "noise_sources = pd.concat([start_p, graph_edges, obstacles_in_area], ignore_index=True)\n",
+    "noise_sources[\"geometric_mean_freq_hz\"] = 2000\n",
+    "\n",
+    "# Calculate simplified noise distribution (set use_tqdm=False to disable progress bar)\n",
+    "noise_frame = calculate_simplified_noise_frame(\n",
+    "    noise_sources,\n",
+    "    obstacles,\n",
+    "    air_temperature=20,\n",
+    ")"
+   ],
+   "id": "970db82b13ae469b",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Visualize simplified noise frame\n",
+    "noise_frame.explore(column='noise_level', cmap='RdYlGn_r', vmax=120, vmin=40, tiles='cartodb positron')"
+   ],
+   "id": "8a0f08eb123f7dfc",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": "## Section for GIF creation",
+   "id": "31cb77ec9dc93fc3"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "import matplotlib.pyplot as plt\n",
+    "import matplotlib.animation as animation\n",
+    "\n",
+    "import numpy as np\n",
+    "from matplotlib import cm\n",
+    "\n",
+    "\n",
+    "def create_noise_animation(gdf_noise, gdf_obstacles, start_p, buffer_p, gdf_trees=None,\n",
+    "                           output_file=\"noise_animation.gif\"):\n",
+    "    if gdf_trees is None:\n",
+    "        gdf_trees = gpd.GeoDataFrame()\n",
+    "\n",
+    "    bounds = start_p.unary_union.buffer(buffer_p).bounds\n",
+    "    minx, miny, maxx, maxy = bounds\n",
+    "    vmin = gdf_noise['noise_level'].min()\n",
+    "    vmax = gdf_noise['noise_level'].max()\n",
+    "    cmap = cm.plasma\n",
+    "\n",
+    "    fig, ax = plt.subplots(figsize=(10, 10))\n",
+    "    plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)\n",
+    "\n",
+    "    def update_frame(frame):\n",
+    "        ax.clear()\n",
+    "        ax.set_xlim(minx, maxx)\n",
+    "        ax.set_ylim(miny, maxy)\n",
+    "\n",
+    "        gdf_trees.plot(ax=ax, edgecolor='green', facecolor='none', linewidth=3)\n",
+    "        gdf_obstacles.plot(ax=ax, facecolor='gray')\n",
+    "\n",
+    "        gdf_noise[gdf_noise['noise_level'] > frame].plot(ax=ax, column='noise_level', cmap=cmap, alpha=0.8, vmin=vmin,\n",
+    "                                                         vmax=vmax)\n",
+    "        gdf_noise[gdf_noise['noise_level'] == frame].plot(ax=ax, column='noise_level', cmap=cmap, alpha=1, vmin=vmin,\n",
+    "                                                          vmax=vmax)\n",
+    "        gdf_noise[gdf_noise['noise_level'] == frame - 1].plot(ax=ax, column='noise_level', cmap=cmap, alpha=0.5,\n",
+    "                                                              vmin=vmin, vmax=vmax)\n",
+    "        gdf_noise[gdf_noise['noise_level'] < frame - 1].plot(ax=ax, column='noise_level', cmap=cmap, alpha=0.3,\n",
+    "                                                             vmin=vmin, vmax=vmax)\n",
+    "\n",
+    "        ax.set_title(f\"Noise Level: {frame} dB\", fontsize=20)\n",
+    "        ax.set_axis_off()\n",
+    "\n",
+    "    frames = np.arange(gdf_noise['noise_level'].max(), gdf_noise['noise_level'].min() - 1, -1)\n",
+    "    ani = animation.FuncAnimation(fig, update_frame, frames=frames, repeat=False)\n",
+    "    ani.save(output_file, writer='imagemagick', fps=15)\n",
+    "\n",
+    "    plt.close()\n",
+    "\n",
+    "\n",
+    "# Call the function to create the noise animation, using the noise, obstacles, and trees data\n",
+    "# Fill in the buffer_p parameter close to the value specified in the logs when running the simulation.\n",
+    "create_noise_animation(noise, obstacles, start_p, 350, trees)\n"
+   ],
+   "id": "8266509e1bd32c7",
+   "outputs": [],
+   "execution_count": null
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
