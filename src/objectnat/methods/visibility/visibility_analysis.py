@@ -1,5 +1,6 @@
 import math
 from multiprocessing import cpu_count
+from typing import Literal
 
 import geopandas as gpd
 import numpy as np
@@ -19,6 +20,65 @@ from objectnat.methods.utils.geom_utils import (
 from objectnat.methods.utils.math_utils import min_max_normalization
 
 logger = config.logger
+
+
+def _find_furthest_point(point_from: Point, view_polygon: Polygon) -> float:
+    try:
+        coords = np.asarray(view_polygon.exterior.coords, dtype="float64")
+        dx = coords[:, 0] - point_from.x
+        dy = coords[:, 1] - point_from.y
+        res = float(np.sqrt(dx * dx + dy * dy).max())
+        return round(res, 1)
+    except Exception as e:
+        print(view_polygon)
+        raise e
+
+
+def get_visibility(
+    point_from: gpd.GeoDataFrame,
+    obstacles: gpd.GeoDataFrame,
+    view_distance: float,
+    method: Literal["accurate", "fast"] = "accurate",
+    *,
+    return_max_view_dist: bool = False,
+    resolution: int = 32,
+) -> gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, float]:
+
+    if obstacles is not None and len(obstacles) > 0:
+        if obstacles.contains(point_geom).any():
+            empty_poly = Polygon()
+            empty_gdf = gpd.GeoDataFrame(geometry=[empty_poly], crs=original_crs)
+            return (empty_gdf, 0.0) if (method == "accurate" and return_max_view_dist) else empty_gdf
+    else:
+        # препятствий нет вообще
+        point_buffer = point_geom.buffer(
+            view_distance,
+            resolution=(32 if method == "accurate" else resolution),
+        )
+        full_vision_gdf = gpd.GeoDataFrame(geometry=[point_buffer], crs=local_crs).to_crs(original_crs)
+        return (full_vision_gdf, view_distance) if (method == "accurate" and return_max_view_dist) else full_vision_gdf
+
+    # выбор алгоритма
+    if method == "accurate":
+        res_poly = _visibility_accurate_local(point_geom, obstacles, view_distance)
+        result_gdf = gpd.GeoDataFrame(geometry=[res_poly], crs=local_crs).to_crs(original_crs)
+        if return_max_view_dist:
+            max_dist = _find_furthest_point(point_geom, res_poly)
+            return result_gdf, max_dist
+        return result_gdf
+
+    elif method == "fast":
+        res_poly = _visibility_fast_local(
+            point_geom,
+            obstacles,
+            view_distance,
+            resolution=resolution,
+        )
+        result_gdf = gpd.GeoDataFrame(geometry=[res_poly], crs=local_crs).to_crs(original_crs)
+        return result_gdf
+
+    else:
+        raise ValueError("method must be one of: 'accurate', 'fast'")
 
 
 def _ensure_crs(point_from, obstacles):
@@ -88,11 +148,14 @@ def get_visibility_accurate(
 
     def find_furthest_point(point_from, view_polygon):
         try:
-            res = round(max(Point(coords).distance(point_from) for coords in view_polygon.exterior.coords), 1)
+            coords = np.asarray(view_polygon.exterior.coords, dtype="float64")
+            dx = coords[:, 0] - point_from.x
+            dy = coords[:, 1] - point_from.y
+            res = float(np.sqrt(dx * dx + dy * dy).max())
+            return round(res, 1)
         except Exception as e:
             print(view_polygon)
             raise e
-        return res
 
     point_geom, obstacles, original_crs, local_crs, return_gdf = _ensure_crs(point_from, obstacles)
 
@@ -110,8 +173,10 @@ def get_visibility_accurate(
     allowed_geom_types = ["MultiPolygon", "Polygon", "LineString", "MultiLineString"]
 
     obstacles = obstacles[obstacles.geom_type.isin(allowed_geom_types)]
-    s = obstacles.intersects(point_buffer)
-    obstacles_in_buffer = obstacles.loc[s[s].index].geometry
+
+    sindex = obstacles.sindex
+    idx = list(sindex.query(point_buffer, predicate="intersects"))
+    obstacles_in_buffer = obstacles.geometry.iloc[idx]
 
     buildings_lines_in_buffer = gpd.GeoSeries(
         pd.Series(
@@ -121,20 +186,25 @@ def get_visibility_accurate(
 
     buildings_lines_in_buffer = buildings_lines_in_buffer.loc[buildings_lines_in_buffer.intersects(point_buffer)]
 
-    buildings_in_buffer_points = gpd.GeoSeries(
-        [Point(line.coords[0]) for line in buildings_lines_in_buffer.geometry]
-        + [Point(line.coords[-1]) for line in buildings_lines_in_buffer.geometry]
-    )
+    coords = [line.coords[0] for line in buildings_lines_in_buffer.geometry] + [
+        line.coords[-1] for line in buildings_lines_in_buffer.geometry
+    ]
 
-    max_dist = max(view_distance, buildings_in_buffer_points.distance(point_geom).max())
+    coords = np.asarray(coords, dtype="float64")
+    dx = coords[:, 0] - point_geom.x
+    dy = coords[:, 1] - point_geom.y
+    max_dist_lines = float(np.sqrt(dx * dx + dy * dy).max())
+
+    max_dist = max(view_distance, max_dist_lines)
+
     polygons = []
     buildings_lines_in_buffer = gpd.GeoDataFrame(geometry=buildings_lines_in_buffer, crs=obstacles.crs).reset_index()
     logger.debug("Calculation vis polygon")
     while not buildings_lines_in_buffer.empty:
         gdf_sindex = buildings_lines_in_buffer.sindex
         # TODO check if 2 walls are nearest and use the widest angle between points
-        nearest_wall_sind = gdf_sindex.nearest(point_geom, return_all=False, max_distance=max_dist)
-        nearest_wall = buildings_lines_in_buffer.loc[nearest_wall_sind[1]].iloc[0]
+        _, nearest_wall_sind = gdf_sindex.nearest(point_geom, return_all=False, max_distance=max_dist)
+        nearest_wall = buildings_lines_in_buffer.loc[nearest_wall_sind].iloc[0]
         wall_points = [Point(coords) for coords in nearest_wall.geometry.coords]
 
         # Calculate angles and sort by angle
@@ -158,15 +228,20 @@ def get_visibility_accurate(
             p2 = get_point_from_a_thorough_b(point_geom, points_with_angle[-1][0], a)
             polygon = Polygon([points_with_angle[0][0], p1, p2, points_with_angle[1][0]])
 
-        polygons.append(polygon)
-        buildings_lines_in_buffer.drop(nearest_wall_sind[1], inplace=True)
-
         if not polygon.is_valid or polygon.area < 1:
+            buildings_lines_in_buffer.drop(nearest_wall_sind, inplace=True)
             buildings_lines_in_buffer.reset_index(drop=True, inplace=True)
             continue
-
-        lines_to_kick = buildings_lines_in_buffer.within(polygon)
-        buildings_lines_in_buffer = buildings_lines_in_buffer.loc[~lines_to_kick]
+        polygons.append(polygon)
+        candidate_idx = list(gdf_sindex.query(polygon, predicate="intersects"))
+        if candidate_idx:
+            candidates = buildings_lines_in_buffer.loc[candidate_idx]
+            mask_within = candidates.within(polygon)
+            to_drop = candidates.index[mask_within]
+        else:
+            to_drop = pd.Index([])
+        to_drop = to_drop.append(pd.Index(nearest_wall_sind))
+        buildings_lines_in_buffer.drop(index=to_drop, inplace=True)
         buildings_lines_in_buffer.reset_index(drop=True, inplace=True)
     logger.debug("Done calculating!")
     res = point_buffer.difference(unary_union(polygons + obstacles_in_buffer.to_list()))
