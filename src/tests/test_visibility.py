@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Patch
 from shapely import Point, Polygon
 
-from objectnat import get_visibilities_from_points, get_visibility, get_visibility_accurate
+from objectnat import get_visibility
 from tests.conftest import output_dir
 
 
@@ -18,31 +18,18 @@ def gdf_1point_special():
 def test_empty_obstacles_point_gdf(gdf_1point_special):
     radius = 500
 
-    simple = get_visibility(gdf_1point_special, gpd.GeoDataFrame(), radius)
-    accurate = get_visibility_accurate(gdf_1point_special, gpd.GeoDataFrame(), radius)
+    simple = get_visibility(gdf_1point_special, gpd.GeoDataFrame(), radius, "simple")
+    accurate = get_visibility(gdf_1point_special, gpd.GeoDataFrame(), radius, "accurate")
 
     assert simple.crs == gdf_1point_special.crs
     assert accurate.crs == gdf_1point_special.crs
 
 
-def test_empty_obstacles_point_shapely(gdf_1point_special):
-    radius = 500
-
-    point = gdf_1point_special.iloc[0].geometry
-
-    simple = get_visibility(point, gpd.GeoDataFrame(), radius)
-    accurate = get_visibility_accurate(point, gpd.GeoDataFrame(), radius)
-
-    assert isinstance(simple, Polygon)
-    assert isinstance(accurate, Polygon)
-
-
 def test_compare_visibility_methods(gdf_1point_special, buildings_data):
 
     radius = 800
-
-    simple = get_visibility(gdf_1point_special, buildings_data, radius)
-    accurate = get_visibility_accurate(gdf_1point_special, buildings_data, radius)
+    simple = get_visibility(gdf_1point_special, buildings_data, radius, "simple")
+    accurate = get_visibility(gdf_1point_special, buildings_data, radius, "accurate")
 
     assert simple.crs == gdf_1point_special.crs
     assert accurate.crs == gdf_1point_special.crs

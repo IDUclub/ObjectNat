@@ -10,7 +10,7 @@ from objectnat.methods.utils.geom_utils import (
     distribute_points_on_polygons,
     polygons_to_multilinestring,
 )
-from objectnat.methods.visibility.visibility_analysis import get_visibility_accurate
+from objectnat.methods.visibility.visibility_analysis import get_visibility
 
 MAX_DB_VALUE = 194
 
@@ -131,7 +131,7 @@ def calculate_simplified_noise_frame(
                     point_from = row.geometry
                     point_buffer = point_from.buffer(max_dist, resolution=16)
                     local_obstacles = obstacles[obstacles.intersects(point_buffer)]
-                    vis_poly = get_visibility_accurate(point_from, obstacles=local_obstacles, view_distance=max_dist)
+                    vis_poly = get_visibility(point_from, obstacles=local_obstacles, view_distance=max_dist)
                     noise_from_feature = _eval_donuts_gdf(point_from, dist_db, local_crs, vis_poly)
                     frame_result.append(noise_from_feature)
                     pbar.update(1)
@@ -186,7 +186,7 @@ def _process_lines_or_polygons(
     local_obstacles = obstacles[obstacles.intersects(layer_buffer)]
     for _, row in layer_points.iterrows():
         point_from = row.geometry
-        vis_poly = get_visibility_accurate(point_from, obstacles=local_obstacles, view_distance=max_dist)
+        vis_poly = get_visibility(point_from, obstacles=local_obstacles, view_distance=max_dist)
         features_vision_polys.append(vis_poly)
         pbar.update(1)
     features_vision_polys = unary_union(features_vision_polys)

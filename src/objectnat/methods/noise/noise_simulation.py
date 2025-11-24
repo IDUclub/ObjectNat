@@ -18,7 +18,7 @@ from objectnat.methods.utils.geom_utils import (
     get_point_from_a_thorough_b,
     polygons_to_multilinestring,
 )
-from objectnat.methods.visibility.visibility_analysis import get_visibility_accurate
+from objectnat.methods.visibility.visibility_analysis import get_visibility
 
 logger = config.logger
 
@@ -252,8 +252,8 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
         obstacles_union = Polygon()
     else:
         obstacles_union = obstacles.union_all()
-
-    vis_poly, max_view_dist = get_visibility_accurate(point_from, obstacles, dist, return_max_view_dist=True)
+    # TODO REWRITE
+    vis_poly, max_view_dist = get_visibility(point_from, obstacles, dist, return_max_view_dist=True)
 
     donuts_dist_values = donuts_dist_values(dist_db, passed_dist, max_view_dist)
 
