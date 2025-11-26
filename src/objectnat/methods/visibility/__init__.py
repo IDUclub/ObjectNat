@@ -1,6 +1,1 @@
-from .visibility_analysis import (
-    calculate_visibility_catchment_area,
-    get_visibilities_from_points,
-    get_visibility,
-    get_visibility_accurate,
-)
+from .visibility_analysis import get_visibility, dist_to_furthest_point
