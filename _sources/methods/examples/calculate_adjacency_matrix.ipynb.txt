@@ -1,0 +1,181 @@
+{
+ "cells": [
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "# Building-to-Service Travel Time Matrix with Intermodal Graph\n",
+    "This notebook demonstrates how to compute a time-based adjacency matrix between two GeoDataFrames\n",
+    "(e.g., buildings and services) using a multimodal transport graph.\n",
+    "\n",
+    "The method utilizes the `IduEdu` library to:\n",
+    "- Construct a multimodal graph (e.g., walk + public transport)\n",
+    "- Calculate travel time-based adjacency matrix from one GeoDataFrame to another\n",
+    "\n",
+    "This matrix can be used in `ObjectNat` for further service provision analysis."
+   ],
+   "id": "9ca78071b77f245e"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# %%\n",
+    "# Install required packages (uncomment if needed)\n",
+    "# !pip install iduedu pyarrow"
+   ],
+   "id": "a3fd404cc3b83edd",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Import necessary libraries\n",
+    "from iduedu import get_intermodal_graph, get_adj_matrix_gdf_to_gdf\n",
+    "import geopandas as gpd\n",
+    "import pandas as pd\n",
+    "from shapely.ops import unary_union"
+   ],
+   "id": "9a3e15f423bedc31",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 1. Load Input Geospatial Data\n",
+    "Load the GeoDataFrames of buildings (origins) and services (destinations).\n"
+   ],
+   "id": "68af599b21a7895d"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Read building and service datasets\n",
+    "buildings = gpd.read_parquet('examples_data/buildings.parquet')\n",
+    "services = gpd.read_parquet('examples_data/services.parquet')"
+   ],
+   "id": "ecaca9093632eb44",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 2. Create Coverage Polygon for Graph Download\n",
+    "Compute a polygon that encompasses both datasets to define the spatial extent for graph download.\n",
+    "This is done by computing a convex hull over all geometries and buffering it slightly.\n"
+   ],
+   "id": "5146507282cd8082"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "polygon = unary_union(\n",
+    "    buildings.to_crs(4326).geometry.to_list() + services.to_crs(4326).geometry.to_list()\n",
+    ").convex_hull.buffer(0.001)"
+   ],
+   "id": "74e684470ea483a1",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 3. Download and Clip Intermodal Graph\n",
+    "Download the intermodal (multi-modal) network graph using the defined polygon.\n",
+    "This includes walking paths and public transport networks."
+   ],
+   "id": "b6b58fffdd714d38"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Load multimodal graph clipped to polygon\n",
+    "G_intermodal = get_intermodal_graph(territory=polygon, clip_by_territory=True)"
+   ],
+   "id": "1e643d3fdc052876",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 4. Compute Adjacency Matrix (Travel Time)\n",
+    "Calculate a travel-time-based adjacency matrix from buildings to services.\n",
+    "\n",
+    "Parameters:\n",
+    "- `weight`: edge attribute used for cost (e.g., \"time_min\")\n",
+    "- `threshold`: maximum allowed travel time (in minutes)"
+   ],
+   "id": "812757b2e10fe745"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Compute travel time matrix (in minutes)\n",
+    "matrix: pd.DataFrame = get_adj_matrix_gdf_to_gdf(\n",
+    "    gdf_from=buildings,\n",
+    "    gdf_to=services,\n",
+    "    nx_graph=G_intermodal,\n",
+    "    weight=\"time_min\",\n",
+    "    threshold=45\n",
+    ")"
+   ],
+   "id": "f763ed1656707714",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 5. Save Adjacency Matrix\n",
+    "Export the result for further processing, e.g., with `ObjectNat`'s service provision tools."
+   ],
+   "id": "8c56b37f6c2f508f"
+  },
+  {
+   "cell_type": "code",
+   "source": [
+    "# Save matrix to Parquet format\n",
+    "matrix.to_parquet('examples_data/matrix_time.parquet')"
+   ],
+   "metadata": {},
+   "id": "371f4607ed8ec9c9",
+   "outputs": [],
+   "execution_count": null
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

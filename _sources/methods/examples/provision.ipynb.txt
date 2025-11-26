@@ -1,0 +1,197 @@
+{
+ "cells": [
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "# Service Provision Analysis\n",
+    "This notebook demonstrates how to analyze service accessibility from buildings using precomputed distances:\n",
+    "- Compute basic service provision\n",
+    "- Adjust provision thresholds\n",
+    "- Clip provision to specific subareas"
+   ],
+   "id": "8412dc445f8b77de"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Import necessary libraries\n",
+    "from objectnat import get_service_provision, recalculate_links, clip_provision\n",
+    "import geopandas as gpd\n",
+    "import pandas as pd"
+   ],
+   "id": "8bd677b0f6ad1c1",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 1. Load Input Data\n",
+    "Load buildings, services, and an adjacency matrix of distances or travel times between them. All layers are reprojected to UTM (EPSG:32636) for consistency.\n"
+   ],
+   "id": "133bb319e2fd5ec3"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Load datasets\n",
+    "buildings = gpd.read_parquet(\"examples_data/buildings.parquet\")\n",
+    "services = gpd.read_parquet(\"examples_data/services.parquet\")\n",
+    "adjacency_matrix = pd.read_parquet(\"examples_data/matrix_time.parquet\")"
+   ],
+   "id": "4f2059500cec3f8b",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 2. Compute Initial Service Provision\n",
+    "Compute how well buildings are served by nearby services using the `get_service_provision()` function.\n",
+    "The `threshold` parameter defines the maximum distance or time for service availability."
+   ],
+   "id": "3072fc796157aab5"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Compute service provision using a threshold of 10 (e.g., minutes)\n",
+    "buildings_prov, services_prov, links_prov = get_service_provision(\n",
+    "    buildings=buildings,\n",
+    "    services=services,\n",
+    "    adjacency_matrix=adjacency_matrix,\n",
+    "    threshold=10\n",
+    ")\n",
+    "# This returns updated buildings, services, and links GeoDataFrames with provision status and metrics."
+   ],
+   "id": "5495c4c389c1d17",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 3. Visualize Service Provision\n",
+    "Use an interactive map to inspect which buildings are well-served and which are underserved.\n"
+   ],
+   "id": "f267ccc667dea286"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Visualize provision by average distance to services\n",
+    "m = buildings_prov.reset_index().explore(column=\"avg_dist\", cmap=\"RdYlGn_r\", tiles=\"CartoDB positron\")\n",
+    "\n",
+    "# Overlay service locations (in red)\n",
+    "services_prov.explore(m=m, color=\"red\")\n",
+    "\n",
+    "# Uncomment to show service links (color-coded by service index)\n",
+    "# links_prov.explore(m=m, column='service_index', cmap='prism', style_kwds={'opacity': 0.5})"
+   ],
+   "id": "dbdacc6bef92bc83",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 4. Recalculate Provision with New Threshold\n",
+    "Update the service provision based on a new threshold (e.g., longer acceptable walking or travel time).\n"
+   ],
+   "id": "9f941a72e57af722"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Determine color scaling from original results\n",
+    "vmax = buildings_prov['avg_dist'].max()\n",
+    "\n",
+    "# Recompute provision using a threshold of 15\n",
+    "buildings_prov2, services_prov2, links_prov2 = recalculate_links(\n",
+    "    buildings_prov,\n",
+    "    services_prov,\n",
+    "    links_prov,\n",
+    "    new_max_dist=15\n",
+    ")\n",
+    "\n",
+    "# Visualize updated provision with consistent color scale\n",
+    "m2 = buildings_prov2.reset_index().explore(column=\"avg_dist\", cmap=\"RdYlGn_r\", tiles=\"CartoDB positron\", vmax=vmax)\n",
+    "\n",
+    "services_prov2.explore(m=m2, color=\"red\")\n",
+    "# Uncomment to show service links (color-coded by service index)\n",
+    "# links_prov2.explore(m=m2, column='service_index', cmap='prism', style_kwds={'opacity': 0.5})"
+   ],
+   "id": "ddeb3b14e59993",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 5. Clip Provision to a Subarea\n",
+    "Limit the analysis to a specific geographic region using any interested area.\n"
+   ],
+   "id": "4d8eaec54833393"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Select a few buildings and buffer them to define a clipping area\n",
+    "clip_area = buildings.iloc[500:503].copy()\n",
+    "clip_area[\"geometry\"] = clip_area.geometry.buffer(500)\n",
+    "\n",
+    "# Clip provision to selected subarea\n",
+    "buildings_prov_clipped, services_prov_clipped, links_prov_clipped = clip_provision(\n",
+    "    buildings_prov2,\n",
+    "    services_prov2,\n",
+    "    links_prov2,\n",
+    "    selection_zone=clip_area\n",
+    ")\n",
+    "\n",
+    "# Visualize the clipped results\n",
+    "m3 = buildings_prov_clipped.reset_index().explore(column=\"avg_dist\", cmap=\"RdYlGn_r\", tiles=\"CartoDB positron\",\n",
+    "                                                  vmax=vmax)\n",
+    "\n",
+    "services_prov_clipped.explore(m=m3, color=\"red\")\n",
+    "# Uncomment to show service links (color-coded by service index)\n",
+    "# links_prov_clipped.explore(m=m3, column='service_index', cmap='prism', style_kwds={'opacity': 0.5})"
+   ],
+   "id": "950866ceb91eb982",
+   "outputs": [],
+   "execution_count": null
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

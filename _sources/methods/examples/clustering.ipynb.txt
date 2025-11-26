@@ -1,0 +1,104 @@
+{
+ "cells": [
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "# Spatial Clustering of GeoDataFrame into Polygons\n",
+    "This example demonstrates how to cluster spatial point data (e.g., buildings or services) into polygons using density-based algorithms:\n",
+    "- DBSCAN or HDBSCAN methods\n",
+    "- Parameters for minimum distance and minimum points per cluster"
+   ],
+   "id": "cf34b03e60843e6a"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Import necessary libraries\n",
+    "from objectnat import get_clusters_polygon\n",
+    "import geopandas as gpd"
+   ],
+   "id": "1a1dbf25992ecf52",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    "## 1. Load Point Dataset\n",
+    "Load a set of points (e.g., buildings) for spatial clustering.\n"
+   ],
+   "id": "fb6c09592d642382"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Load building data\n",
+    "buildings = gpd.read_parquet('examples_data/buildings.parquet')"
+   ],
+   "id": "a4e1407403d83325",
+   "outputs": [],
+   "execution_count": null
+  },
+  {
+   "metadata": {},
+   "cell_type": "markdown",
+   "source": [
+    " ## 2. Perform Clustering and Create Cluster Polygons\n",
+    " Use the `get_clusters_polygon()` function to cluster points into groups based on spatial proximity.\n",
+    " \n",
+    " Parameters:\n",
+    " - `min_dist`: maximum distance between neighboring points (e.g., 20 meters)\n",
+    " - `min_point`: minimum number of points to form a cluster (e.g., 10)\n",
+    " - `method`: clustering algorithm ('DBSCAN' or 'HDBSCAN')"
+   ],
+   "id": "9149bdc20488bbe5"
+  },
+  {
+   "metadata": {},
+   "cell_type": "code",
+   "source": [
+    "# Apply clustering with DBSCAN\n",
+    "clusters, buildings_clustered = get_clusters_polygon(\n",
+    "    points=buildings,\n",
+    "    min_dist=70,\n",
+    "    min_point=2,\n",
+    "    method='DBSCAN'\n",
+    ")\n",
+    "# Show cluster polygons\n",
+    "m = clusters.explore()\n",
+    "\n",
+    "# Optional: show clustered buildings colored by cluster ID\n",
+    "# buildings_clustered.explore(m=m, column='cluster', categorical=True)\n",
+    "m"
+   ],
+   "id": "f990273f2f2e26c",
+   "outputs": [],
+   "execution_count": null
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

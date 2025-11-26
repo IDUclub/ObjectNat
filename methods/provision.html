@@ -1,0 +1,546 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Visibility Analysis" href="visibility.html"><link rel="prev" title="Graph Coverage Zones from Points" href="coverage.html">
+        <link rel="prefetch" href="../_static/ONlogo.svg" as="image">
+
+    <link rel="shortcut icon" href="../_static/ONFavicon.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
+        <title>Service Provision Analysis - ObjectNat 1.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">ObjectNat 1.4.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/ONlogo.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">ObjectNat 1.4.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="isochrones.html">Isochrones and Transport Accessibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverage.html">Graph Coverage Zones from Points</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Service Provision Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visibility.html">Visibility Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="noise.html">Noise Simulation &amp; Noise Frame</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering.html">Point Clusterization</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples/index.html">Examples</a><input aria-label="Toggle navigation of Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/isochrones.html">Isochrone Analysis from Points of Interest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/coverage.html">Graph Coverage Analysis for Service Points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/provision.html">Service Provision Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/visibility.html">Line-of-Sight Visibility Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/noise.html">Noise Propagation Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/clustering.html">Spatial Clustering of GeoDataFrame into Polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/calculate_adjacency_matrix.html">Building-to-Service Travel Time Matrix with Intermodal Graph</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/methods/provision.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="service-provision-analysis">
+<h1>Service Provision Analysis<a class="headerlink" href="#service-provision-analysis" title="Link to this heading">¶</a></h1>
+<p>This module evaluates how well <strong>services</strong> (e.g., schools, clinics, shops)
+cover <strong>residential buildings</strong> based on their <strong>capacity</strong> and <strong>accessibility</strong>.
+It models <strong>demand–supply relationships</strong> and provides tools to analyze, visualize,
+and adjust service coverage.</p>
+<hr class="docutils" />
+<blockquote>
+<div><p>Service provision analysis helps estimate how effectively urban infrastructure
+meets population needs.</p>
+</div></blockquote>
+<hr class="docutils" />
+<section id="evaluate-initial-provision">
+<h2>Evaluate Initial Provision<a class="headerlink" href="#evaluate-initial-provision" title="Link to this heading">¶</a></h2>
+<p>Calculates <strong>provision scores</strong> between population points and service facilities
+considering:</p>
+<ul class="simple">
+<li><p><strong>Distance or time thresholds</strong></p></li>
+<li><p><strong>Facility capacity</strong></p></li>
+<li><p><strong>Demand distribution</strong></p></li>
+</ul>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.get_service_provision">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">get_service_provision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buildings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adjacency_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">services</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buildings_demand_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'demand'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">services_capacity_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'capacity'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/provision/provision.html#get_service_provision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.get_service_provision" title="Link to this definition">¶</a></dt>
+<dd><p>Compute service provision between demand locations (buildings) and service facilities.</p>
+<p>The function implements a <strong>gravity-based allocation model</strong>: service capacity is
+distributed across nearby demand points with weights that <strong>decay with the square
+of distance (or generalized cost)</strong>. Closer buildings receive proportionally
+higher shares of the available capacity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buildings</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – GeoDataFrame of <strong>demand locations</strong> (e.g., residential buildings).
+Must include a numeric column with demand values
+(see <code class="docutils literal notranslate"><span class="pre">buildings_demand_column</span></code>).</p></li>
+<li><p><strong>adjacency_matrix</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">pd.DataFrame</span></code>) – A rectangular DataFrame representing <strong>OD (origin–destination) costs</strong>
+between <code class="docutils literal notranslate"><span class="pre">buildings</span></code> (rows) and <code class="docutils literal notranslate"><span class="pre">services</span></code> (columns).
+Units must match <code class="docutils literal notranslate"><span class="pre">threshold</span></code> (e.g., minutes or meters).
+Missing or infinite values (<code class="docutils literal notranslate"><span class="pre">NaN</span></code> or <code class="docutils literal notranslate"><span class="pre">inf</span></code>) are treated as <strong>unreachable</strong>.
+The row index must match <code class="docutils literal notranslate"><span class="pre">buildings.index</span></code> and column index must
+match <code class="docutils literal notranslate"><span class="pre">services.index</span></code>.</p></li>
+<li><p><strong>services</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – GeoDataFrame of <strong>service facilities</strong> (e.g., schools, clinics).
+Must include a numeric column with service capacity
+(see <code class="docutils literal notranslate"><span class="pre">services_capacity_column</span></code>).</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Maximum allowed cost value for assignment.
+Any OD entry <strong>greater than this threshold</strong> is considered unreachable.
+Units are the same as in <code class="docutils literal notranslate"><span class="pre">adjacency_matrix</span></code>.</p></li>
+<li><p><strong>buildings_demand_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Column name of building demand values. Default is <code class="docutils literal notranslate"><span class="pre">&quot;demand&quot;</span></code>.</p></li>
+<li><p><strong>services_capacity_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Column name of service capacity values. Default is <code class="docutils literal notranslate"><span class="pre">&quot;capacity&quot;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A tuple of three GeoDataFrames:</p>
+<ul class="simple">
+<li><p><strong>buildings</strong>: input buildings with updated provision metrics.</p></li>
+<li><p><strong>services</strong>: input services with updated load and capacity metrics.</p></li>
+<li><p><strong>links</strong>: building–service links within the threshold, containing
+allocated demand shares and distances/costs based on the gravity model.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[gpd.GeoDataFrame, gpd.GeoDataFrame, gpd.GeoDataFrame]</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The model is <strong>gravity-based</strong>, with cost weights decaying by the <strong>square of distance</strong>.</p></li>
+<li><p>Unreachable OD pairs (<code class="docutils literal notranslate"><span class="pre">NaN</span></code> or <code class="docutils literal notranslate"><span class="pre">inf</span></code>) are ignored.</p></li>
+<li><p>The function does not perform routing; it expects a precomputed OD matrix.</p></li>
+</ul>
+</dd></dl>
+
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/service_provision_initial.png"><img alt="service_provision_initial" src="https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/service_provision_initial.png" style="width: 80%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Initial service provision analysis — demand–supply balance based on accessibility.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<hr class="docutils" />
+<section id="recalculate-provision">
+<h2>Recalculate Provision<a class="headerlink" href="#recalculate-provision" title="Link to this heading">¶</a></h2>
+<p>Allows recalculation of provision results with <strong>new accessibility thresholds</strong>
+<strong>without recomputing the full OD-matrix</strong>, saving computation time.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.recalculate_links">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">recalculate_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buildings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">services</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_max_dist</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/provision/provision.html#recalculate_links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.recalculate_links" title="Link to this definition">¶</a></dt>
+<dd><p>Recalculate provision aggregates after tightening the accessibility threshold.</p>
+<p>Removes all links whose cost (distance or time) exceeds <code class="docutils literal notranslate"><span class="pre">new_max_dist</span></code>, then
+updates demand and capacity aggregates accordingly. This is done <strong>without
+redistributing</strong> removed demand to alternative services.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buildings</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a></span>) – GeoDataFrame of buildings after <a class="reference internal" href="#objectnat.get_service_provision" title="objectnat.get_service_provision"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_service_provision()</span></code></a>.
+Expected to include provision-related fields such as demand, demand_left,
+supplied demand, and average distance/cost.</p></li>
+<li><p><strong>services</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a></span>) – GeoDataFrame of services after <a class="reference internal" href="#objectnat.get_service_provision" title="objectnat.get_service_provision"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_service_provision()</span></code></a>, with
+fields describing remaining capacity and service load.</p></li>
+<li><p><strong>links</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a></span>) – <p>GeoDataFrame of building–service links containing at least:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">building_index</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service_index</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">distance</span></code> (or time cost, in the same units as <code class="docutils literal notranslate"><span class="pre">new_max_dist</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">demand</span></code> (assigned portion)</p></li>
+</ul>
+</p></li>
+<li><p><strong>new_max_dist</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – New maximum allowed cost value (same units as OD/threshold).
+Links with cost <strong>greater than</strong> this value are removed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>buildings</strong>: updated aggregate demand metrics and recalculated
+average cost.</p></li>
+<li><p><strong>services</strong>: updated load and capacity fields after freeing excess capacity.</p></li>
+<li><p><strong>links</strong>: subset of links that remain within the new threshold.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[gpd.GeoDataFrame, gpd.GeoDataFrame, gpd.GeoDataFrame]</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>If no links exceed <code class="docutils literal notranslate"><span class="pre">new_max_dist</span></code>, the function logs a warning
+and returns the original inputs unchanged.</p></li>
+<li><p>Average cost values are recomputed based on remaining links.
+If a building has no remaining assigned demand, <code class="docutils literal notranslate"><span class="pre">avg_dist</span></code> becomes <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p></li>
+<li><p>Removed demand is <strong>not reallocated</strong> to other services.</p></li>
+</ul>
+</dd></dl>
+
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/service_provision_recalculated.png"><img alt="service_provision_recalculated" src="https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/service_provision_recalculated.png" style="width: 80%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Recalculated provision results using adjusted travel-time thresholds.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<hr class="docutils" />
+<section id="clip-to-analysis-area">
+<h2>Clip to Analysis Area<a class="headerlink" href="#clip-to-analysis-area" title="Link to this heading">¶</a></h2>
+<p>Restricts provision outputs to a given <strong>geographic boundary</strong>
+(e.g., administrative region, neighborhood, planning area).</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.clip_provision">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">clip_provision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buildings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">services</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selection_zone</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/provision/provision.html#clip_provision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.clip_provision" title="Link to this definition">¶</a></dt>
+<dd><p>Clip service provision results to a specific geographic boundary.</p>
+<dl class="simple">
+<dt>Keeps only:</dt><dd><ul class="simple">
+<li><p>buildings that intersect the <code class="docutils literal notranslate"><span class="pre">selection_zone</span></code>;</p></li>
+<li><p>links that connect to the kept buildings;</p></li>
+<li><p>services referenced by those links.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buildings</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a></span>) – GeoDataFrame of buildings <strong>after</strong> <a class="reference internal" href="#objectnat.get_service_provision" title="objectnat.get_service_provision"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_service_provision()</span></code></a>.</p></li>
+<li><p><strong>services</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a></span>) – GeoDataFrame of services <strong>after</strong> <a class="reference internal" href="#objectnat.get_service_provision" title="objectnat.get_service_provision"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_service_provision()</span></code></a>.</p></li>
+<li><p><strong>links</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a></span>) – GeoDataFrame of building–service links from
+<a class="reference internal" href="#objectnat.get_service_provision" title="objectnat.get_service_provision"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_service_provision()</span></code></a>. Must include indices or columns
+to match buildings and services.</p></li>
+<li><p><strong>selection_zone</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a></span>) – GeoDataFrame (polygon or multipolygon) defining the clipping area.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The filtered subsets of buildings, services, and links
+that fall inside the specified zone.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[gpd.GeoDataFrame, gpd.GeoDataFrame, gpd.GeoDataFrame]</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The function performs <strong>spatial filtering only</strong>.
+It does <strong>not</strong> recompute or redistribute demand/supply.</p></li>
+</ul>
+</dd></dl>
+
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/service_provision_clipped.png"><img alt="service_provision_clipped" src="https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/service_provision_clipped.png" style="width: 80%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Provision results clipped to a selected administrative boundary.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<hr class="docutils" />
+<section id="example-notebook">
+<h2>Example notebook<a class="headerlink" href="#example-notebook" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="examples/calculate_adjacency_matrix.html"><span class="doc">Building-to-Service Travel Time Matrix with Intermodal Graph</span></a>
+<a class="reference internal" href="examples/provision.html"><span class="doc">Service Provision Analysis</span></a></p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="visibility.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Visibility Analysis</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="coverage.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Graph Coverage Zones from Points</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Donny
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Service Provision Analysis</a><ul>
+<li><a class="reference internal" href="#evaluate-initial-provision">Evaluate Initial Provision</a><ul>
+<li><a class="reference internal" href="#objectnat.get_service_provision"><code class="docutils literal notranslate"><span class="pre">get_service_provision()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#recalculate-provision">Recalculate Provision</a><ul>
+<li><a class="reference internal" href="#objectnat.recalculate_links"><code class="docutils literal notranslate"><span class="pre">recalculate_links()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#clip-to-analysis-area">Clip to Analysis Area</a><ul>
+<li><a class="reference internal" href="#objectnat.clip_provision"><code class="docutils literal notranslate"><span class="pre">clip_provision()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#example-notebook">Example notebook</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=9172181d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    </body>
+</html>
