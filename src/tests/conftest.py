@@ -11,7 +11,7 @@ from objectnat import graph_to_gdf
 
 logger = config.logger
 
-path_to_data = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../docs/examples/examples_data/")
+path_to_data = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../docs/methods/examples/examples_data/")
 output_dir = os.path.join(os.path.dirname(__file__), "test_output")
 cache_dir = os.path.join(os.path.dirname(__file__), "test_cache")
 os.makedirs(cache_dir, exist_ok=True)

@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry install --with dev,test,docs
+
+      - name: Check tag matches pyproject version
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          POETRY_VERSION="$(poetry version -s)"
+          echo "Tag version: $TAG_VERSION"
+          echo "pyproject version: $POETRY_VERSION"
+          if [ "$TAG_VERSION" != "$POETRY_VERSION" ]; then
+            echo "Version mismatch: tag v$TAG_VERSION != pyproject $POETRY_VERSION"
+            exit 1
+          fi
+
+      - name: Build package
+        run: poetry build
+
+      - name: Publish to PyPI
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          poetry publish --no-interaction --username __token__ --password "$POETRY_PYPI_TOKEN_PYPI"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: |
+            Release for ${{ github.ref_name }}.
+
+          files: |
+            dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

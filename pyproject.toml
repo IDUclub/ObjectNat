@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ObjectNat"
-version = "1.3.2"
+version = "1.4.0"
 description = "ObjectNat is an open-source library created for geospatial analysis created by IDU team"
 license = "BSD-3-Clause"
 authors = ["DDonnyy <63115678+DDonnyy@users.noreply.github.com>"]

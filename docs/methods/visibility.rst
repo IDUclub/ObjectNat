@@ -1,35 +1,37 @@
 Visibility Analysis
 ===================
 
-**Visibility analysis** estimates which **buildings** or **areas** are visible from
-a given observer point (or set of points) within a specified distance.
-It is useful for studying **visual accessibility**, **urban morphology**, and
-**perceptual exposure** in public spaces.
+**Visibility analysis** estimates which **buildings**, **barriers**, or **areas**
+are visible from one or multiple observer points within a given distance.
+It is commonly used in studies of **visual accessibility**, **urban perception**,
+**noise propagation**, and **urban form analysis**.
 
 ----
 
-    The module supports several modes of visibility computation — from precise
-    raster-based modeling to fast vector-based approximations and multi-point visibility grids.
+    The module provides a unified interface for visibility computation through
+    the :func:`objectnat.get_visibility` function, supporting both high-accuracy
+    and fast approximate algorithms. The user can compute visibility from
+    a single point or from a large batch of points in parallel.
 
 ----
 
-Accurate Method
-----------------
+Visibility Methods
+------------------
 
-Performs visibility analysis using **fine-grained raster-based algorithms**.
-Provides high spatial accuracy but is more computationally intensive.
-Best suited for detailed, local-scale visibility studies.
+Two algorithmic modes are available through the ``method`` parameter:
 
-.. autofunction:: objectnat.get_visibility_accurate
+**Accurate method (``method="accurate"``)**
+    Performs detailed visibility computation based on obstacle boundaries,
+    angular relations, and iterative polygon subtraction.
+    This method captures narrow occlusions, corners, and complex geometry
+    with high precision, making it ideal for **urban micro-scale** analysis.
 
-----
+**Simple method (``method="simple"``)**
+    Computes visibility using radial rays projected from the observer.
+    It is significantly faster and suitable for **large datasets**,
+    **noise modelling**, and **regional-scale visibility studies**.
 
-Fast Approximate Method
------------------------
-
-Optimized for **large datasets** or **regional-scale studies**.
-Uses geometric simplifications and **vector-based visibility** estimation,
-providing fast yet informative results.
+Both methods are accessed via a single API:
 
 .. autofunction:: objectnat.get_visibility
 
@@ -38,7 +40,7 @@ providing fast yet informative results.
    :align: center
    :width: 80%
 
-   Comparison between raster-based and vector-based visibility methods.
+   Comparison between accurate (boundary-based) and simple (ray-based) methods.
 
 ----
 
@@ -49,7 +51,6 @@ Performs visibility analysis for a **dense grid of observer points**,
 producing combined **catchment visibility zones** — areas showing where specific
 objects (e.g., landmarks, buildings) can be seen from.
 
-.. autofunction:: objectnat.get_visibilities_from_points
 
 .. figure:: https://github.com/user-attachments/assets/b5b0d4b3-a02f-4ade-8772-475703cd6435
    :alt: visibility-catchment-area

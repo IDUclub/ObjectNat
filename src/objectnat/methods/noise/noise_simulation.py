@@ -18,7 +18,7 @@ from objectnat.methods.utils.geom_utils import (
     get_point_from_a_thorough_b,
     polygons_to_multilinestring,
 )
-from objectnat.methods.visibility.visibility_analysis import get_visibility
+from objectnat.methods.visibility.visibility_analysis import _visibility_accurate, dist_to_furthest_point
 
 logger = config.logger
 
@@ -252,9 +252,9 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
         obstacles_union = Polygon()
     else:
         obstacles_union = obstacles.union_all()
-    # TODO REWRITE
-    vis_poly, max_view_dist = get_visibility(point_from, obstacles, dist, return_max_view_dist=True)
 
+    vis_poly = _visibility_accurate(point_from, obstacles, dist)
+    max_view_dist = dist_to_furthest_point(point_from, vis_poly)
     donuts_dist_values = donuts_dist_values(dist_db, passed_dist, max_view_dist)
 
     allowed_geom_types = ["MultiPolygon", "Polygon"]
@@ -291,7 +291,7 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
                 if delta_angle > math.pi:
                     delta_angle = 2 * math.pi - delta_angle
 
-                a = math.sqrt((dist**2) * (1 + (math.tan(delta_angle / 2) ** 2)))
+                a = math.sqrt((dist**2) * (1 + (math.tan(delta_angle / 2) ** 2))) * 1.05
                 p1 = get_point_from_a_thorough_b(point_from, p0_1[0], a)
                 p2 = get_point_from_a_thorough_b(point_from, p0_2[0], a)
                 red_polygon = unary_union([Polygon([p0_1[0], p1, p2, p0_2[0]]).intersection(vis_poly), tree_geom])
@@ -351,6 +351,7 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
         noise_from_point["reduce"] = 0
     noise_from_point = noise_from_point[noise_from_point.geom_type.isin(allowed_geom_types)]
     noise_from_point = noise_from_point[noise_from_point["noise_level"] >= min_db]
+    noise_from_point = noise_from_point[noise_from_point.area >= 0.01]
     if deep == reflection_n:
         return noise_from_point, None
 

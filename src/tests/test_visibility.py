@@ -83,7 +83,5 @@ def test_compare_visibility_methods(gdf_1point_special, buildings_data):
 
 
 def test_multiple_visibility(gdf_3points, buildings_data):
-    local_crs = buildings_data.estimate_utm_crs()
-    result = get_visibilities_from_points(gdf_3points.to_crs(local_crs), buildings_data.to_crs(local_crs), 800)
-    result = gpd.GeoDataFrame(geometry=result, crs=local_crs)
+    result = get_visibility(gdf_3points, buildings_data, 800)
     assert len(result) == len(gdf_3points)

@@ -1,6 +1,5 @@
 import math
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from multiprocessing import cpu_count
+from concurrent.futures import ProcessPoolExecutor
 from typing import Literal
 
 import geopandas as gpd
@@ -12,18 +11,36 @@ from tqdm.contrib.concurrent import process_map
 
 from objectnat import config
 from objectnat.methods.utils.geom_utils import (
-    combine_geometry,
     explode_linestring,
     get_point_from_a_thorough_b,
     point_side_of_line,
     polygons_to_multilinestring,
 )
-from objectnat.methods.utils.math_utils import min_max_normalization
 
 logger = config.logger
+enable_tqdm = config.enable_tqdm_bar
 
 
-def find_furthest_point(point_from: Point, view_polygon: Polygon) -> float:
+def dist_to_furthest_point(point_from: Point, view_polygon: Polygon) -> float:
+    """
+    Compute the maximum distance from an observer point to the boundary of a visibility polygon.
+
+    The function measures the Euclidean distance from the observer point to all
+    vertices of the polygon's exterior ring and returns the maximum distance,
+    rounded to one decimal place.
+
+    Args:
+        point_from (Point):
+            Observer location in the same CRS as ``view_polygon``.
+        view_polygon (Polygon):
+            Polygon representing the visibility area or any polygonal geometry
+            around the observer.
+
+    Returns:
+        float:
+            Maximum distance from ``point_from`` to the vertices of
+            ``view_polygon``, rounded to one decimal place.
+    """
     try:
         coords = np.asarray(view_polygon.exterior.coords, dtype="float64")
         dx = coords[:, 0] - point_from.x
@@ -36,7 +53,47 @@ def find_furthest_point(point_from: Point, view_polygon: Polygon) -> float:
 
 
 def _visibility_accurate(point_from: Point, obstacles: gpd.GeoDataFrame, view_distance: float) -> Polygon:
+    """
+    Compute a high-accuracy visibility polygon for a single observer point.
 
+    This function implements a detailed line-of-sight algorithm based on obstacle
+    boundaries:
+
+    * A circular buffer with radius ``view_distance`` is built around the
+      observer point.
+    * Obstacles intersecting this buffer are selected.
+    * Polygonal obstacles are converted to line boundaries and exploded into
+      individual segments.
+    * For each nearest wall segment, a visibility wedge (sector) is constructed
+      using angular relationships between wall endpoints and the observer.
+    * All wedges are combined and subtracted from the initial visibility buffer
+      together with obstacles to obtain the final visible area.
+
+    Compared to ``_visibility_simple()``, this method is more accurate in
+    complex environments (e.g., dense buildings, narrow streets), but it is also
+    significantly slower.
+
+    Args:
+        point_from (Point):
+            Observer location in projected coordinates.
+        obstacles (gpd.GeoDataFrame):
+            GeoDataFrame with obstacle geometries (buildings, walls, etc.) in
+            the same CRS as ``point_from``. Expected geometry types are
+            Polygon, MultiPolygon, LineString or MultiLineString.
+        view_distance (float):
+            Maximum viewing radius around the observer, in units of the CRS.
+
+    Returns:
+        Polygon:
+            Polygon representing the visible area around ``point_from`` within
+            ``view_distance``, after subtracting obstacles. If the result is a
+            MultiPolygon, the component intersecting the observer point is
+            returned.
+
+    Notes:
+        It is assumed that coordinates are in a metric CRS (e.g., UTM). CRS
+        management is done externally in ``get_visibility()``.
+    """
     point_buffer = point_from.buffer(view_distance)
     sindex = obstacles.sindex
     idx = list(sindex.query(point_buffer, predicate="intersects"))
@@ -124,6 +181,43 @@ def _visibility_accurate(point_from: Point, obstacles: gpd.GeoDataFrame, view_di
 def _visibility_simple(
     point_from: Point, obstacles: gpd.GeoDataFrame, view_distance: float, resolution: int
 ) -> Polygon:
+    """
+    Compute a fast, approximate visibility polygon for a single observer point.
+
+    This function provides a simplified line-of-sight estimate using radial
+    rays:
+
+    * A circular buffer with radius ``view_distance`` is created around the
+      observer.
+    * The buffer is discretized into multiple directions using the
+      ``quad_segs`` parameter (``resolution``).
+    * For each direction, a line segment is drawn from the observer to the
+      buffer boundary.
+    * These lines are cut by the union of obstacles, removing occluded parts.
+    * The endpoints of the remaining visible segments form an approximate
+      visibility contour.
+
+    Compared to ``_visibility_accurate()``, this method is much faster but
+    less precise, especially in highly complex or detailed urban scenes.
+
+    Args:
+        point_from (Point):
+            Observer location in projected coordinates.
+        obstacles (gpd.GeoDataFrame):
+            GeoDataFrame with obstacle geometries in the same CRS as
+            ``point_from``.
+        view_distance (float):
+            Maximum viewing radius around the observer, in units of the CRS.
+        resolution (int):
+            Angular resolution of the buffer. Passed as ``quad_segs`` to
+            ``Point.buffer()``. Higher values produce smoother and more
+            detailed visibility contours but increase computation time.
+
+    Returns:
+        Polygon:
+            Approximate visibility polygon from ``point_from`` within
+            ``view_distance``, clipped by ``obstacles``.
+    """
     point_buffer = point_from.buffer(view_distance, quad_segs=resolution)
     sindex = obstacles.sindex
     idx = list(sindex.query(point_buffer, predicate="intersects"))
@@ -153,6 +247,33 @@ def _visibility_simple(
 
 
 def _visibility_worker(args: tuple[Point, gpd.GeoDataFrame | None, float, str, int]) -> Polygon:
+    """
+    Worker function for computing visibility for a single observer point.
+
+    This helper is designed to be used with process-based parallelization
+    (e.g., ``ProcessPoolExecutor`` or ``tqdm.contrib.concurrent.process_map``).
+    It unpacks the argument tuple and dispatches to either the accurate or
+    simple visibility algorithm.
+
+    Args:
+        args (tuple[Point, gpd.GeoDataFrame | None, float, str, int]):
+            A 5-tuple containing:
+
+            * point_geom (Point): Observer location in local projected CRS.
+            * obstacles (gpd.GeoDataFrame | None): Obstacles in the same CRS.
+              If ``None`` or empty, no occlusion is applied.
+            * view_distance (float): Viewing radius for this particular point.
+            * method (str): Visibility algorithm to use. Must be either
+              ``"accurate"`` or ``"simple"``.
+            * resolution (int): Resolution parameter passed to the simple
+              method (ignored for the accurate method).
+
+    Returns:
+        Polygon:
+            Visibility polygon for the given observer and parameters. If there
+            are no obstacles, this is a circular-like buffer. If the observer
+            lies inside an obstacle, an empty polygon is returned.
+    """
     point_geom, obstacles, view_distance, method, resolution = args
 
     if obstacles is None or len(obstacles) == 0:
@@ -176,14 +297,94 @@ def _visibility_worker(args: tuple[Point, gpd.GeoDataFrame | None, float, str, i
 def get_visibility(
     point_from: gpd.GeoDataFrame,
     obstacles: gpd.GeoDataFrame,
-    view_distance: float,
+    view_distance: float | None = None,
     method: Literal["accurate", "simple"] = "accurate",
     *,
     resolution: int = 32,
     parallel: bool = False,
     max_workers: int | None = None,
-) -> gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, float]:
+) -> gpd.GeoDataFrame:
+    """
+    Compute visibility polygons for one or many observer points.
 
+    This is a high-level, batch interface to the visibility analysis:
+
+    * Accepts a GeoDataFrame of observer points.
+    * Reprojects points and obstacles to a locally estimated projected CRS
+      (typically UTM) for distance-accurate calculations.
+    * For each point, computes a visibility polygon using either:
+        * an accurate wall-based algorithm (``method="accurate"``), or
+        * a simple ray-based approximation (``method="simple"``).
+    * Supports per-point visibility radii via a dedicated column or a global
+      ``view_distance`` value.
+    * Optionally parallelizes computation across points using processes and
+      can display a tqdm progress bar.
+
+    Args:
+        point_from (gpd.GeoDataFrame):
+            GeoDataFrame with point geometries representing observer locations.
+            Must have a valid CRS. Any additional attributes are preserved in
+            the output.
+        obstacles (gpd.GeoDataFrame):
+            GeoDataFrame with obstacle geometries in the same CRS as
+            ``point_from``. If empty or ``None``, no occlusion is applied and
+            visibility is limited only by the viewing radius.
+        view_distance (float | None, optional):
+            Global viewing radius for all points (in units of the CRS). Used
+            when the ``"visibility_distance"`` column is not present in
+            ``point_from``. If ``None`` and the column is also missing, a
+            ``ValueError`` is raised.
+        method (Literal["accurate", "simple"], optional):
+            Visibility algorithm to use:
+
+            * ``"accurate"`` – slower but more precise, based on obstacle
+              boundaries and visibility wedges.
+            * ``"simple"`` – faster approximation with radial rays and
+              obstacle cutting.
+
+        resolution (int, optional):
+            Resolution parameter for the simple method. Passed as ``quad_segs``
+            to ``Point.buffer()``; ignored when ``method="accurate"``.
+        parallel (bool, optional):
+            If ``True``, compute visibility polygons for multiple points in
+            parallel using processes. If ``False``, process points
+            sequentially in the current process.
+        max_workers (int | None, optional):
+            Maximum number of worker processes when ``parallel=True``. If
+            ``None``, the default from ``ProcessPoolExecutor`` is used.
+
+    Returns:
+        gpd.GeoDataFrame:
+            GeoDataFrame with the same index and attributes as ``point_from``,
+            but with the geometry column replaced by visibility polygons. The
+            result is returned in the original CRS of ``point_from``.
+
+    Raises:
+        TypeError:
+            If ``point_from`` is not a GeoDataFrame.
+        ValueError:
+            If ``point_from`` is empty, has no CRS, or neither
+            ``view_distance`` nor the ``"visibility_distance"`` column is
+            provided.
+
+    Notes:
+        * If a column named ``"visibility_distance"`` is present in
+          ``point_from``, its values are used as per-point view distances and
+          the ``view_distance`` argument is ignored.
+        * When ``parallel=True`` and ``enable_tqdm`` is True in the global
+          config, a progress bar is displayed using
+          ``tqdm.contrib.concurrent.process_map`` during parallel execution.
+
+    Differences between methods
+    ---------------------------
+    * ``method="accurate"``:
+        Uses obstacle boundaries and angular visibility wedges. More precise,
+        especially in dense environments and around corners, but slower.
+    * ``method="simple"``:
+        Uses radial rays and line splitting. Much faster and suitable for
+        large batches or rough estimates, but may produce less detailed
+        visibility shapes.
+    """
     if not isinstance(point_from, gpd.GeoDataFrame):
         raise TypeError("point_from must be a GeoDataFrame with a point geometry")
 
@@ -195,18 +396,38 @@ def get_visibility(
 
     points_local = point_from.to_crs(local_crs)
 
+    if "visibility_distance" in points_local.columns:
+        distances = points_local["visibility_distance"].to_list()
+    else:
+        if view_distance is None:
+            raise ValueError(
+                "Either provide parameter view_distance or add column 'visibility_distance' to point_from GeoDataFrame."
+            )
+        distances = [view_distance] * len(points_local)
+
     if obstacles is not None and len(obstacles) > 0:
         obstacles_local = obstacles.to_crs(local_crs)
     else:
         obstacles_local = None
 
-    tasks = [(geom, obstacles_local, view_distance, method, resolution) for geom in points_local.geometry]
-
-    if parallel:
-        with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            results = list(executor.map(_visibility_worker, tasks))
-    else:
+    tasks = [(geom, obstacles_local, dist, method, resolution) for geom, dist in zip(points_local.geometry, distances)]
+    logger.info("started")
+    if not parallel:
         results = [_visibility_worker(t) for t in tasks]
+        logger.info("done seq ")
+    else:
+        if enable_tqdm:
+            results = process_map(
+                _visibility_worker,
+                tasks,
+                max_workers=max_workers,
+                chunksize=1,
+                desc="Visibility",
+            )
+        else:
+            with ProcessPoolExecutor(max_workers=max_workers) as executor:
+                results = list(executor.map(_visibility_worker, tasks))
+        logger.info("done parallel")
 
     result_gdf = points_local.copy()
     result_gdf["geometry"] = results

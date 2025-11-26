@@ -1,1 +1,1 @@
-from .visibility_analysis import get_visibility, find_furthest_point
+from .visibility_analysis import get_visibility, dist_to_furthest_point

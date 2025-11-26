@@ -2,7 +2,6 @@
 import geopandas as gpd
 import pandas as pd
 from shapely.ops import polygonize, unary_union
-from tqdm.auto import tqdm
 
 from objectnat.methods.noise.noise_reduce import dist_to_target_db
 from objectnat.methods.utils.geom_utils import (
@@ -16,7 +15,16 @@ MAX_DB_VALUE = 194
 
 
 def calculate_simplified_noise_frame(
-    noise_sources: gpd.GeoDataFrame, obstacles: gpd.GeoDataFrame, air_temperature, **kwargs
+    noise_sources: gpd.GeoDataFrame,
+    obstacles: gpd.GeoDataFrame,
+    air_temperature,
+    *,
+    target_noise_db: int = 40,
+    db_sim_step: int = 5,
+    linestring_point_radius: int = 15,
+    polygon_point_radius: int = 5,
+    visibility_parallel: bool = True,
+    visibility_max_workers: int | None = None,
 ) -> gpd.GeoDataFrame:
     """
     Calculates a simplified environmental noise frame using static noise source geometries without simulating
@@ -29,7 +37,8 @@ def calculate_simplified_noise_frame(
     based on sound power, frequency and temperature.
 
     Args:
-        noise_sources (gpd.GeoDataFrame): A GeoDataFrame containing geometries of noise sources (Point, LineString,
+        noise_sources (gpd.GeoDataFrame):
+            A GeoDataFrame containing geometries of noise sources (Point, LineString,
             or Polygon). Each feature must have the following two columns:
 
             - 'source_noise_db': Initial sound level at the source, in decibels (dB).
@@ -38,29 +47,45 @@ def calculate_simplified_noise_frame(
             Values in 'source_noise_db' must not exceed the physical maximum of 194 dB. Missing or NaN values in
             required fields will raise an error.
 
-        obstacles (gpd.GeoDataFrame): A GeoDataFrame representing physical obstructions in the environment
+        obstacles (gpd.GeoDataFrame):
+            A GeoDataFrame representing physical obstructions in the environment
             (e.g., buildings, walls, terrain). These are used to build visibility masks that affect where sound can
             propagate. Geometry will be simplified for performance using a default tolerance of 1 unit.
 
-        air_temperature (float): The ambient air temperature in degrees Celsius. This value influences the
+        air_temperature (float):
+            The ambient air temperature in degrees Celsius. This value influences the
             attenuation model of sound in the atmosphere. Temperatures significantly outside the typical 0–30°C
             range may lead to inaccurate results.
 
-    Keyword Args:
-        target_noise_db (float, optional): The minimum sound level threshold (in dB) to be modeled. Any value below
+        target_noise_db (float, default=40):
+            The minimum sound level threshold (in dB) to be modeled. Any value below
             this threshold is considered insignificant and will be excluded from the resulting noise frame.
             Default is 40 dB.
-        db_sim_step (float, optional): The simulation step size (in dB) used to discretize sound levels into
+
+        db_sim_step (float, default=5):
+            The simulation step size (in dB) used to discretize sound levels into
             spatial layers. Default is 5. Smaller values produce more detailed output but increase computation time.
-        linestring_point_radius (float, optional): The spacing radius (in meters) used when converting LineString
+
+        linestring_point_radius (float,  default=15):
+            The spacing radius (in meters) used when converting LineString
             geometries into distributed point sources for simulation. Default is 30. Reducing this value improves
             detail along long lines.
-        polygon_point_radius (float, optional): The point spacing (in meters) for distributing sources within
-            Polygon geometries. Default is 15. Points are sampled across the polygon’s surface and perimeter to
+
+        polygon_point_radius (float,  default=5):
+            The point spacing (in meters) for distributing sources within Polygon geometries.
+            Default is 15. Points are sampled across the polygon’s surface and perimeter to
             represent the full sound-emitting area.
 
+        visibility_parallel (bool, optional):
+            If True, visibility polygons for all distributed sample points are computed in parallel using
+            multiprocessing. Recommended when the number of sample points is large. Default is True.
+
+        visibility_max_workers (int | None, optional):
+            Maximum number of parallel worker processes for visibility computation. None uses the system default.
+
     Returns:
-        gpd.GeoDataFrame: A GeoDataFrame representing simplified noise distribution areas. The output geometries
+        gpd.GeoDataFrame:
+            A GeoDataFrame representing simplified noise distribution areas. The output geometries
             are polygons where each polygon is associated with the maximum sound level (in dB) present in that area,
             as derived from overlapping source zones. The resulting data is dissolved by noise level and returned in
             the original coordinate reference system (CRS) of the input sources.
@@ -70,13 +95,11 @@ def calculate_simplified_noise_frame(
           visibility (line-of-sight) and a layered distance-decay approach for rapid estimation.
         - Obstacles are used for visibility masking only, not as reflectors or absorbers.
         - Output resolution and accuracy depend heavily on the geometry type and point distribution settings.
+        - Parallel visibility significantly improves performance for line and
+          polygon sources with many sample points.
         - Results are useful for quick noise mapping or for generating initial noise envelopes prior to more
           detailed simulations.
     """
-    target_noise_db = kwargs.get("target_noise_db", 40)
-    db_sim_step = kwargs.get("db_sim_step", 5)
-    linestring_point_radius = kwargs.get("linestring_point_radius", 30)
-    polygon_point_radius = kwargs.get("polygon_point_radius", 15)
 
     required_columns = ["source_noise_db", "geometric_mean_freq_hz"]
     for col in required_columns:
@@ -105,62 +128,122 @@ def calculate_simplified_noise_frame(
 
     grouped_sources = noise_sources.groupby(by=["source_noise_db", "geometric_mean_freq_hz", "geom_type"])
 
-    frame_result = []
-    total_tasks = 0
-    with tqdm(total=total_tasks, desc="Simulating noise") as pbar:
-        for (source_db, freq_hz, geom_type), group_gdf in grouped_sources:
-            # calculating layer dist and db values
-            dist_db = [(0, source_db)]
-            cur_db = source_db - db_sim_step
-            max_dist = 0
-            while cur_db > target_noise_db - db_sim_step:
-                if cur_db - db_sim_step < target_noise_db:
-                    cur_db = target_noise_db
-                max_dist = dist_to_target_db(source_db, cur_db, freq_hz, air_temperature)
-                dist_db.append((max_dist, cur_db))
-                cur_db -= db_sim_step
+    frame_result: list[gpd.GeoDataFrame] = []
+    groups_meta: dict[int, dict] = {}  # group_id -> {geom_type, dist_db, view_radius, union_geometry}
+    vis_points_records: list[dict] = []
+    group_id_counter = 0
 
-            # increasing max_dist for extra view
-            max_dist = max_dist * 1.2
+    for (source_db, freq_hz, geom_type), group_gdf in grouped_sources:
+        dist_db: list[tuple[float, float]] = [(0, source_db)]
+        cur_db = source_db - db_sim_step
+        max_dist = 0.0
+        while cur_db > target_noise_db - db_sim_step:
+            if cur_db - db_sim_step < target_noise_db:
+                cur_db = target_noise_db
+            max_dist = dist_to_target_db(source_db, cur_db, freq_hz, air_temperature)
+            dist_db.append((max_dist, cur_db))
+            cur_db -= db_sim_step
 
-            if geom_type == "Point":
-                total_tasks += len(group_gdf)
-                pbar.total = total_tasks
-                pbar.refresh()
-                for _, row in group_gdf.iterrows():
-                    point_from = row.geometry
-                    point_buffer = point_from.buffer(max_dist, resolution=16)
-                    local_obstacles = obstacles[obstacles.intersects(point_buffer)]
-                    vis_poly = get_visibility(point_from, obstacles=local_obstacles, view_distance=max_dist)
-                    noise_from_feature = _eval_donuts_gdf(point_from, dist_db, local_crs, vis_poly)
-                    frame_result.append(noise_from_feature)
-                    pbar.update(1)
+        view_radius = max_dist * 1.2
 
-            elif geom_type == "LineString":
-                layer_points = distribute_points_on_linestrings(
-                    group_gdf, radius=linestring_point_radius, lloyd_relax_n=1
+        gid = group_id_counter
+        group_id_counter += 1
+
+        meta = {
+            "group_id": gid,
+            "geom_type": geom_type,
+            "dist_db": dist_db,
+            "view_radius": view_radius,
+            "union_geometry": None,
+        }
+
+        if geom_type == "Point":
+            for idx, row in group_gdf.iterrows():
+                vis_points_records.append(
+                    {
+                        "geometry": row.geometry,
+                        "group_id": gid,
+                        "mode": "point",
+                        "source_index": idx,
+                        "visibility_distance": view_radius,
+                    }
                 )
-                total_tasks += len(layer_points)
-                pbar.total = total_tasks
-                pbar.refresh()
-                noise_from_feature = _process_lines_or_polygons(
-                    group_gdf, max_dist, obstacles, layer_points, dist_db, local_crs, pbar
+
+        elif geom_type == "LineString":
+            layer_points = distribute_points_on_linestrings(group_gdf, radius=linestring_point_radius, lloyd_relax_n=1)
+            for _, row in layer_points.iterrows():
+                vis_points_records.append(
+                    {
+                        "geometry": row.geometry,
+                        "group_id": gid,
+                        "mode": "line",
+                        "visibility_distance": view_radius,
+                    }
                 )
-                frame_result.append(noise_from_feature)
-            elif geom_type == "Polygon":
-                group_gdf.geometry = group_gdf.buffer(0.1, resolution=1)
-                layer_points = distribute_points_on_polygons(
-                    group_gdf, only_exterior=False, radius=polygon_point_radius, lloyd_relax_n=1
+            meta["union_geometry"] = group_gdf.union_all()
+
+        elif geom_type == "Polygon":
+            group_gdf.geometry = group_gdf.buffer(0.1, resolution=1)
+            layer_points = distribute_points_on_polygons(
+                group_gdf, only_exterior=False, radius=polygon_point_radius, lloyd_relax_n=1
+            )
+            for _, row in layer_points.iterrows():
+                vis_points_records.append(
+                    {
+                        "geometry": row.geometry,
+                        "group_id": gid,
+                        "mode": "polygon",
+                        "visibility_distance": view_radius,
+                    }
                 )
-                total_tasks += len(layer_points)
-                pbar.total = total_tasks
-                pbar.refresh()
-                noise_from_feature = _process_lines_or_polygons(
-                    group_gdf, max_dist, obstacles, layer_points, dist_db, local_crs, pbar
-                )
-                frame_result.append(noise_from_feature)
-            else:
-                pass
+            meta["union_geometry"] = group_gdf.union_all()
+        else:
+            continue
+
+        groups_meta[gid] = meta
+
+    if not vis_points_records:
+        return gpd.GeoDataFrame(columns=["noise_level", "geometry"])
+
+    all_points_gdf = gpd.GeoDataFrame(vis_points_records, geometry="geometry", crs=local_crs)
+
+    vis_gdf = get_visibility(
+        point_from=all_points_gdf,
+        obstacles=obstacles,
+        view_distance=None,
+        method="accurate",
+        parallel=visibility_parallel,
+        max_workers=visibility_max_workers,
+    )
+
+    vision_polys_by_group: dict[int, list] = {
+        gid: [] for gid, meta in groups_meta.items() if meta["geom_type"] in ("LineString", "Polygon")
+    }
+
+    for rec, vis_row in zip(vis_points_records, vis_gdf.itertuples()):
+        gid = rec["group_id"]
+        meta = groups_meta[gid]
+        vis_poly = vis_row.geometry
+
+        if meta["geom_type"] == "Point":
+            point_from = rec["geometry"]
+            noise_from_feature = _eval_donuts_gdf(point_from, meta["dist_db"], local_crs, vis_poly)
+            frame_result.append(noise_from_feature)
+        else:
+            vision_polys_by_group[gid].append(vis_poly)
+
+    for gid, meta in groups_meta.items():
+        if meta["geom_type"] not in ("LineString", "Polygon"):
+            continue
+
+        polys = vision_polys_by_group.get(gid, [])
+        if not polys:
+            continue
+
+        features_vision_polys = unary_union(polys)
+        initial_geometry = meta["union_geometry"]
+        noise_from_feature = _eval_donuts_gdf(initial_geometry, meta["dist_db"], local_crs, features_vision_polys)
+        frame_result.append(noise_from_feature)
 
     noise_gdf = gpd.GeoDataFrame(pd.concat(frame_result, ignore_index=True), crs=local_crs)
     polygons = gpd.GeoDataFrame(
@@ -176,21 +259,6 @@ def calculate_simplified_noise_frame(
     )
 
     return sim_result.to_crs(original_crs)
-
-
-def _process_lines_or_polygons(
-    group_gdf, max_dist, obstacles, layer_points, dist_db, local_crs, pbar
-) -> gpd.GeoDataFrame:
-    features_vision_polys = []
-    layer_buffer = group_gdf.buffer(max_dist, resolution=16).union_all()
-    local_obstacles = obstacles[obstacles.intersects(layer_buffer)]
-    for _, row in layer_points.iterrows():
-        point_from = row.geometry
-        vis_poly = get_visibility(point_from, obstacles=local_obstacles, view_distance=max_dist)
-        features_vision_polys.append(vis_poly)
-        pbar.update(1)
-    features_vision_polys = unary_union(features_vision_polys)
-    return _eval_donuts_gdf(group_gdf.union_all(), dist_db, local_crs, features_vision_polys)
 
 
 def _eval_donuts_gdf(initial_geometry, dist_db, local_crs, clip_poly) -> gpd.GeoDataFrame:
