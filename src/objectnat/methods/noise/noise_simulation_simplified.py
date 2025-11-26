@@ -260,7 +260,7 @@ def calculate_simplified_noise_frame(
 
     return sim_result.to_crs(original_crs)
 
-
+              
 def _eval_donuts_gdf(initial_geometry, dist_db, local_crs, clip_poly) -> gpd.GeoDataFrame:
     donuts = []
     don_values = []
