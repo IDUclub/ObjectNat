@@ -1,0 +1,31 @@
+name: Post coverage comment
+
+# Pull requests from forks run Tests and Coverage with a read-only token, so the
+# coverage comment is stored as an artifact there and posted from here, in a
+# trusted context that never checks out the pull request's code.
+
+on:
+  workflow_run:
+    workflows: ["Tests and Coverage"]
+    types: [completed]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # post the comment and update it on later runs
+      actions: read # download the comment artifact from the triggering run
+      contents: read
+    steps:
+      - name: Post comment
+        uses: py-cov-action/python-coverage-comment-action@a05be3d2e8a6272d3ef5fb2840ab20368bb2eb71 # v4.3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_PR_RUN_ID: ${{ github.event.workflow_run.id }}

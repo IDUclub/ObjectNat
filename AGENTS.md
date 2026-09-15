@@ -37,7 +37,7 @@ Rules (once `graphify-out/graph.json` exists):
 **ObjectNat** is an open-source library for object-level geospatial analysis on city networks: accessibility
 isochrones, coverage zones, service provision, visibility analysis, and noise simulation.
 
-Graphs come from **[IduEdu](https://github.com/DDonnyy/IduEdu)** (`UrbanGraph`); ObjectNat consumes them and never
+Graphs come from **[IduEdu](https://github.com/IDUclub/IduEdu)** (`UrbanGraph`); ObjectNat consumes them and never
 builds networks itself. Python 3.11–3.12 only. Package manager: **uv** (lockfile: `uv.lock`, committed). Build
 backend: hatchling.
 

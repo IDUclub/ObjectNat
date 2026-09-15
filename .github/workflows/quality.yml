@@ -7,8 +7,7 @@ on:
     branches: [master]
 
 permissions:
-  contents: write # push generated test images to the assets branch
-  id-token: write # OIDC for Codecov
+  contents: read
 
 concurrency:
   group: quality-${{ github.workflow }}-${{ github.ref }}
@@ -21,6 +20,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -41,6 +42,11 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    permissions:
+      # Pull requests from forks get these downgraded to read-only by GitHub; their
+      # comment is posted by coverage.yml instead.
+      contents: write # push coverage data and the badge to python-coverage-comment-action-data
+      pull-requests: write # post or update the coverage comment on pull requests from this repository
 
     strategy:
       fail-fast: false
@@ -50,6 +56,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -65,8 +73,8 @@ jobs:
       - name: Run tests with coverage
         run: make coverage-xml
 
-      # Coverage upload and asset publishing run once (on 3.11) to avoid
-      # duplicate Codecov reports and a race on the force-pushed assets branch.
+      # The coverage report, the badge and the rendered images come from one
+      # interpreter only, so they are not published twice.
       - name: Upload coverage report artifact
         if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v4
@@ -74,41 +82,63 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
-      - name: Upload coverage to Codecov
+      - name: Coverage comment and badge
+        id: coverage_comment
         if: matrix.python-version == '3.11'
-        uses: codecov/codecov-action@v5
+        uses: py-cov-action/python-coverage-comment-action@a05be3d2e8a6272d3ef5fb2840ab20368bb2eb71 # v4.3
         with:
-          use_oidc: true
-          files: coverage.xml
-          disable_search: true
-          fail_ci_if_error: true
-          verbose: true
+          GITHUB_TOKEN: ${{ github.token }}
+          MINIMUM_GREEN: 80
+          MINIMUM_ORANGE: 60
 
-      # ObjectNat-specific: the test suite renders result plots into
-      # tests/test_output/. Publish them to the orphan `assets` branch so the
-      # README and docs can hotlink always-current example images.
-      - name: Commit and push test images to assets branch
-        if: >
-          matrix.python-version == '3.11' &&
-          github.repository == 'IDUclub/ObjectNat' &&
-          github.event_name == 'push' &&
-          github.ref == 'refs/heads/master'
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
+      - name: Store the pull request comment for coverage.yml
+        if: matrix.python-version == '3.11' && steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-coverage-comment-action
+          path: python-coverage-comment-action.txt
 
-          if git ls-remote --exit-code --heads origin assets; then
-            git fetch origin assets
-            git checkout assets
-          else
-            git checkout --orphan assets
-            git reset --hard
-          fi
-          rm -f ./*.png || echo "No old PNGs to remove"
-          git rm -f ./*.png || echo "No old PNGs to remove from Git"
-          cp -r tests/test_output/*.png . || echo "No images to copy"
-          git add ./*.png
-          git commit -m "Update test images" || echo "No changes to commit"
-          git push --force origin assets
+      # The test suite renders result plots into tests/test_output/, which the README
+      # and docs hotlink from the assets branch.
+      - name: Upload rendered test images
+        if: matrix.python-version == '3.11' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-images
+          path: tests/test_output/*.png
+          if-no-files-found: error
+
+  publish-assets:
+    needs: test
+    if: >
+      github.repository == 'IDUclub/ObjectNat' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # force-push the rendered test images to the assets branch
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download rendered test images
+        uses: actions/download-artifact@v4
+        with:
+          name: test-images
+          path: ${{ runner.temp }}/test-images
+
+      # The branch holds one commit with the current images, so binary history does
+      # not pile up and the hotlinked URLs stay the same.
+      - name: Replace the assets branch with the new images
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGES_DIR: ${{ runner.temp }}/test-images
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan assets-update
+          git rm -rf --quiet .
+          cp "$IMAGES_DIR"/*.png .
+          git add ./*.png
+          git commit --quiet -m "Update test images from ${GITHUB_SHA::7}"
+          git push --force origin HEAD:assets

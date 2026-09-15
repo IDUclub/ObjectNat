@@ -64,7 +64,7 @@ source objects and to create link geometries between buildings and services.
 .. autofunction:: objectnat.get_provision_services
 .. autofunction:: objectnat.get_provision_links
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/service_provision_initial.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_initial.png
    :alt: service_provision_initial
    :align: center
    :width: 80%
@@ -84,7 +84,7 @@ Removed demand is not redistributed to other services; run
 
 .. autofunction:: objectnat.recalculate_links
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/service_provision_recalculated.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_recalculated.png
    :alt: service_provision_recalculated
    :align: center
    :width: 80%
@@ -101,7 +101,7 @@ Restricts provision outputs to a given **geographic boundary**
 
 .. autofunction:: objectnat.clip_provision
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/service_provision_clipped.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_clipped.png
    :alt: service_provision_clipped
    :align: center
    :width: 80%

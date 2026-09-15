@@ -22,7 +22,7 @@ help:
 	@echo "  format-check      - check code formatting with isort + black"
 	@echo "  test              - run test suite"
 	@echo "  coverage          - run tests with terminal coverage report"
-	@echo "  coverage-xml      - run tests and write coverage.xml for CI/Codecov"
+	@echo "  coverage-xml      - run tests and write coverage.xml for CI"
 	@echo "  coverage-html     - run tests and write HTML coverage report"
 	@echo "  docs              - build documentation"
 	@echo "  build             - build wheel and sdist with uv"

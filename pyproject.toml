@@ -1,7 +1,7 @@
 [project]
 name = "ObjectNat"
 dynamic = ["version"]
-description = "ObjectNat is an open-source library created for geospatial analysis created by IDU team"
+description = "ObjectNat is an open-source library for object-level geospatial analysis on city networks, developed by the IDU team."
 readme = "README.rst"
 requires-python = ">=3.11,<3.13"
 license = "BSD-3-Clause"
@@ -119,6 +119,7 @@ skip = ["__init__.py"]
 [tool.coverage.run]
 branch = true
 source = ["objectnat"]
+relative_files = true
 
 [tool.coverage.report]
 # Floor set below the ~85% baseline (2026-07-10) so runs stay green despite
@@ -137,12 +138,12 @@ testpaths = ["tests"]
 #
 # The next version is derived from Conventional Commit messages since the last
 # tag: feat -> minor, fix/perf -> patch, feat!/BREAKING CHANGE -> major.
-# The release workflow runs after CI succeeds on master, bumps
-# objectnat/_version.py, updates CHANGELOG.md, commits, tags vX.Y.Z, and
-# publishes. See CONTRIBUTING.md.
+# In the official repository, the release workflow runs after Tests and Coverage
+# succeeds on master, bumps objectnat/_version.py, updates CHANGELOG.md, commits,
+# tags vX.Y.Z, and publishes. See CONTRIBUTING.md.
 # ---------------------------------------------------------------------------
 [tool.semantic_release]
-version_variables = ["objectnat/_version.py:VERSION"]
+version_variables = ["objectnat/_version.py:VERSION", "CITATION.cff:version"]
 tag_format = "v{version}"
 commit_message = "chore(release): v{version} [skip ci]\n\nAutomated release, see CHANGELOG.md."
 build_command = "python -m pip install uv && uv build"
@@ -171,4 +172,5 @@ minor_tags = ["feat"]
 patch_tags = ["fix", "perf"]
 
 [tool.semantic_release.changelog]
+mode = "update"
 exclude_commit_patterns = ['''^chore\(release\):.*''']

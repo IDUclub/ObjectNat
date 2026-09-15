@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use ObjectNat, please cite the software."
+title: "ObjectNat"
+type: software
+authors:
+  - family-names: "Oleynikov"
+    given-names: "Danila"
+    orcid: "https://orcid.org/0009-0002-7881-1543"
+    affiliation: "ITMO University"
+    email: "ddonnyy@itmo.ru"
+version: "2.0.0"
+date-released: "2026-07-10"
+repository-code: "https://github.com/IDUclub/ObjectNat"
+url: "https://iduclub.github.io/ObjectNat/"
+license: "BSD-3-Clause"
+keywords:
+  - "urban analytics"
+  - "accessibility"
+  - "isochrones"
+  - "service provision"
+  - "visibility analysis"
+  - "noise simulation"
+  - "GeoPandas"

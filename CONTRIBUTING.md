@@ -49,6 +49,10 @@ message is what drives the next version.
 [optional footer, e.g. BREAKING CHANGE: ...]
 ```
 
+The squash commit body is copied into the GitHub Release and `CHANGELOG.md`. python-semantic-release joins
+consecutive lines of a paragraph into one, so separate every point with a blank line; a wrapped list without
+blank lines becomes a single run-on paragraph.
+
 ### How the version is bumped
 
 The next version is computed from the commit types since the last release tag:
@@ -88,7 +92,9 @@ the official documentation.
 The version lives in a **single source of truth**, `objectnat/_version.py`
 (`VERSION = "x.y.z"`); `pyproject.toml` reads it dynamically through hatchling.
 There is no manual `pyproject.toml` version and no manual `git tag`. Do not edit
-`objectnat/_version.py` or `CHANGELOG.md` by hand — the release automation owns them.
+`objectnat/_version.py` by hand — the release automation owns it. `CHANGELOG.md` is updated in place: each
+release is inserted below `<!-- version list -->` and earlier entries are left untouched, so a released entry
+may be rewritten by hand when the generated text needs it.
 
 ## Pull request checklist
 

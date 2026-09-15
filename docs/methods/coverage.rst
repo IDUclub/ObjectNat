@@ -23,7 +23,7 @@ then builds coverage zones based on actual network paths.
 
 ----
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/coverage_zones_time_10min.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/coverage_zones_time_10min.png
    :alt: coverage_zones_time_10min
    :align: center
    :width: 80%
@@ -32,7 +32,7 @@ then builds coverage zones based on actual network paths.
 
 ----
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/coverage_zones_distance_600m.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/coverage_zones_distance_600m.png
    :alt: coverage_zones_distance_600m
    :align: center
    :width: 80%
@@ -51,7 +51,7 @@ then merges or clips them via **Voronoi** diagrams for cleaner borders.
 
 ----
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/coverage_zones_radius_distance_800m.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/coverage_zones_radius_distance_800m.png
    :alt: coverage_zones_distance_radius_voronoi
    :align: center
    :width: 80%
@@ -68,7 +68,7 @@ using the full transport graph for each source point.
 
 .. autofunction:: objectnat.get_stepped_graph_coverage
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/stepped_coverage_zones_separate.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/stepped_coverage_zones_separate.png
    :alt: stepped_coverage_zones_separate
    :align: center
    :width: 80%
@@ -77,7 +77,7 @@ using the full transport graph for each source point.
 
 ----
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/stepped_coverage_zones_voronoi.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/stepped_coverage_zones_voronoi.png
    :alt: stepped_coverage_zones_voronoi
    :align: center
    :width: 80%

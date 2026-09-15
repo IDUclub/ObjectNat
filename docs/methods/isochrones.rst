@@ -19,7 +19,7 @@ Show a single area reachable within a specified time.
 
 .. autofunction:: objectnat.get_graph_isochrones
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/isochrone_ways_15_min.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/isochrone_ways_15_min.png
    :alt: isochrone_ways_15_min
    :align: center
    :width: 80%
@@ -28,7 +28,7 @@ Show a single area reachable within a specified time.
 
 ----
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/isochrone_radius_15_min.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/isochrone_radius_15_min.png
    :alt: isochrone_radius_15_min
    :align: center
    :width: 80%
@@ -37,7 +37,7 @@ Show a single area reachable within a specified time.
 
 ----
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/isochrone_3points_radius_8_min.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/isochrone_3points_radius_8_min.png
    :alt: isochrone_3points_radius_8_min
    :align: center
    :width: 80%
@@ -55,7 +55,7 @@ Show accessibility ranges divided into time intervals (e.g., 5, 10, 15 minutes).
 
 ----
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/stepped_isochrone_ways_15_min.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/stepped_isochrone_ways_15_min.png
    :alt: stepped_isochrone_ways_15_min
    :align: center
    :width: 80%
@@ -64,7 +64,7 @@ Show accessibility ranges divided into time intervals (e.g., 5, 10, 15 minutes).
 
 ----
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/stepped_isochrone_radius_15_min.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/stepped_isochrone_radius_15_min.png
    :alt: stepped_isochrone_radius_15_min
    :align: center
    :width: 80%
@@ -73,7 +73,7 @@ Show accessibility ranges divided into time intervals (e.g., 5, 10, 15 minutes).
 
 ----
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/stepped_isochrone_separate_15_min.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/stepped_isochrone_separate_15_min.png
    :alt: stepped_isochrone_separate_15_min
    :align: center
    :width: 80%

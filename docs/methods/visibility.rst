@@ -35,7 +35,7 @@ Both methods are accessed via a single API:
 
 .. autofunction:: objectnat.get_visibility
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/visibility_comparison_methods.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_comparison_methods.png
    :alt: visibility_comparison_methods
    :align: center
    :width: 80%

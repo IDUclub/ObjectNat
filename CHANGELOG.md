@@ -1,89 +1,55 @@
 # CHANGELOG
 
+<!-- version list -->
 
 ## v2.0.0 (2026-07-10)
 
+ObjectNat 2.0.0 moves every graph-based method from NetworkX to the IduEdu 2.0 `UrbanGraph` model, returns service provision as a structured `ProvisionResult`, and rebuilds packaging, CI and releases around uv and python-semantic-release. It is a breaking release; see **Upgrading from 1.x** below and the [migration guide](https://iduclub.github.io/ObjectNat/migration_1_to_2.html).
+
+### Highlights
+
+- **Graphs from IduEdu.** Isochrones and coverage run directly on `iduedu.UrbanGraph` and its Numba Dijkstra kernels; ObjectNat no longer builds or converts NetworkX graphs.
+- **Structured provision results.** `get_service_provision` returns a `ProvisionResult` with a sparse building-service flow matrix and helpers that attach metrics to buildings, services and links.
+- **Noise through vegetation.** Layered tree attenuation and robust shadow sectors in `simulate_noise`.
+- **Leaner dependencies.** NetworkX and scikit-learn are no longer required.
+
+### Upgrading from 1.x
+
+- Graph-based methods take an `iduedu.UrbanGraph` as the first positional argument instead of a `networkx.Graph`; all other arguments are keyword-only.
+- Renamed functions: `get_accessibility_isochrones` -> `get_graph_isochrones`, `get_accessibility_isochrone_stepped` -> `get_stepped_graph_isochrones`.
+- Renamed arguments: `nx_graph` -> `urban_graph`, `points`/`point` -> `gdf_origins`, `gdf_to` -> `gdf_destinations`, `weight_value` -> `weight_value_cutoff`, `isochrone_type`/`step_type` -> `geometry_type`.
+- Isochrones return one `GeoDataFrame` instead of the `(isochrones, pt_stops, pt_routes)` tuple.
+- `get_service_provision` returns a `ProvisionResult` instead of a tuple of GeoDataFrames; build the tables with `get_provision_buildings`, `get_provision_services` and `get_provision_links`. `recalculate_links` accepts and returns a `ProvisionResult`.
+- Removed: `gdf_to_graph`, `graph_to_gdf`, `get_clusters_polygon` (point clustering) and the `math_utils` module.
+- Requires Python 3.11-3.12, `iduedu>=2.0.0`, `pandas>=3.0` and `numpy>=2.4`.
+
 ### Features
 
-- Objectnat 2.0 — UrbanGraph migration, structured provision, clustering removal
-  ([#16](https://github.com/IDUclub/ObjectNat/pull/16),
-  [`8d9ff49`](https://github.com/IDUclub/ObjectNat/commit/8d9ff4926875b27c32f47a11c5bc70d3274b498e))
+#### Accessibility on UrbanGraph
 
-* feat!: migrate graph methods to IduEdu 2.0 UrbanGraph; uv build; flat layout
+- New `objectnat.methods.accessibility` package with `get_graph_isochrones`, `get_stepped_graph_isochrones`, `get_graph_coverage`, `get_stepped_graph_coverage` and the graph-free `get_radius_coverage`.
+- Origins and destinations are GeoDataFrames, matched to their nearest graph nodes or read from a `graph_node_id` column, or plain node ids.
+- Isochrones for several origins run in one parallel Numba call (`max_workers`); coverage runs a reversed multi-source search from the destinations.
+- `geometry_type="ways"` builds geometry from pedestrian (`type == "walk"`) edges only on walk and intermodal graphs, so transit legs no longer stretch the shape.
 
-Full ObjectNat 2.0 migration off NetworkX onto the IduEdu 2.0 UrbanGraph model, plus a build-system
-  and repository overhaul aligned with IduEdu.
+#### Service provision
 
-Accessibility (isochrones + coverage) - New objectnat/methods/accessibility/ package (coverage,
-  isochrones, radius, shared _utils) built directly on iduedu.UrbanGraph and its Numba Dijkstra
-  (multi_source / nearest_source / parallel), replacing the deleted methods/isochrones/ and
-  methods/coverage_zones/ NetworkX code. - "ways" geometry uses pedestrian (type=="walk") edges only
-  on intermodal/walk graphs so transit legs no longer distort the shape.
+- `ProvisionResult` holds `flow` (a sparse building-service matrix), `demand_rows`, `capacity_rows`, the aligned `distance_matrix` and the `threshold`.
+- `get_provision_buildings`, `get_provision_services` and `get_provision_links` turn a result into GeoDataFrames for mapping or export.
+- `seed` makes the demand allocation reproducible.
 
-Build system & packaging - poetry -> uv + hatchling; version is dynamic from objectnat/_version.py.
-  - PEP 621 [project] + PEP 735 [dependency-groups]; python-semantic-release. - CI split into
-  quality.yml / release.yml / docs.yml (mirrors IduEdu), uv-based; test-image publishing to the
-  assets branch preserved. - src/objectnat + src/tests -> flat objectnat/ + tests/ (tests no longer
-  a package).
+#### Noise
 
-Cleanup - Removed objectnat.gdf_to_graph, dead graph utils (reverse_graph,
-  remove_weakly_connected_nodes, get_closest_nodes_from_gdf) and math_utils; dropped the dead
-  commented get_visibilities_from_points block in visibility. - Exported get_air_resist_ratio from
-  objectnat.methods.noise. - Added AGENTS.md, CONTRIBUTING.md, CHANGELOG.md, .editorconfig,
-  .gitattributes.
+- `simulate_noise` attenuates noise through vegetation layer by layer and uses signed-angle shadow sectors.
+- `source_position_buffer_r` handles sources located inside buildings or trees.
+- `get_air_resist_ratio` is exported from `objectnat.methods.noise`.
 
-Tests validated on a live intermodal graph: accessibility 14/14 and noise 5/5 green under pandas
-  3.0. Known issue: clustering (HDBSCAN cluster_selection_epsilon) fails on numpy 2.4 — upstream
-  scikit-learn bug (#33219), tracked separately.
+### Project
 
-BREAKING CHANGE: graph-based methods now take an iduedu.UrbanGraph, not a networkx.Graph.
-  get_accessibility_isochrones -> get_graph_isochrones and get_accessibility_isochrone_stepped ->
-  get_stepped_graph_isochrones; isochrones return a single GeoDataFrame instead of (isochrones,
-  pt_stops, pt_routes). Arguments are keyword-only and renamed: nx_graph -> urban_graph,
-  points/point -> gdf_origins, gdf_to -> gdf_destinations, weight_value -> weight_value_cutoff,
-  isochrone_type/step_type -> geometry_type. Removed objectnat.gdf_to_graph and the math_utils
-  module. Requires iduedu>=2.0.0, pandas>=3.0, numpy>=2.4.
-
-* feat!: return structured provision results and improve noise attenuation
-
-Refactor service provision to return a ProvisionResult with sparse flow storage, separate
-  demand/capacity summaries, and helper functions for materializing buildings, services, and link
-  GeoDataFrames.
-
-Split provision calculation and result formatting into dedicated modules, remove the old Provision
-  model, export the new provision helpers, and update provision tests, docs, and example notebook
-  for the new API.
-
-Improve noise propagation through vegetation by using layered tree attenuation, robust signed-angle
-  shadow sectors, and an optional source_position_buffer_r for sources located inside buildings or
-  trees.
-
-Add ObjectNat 2.0 migration planning notes and allow lock files to be tracked.
-
-BREAKING CHANGE: get_service_provision now a returns ProvisionResult instead of a tuple of
-  GeoDataFrames. recalculate_links now accepts and returns ProvisionResult.
-
-* feat!: remove clustering and finalize ObjectNat 2.0 docs/tests
-
-- remove point clustering from the public API and runtime dependencies - drop networkx and
-  scikit-learn from project dependencies - add focused unit coverage for provision, noise, geom
-  utils, and config - make provision allocation seed configurable and document ProvisionResult -
-  update CI quality workflow with lint and Python 3.11/3.12 test matrix - refresh README, Sphinx
-  docs, migration guide, and ObjectNat 2.0 examples - update notebooks for UrbanGraph, OD matrix
-  parquet export, coverage joins, noise edges, and visibility API
-
-### Breaking Changes
-
-- Graph-based methods now take an iduedu.UrbanGraph, not a networkx.Graph.
-  get_accessibility_isochrones -> get_graph_isochrones and get_accessibility_isochrone_stepped ->
-  get_stepped_graph_isochrones; isochrones return a single GeoDataFrame instead of (isochrones,
-  pt_stops, pt_routes). Arguments are keyword-only and renamed: nx_graph -> urban_graph,
-  points/point -> gdf_origins, gdf_to -> gdf_destinations, weight_value -> weight_value_cutoff,
-  isochrone_type/step_type -> geometry_type. Removed objectnat.gdf_to_graph and the math_utils
-  module. Requires iduedu>=2.0.0, pandas>=3.0, numpy>=2.4.
-
-- Get_service_provision now a returns ProvisionResult instead of a tuple of GeoDataFrames.
-  recalculate_links now accepts and returns ProvisionResult.
+- Flat package layout (`objectnat/`, `tests/`) built with uv and hatchling; the version lives in `objectnat/_version.py`.
+- Releases are automated with python-semantic-release from Conventional Commits.
+- CI is split into Tests and Coverage (lint, Python 3.11 and 3.12), Release and Docs workflows; rendered test images still publish to the `assets` branch.
+- Added `AGENTS.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `.editorconfig` and `.gitattributes`; the documentation, migration guide and example notebooks are updated for 2.0.
 
 
 ## v1.4.1 (2025-11-27)

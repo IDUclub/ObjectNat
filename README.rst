@@ -16,8 +16,8 @@ Object-oriented Network Analysis Tools
    :target: https://github.com/IDUclub/ObjectNat/actions/workflows/quality.yml
    :alt: Tests and coverage
 
-.. |badge-codecov| image:: https://codecov.io/gh/IDUclub/ObjectNat/graph/badge.svg?token=K6JFSJ02GU
-   :target: https://codecov.io/gh/IDUclub/ObjectNat
+.. |badge-coverage| image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/python-coverage-comment-action-data/badge.svg
+   :target: https://github.com/IDUclub/ObjectNat/tree/python-coverage-comment-action-data
    :alt: Coverage
 
 .. |badge-license| image:: https://img.shields.io/badge/license-BSD--3--Clause-blue.svg
@@ -28,7 +28,7 @@ Object-oriented Network Analysis Tools
    :target: https://iduclub.github.io/ObjectNat/
    :alt: Docs
 
-|badge-black| |badge-pypi| |badge-ci| |badge-codecov| |badge-license| |badge-docs|
+|badge-black| |badge-pypi| |badge-ci| |badge-coverage| |badge-license| |badge-docs|
 
 `РИДМИ (Russian) <https://github.com/IDUclub/ObjectNat/blob/master/README_RU.rst>`__
 
@@ -42,6 +42,7 @@ Object-oriented Network Analysis Tools
 for spatial and network analysis in urban studies.
 The library provides tools for analyzing **accessibility**, **visibility**,
 **noise propagation**, and **service provision**.
+
 ----
 
 Key Features
@@ -103,7 +104,7 @@ Each feature includes a **Jupyter Notebook example** and **full documentation**.
 
    📘 `Example <https://iduclub.github.io/ObjectNat/methods/examples/noise.html>`__
    🔗 `Documentation <https://iduclub.github.io/ObjectNat/methods/noise.html>`__
-   🧠 `Detailed theory <https://github.com/DDonnyy/ObjectNat/wiki/Noise-simulation>`__
+   🧠 `Detailed theory <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__
 
 ----
 
@@ -116,7 +117,7 @@ Graph-based ObjectNat methods consume ``iduedu.UrbanGraph`` directly; ObjectNat
 does not build NetworkX graphs internally.
 
 **IduEdu** is an open-source Python library designed for building and processing
-complex urban networks based on OpenStreetMap data.
+complex urban networks from OpenStreetMap and GTFS Schedule data.
 
 
 **IduEdu** can be installed via ``pip``::
@@ -170,6 +171,14 @@ Contacts
 - `Danila Oleynikov (Donny) <https://t.me/ddonny_dd>`_ — Lead Software Engineer
 
 ----
+
+Citing ObjectNat
+----------------
+
+If you use ObjectNat in research, please cite it. Citation metadata is kept in
+`CITATION.cff <https://github.com/IDUclub/ObjectNat/blob/master/CITATION.cff>`__; on GitHub,
+**Cite this repository** in the repository sidebar copies it as APA or BibTeX.
+Publications describing ObjectNat will be listed below.
 
 Publications
 ------------

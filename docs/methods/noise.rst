@@ -41,7 +41,7 @@ each distance layer.
 
 .. autofunction:: objectnat.simulate_noise
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/noise_simulation_1point.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_simulation_1point.png
    :alt: noise_simulation_1point
    :align: center
    :width: 80%
@@ -66,7 +66,7 @@ line-of-sight masks.
 
 .. autofunction:: objectnat.calculate_simplified_noise_frame
 
-.. figure:: https://raw.githubusercontent.com/DDonnyy/ObjectNat/assets/noise_frame.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_frame.png
    :alt: noise_frame
    :align: center
    :width: 80%
@@ -81,7 +81,7 @@ Additional Resources
 The historical project wiki contains additional background on the noise model,
 but the API reference on this page is the source of truth for ObjectNat 2.0:
 
-`Noise Simulation on GitHub <https://github.com/DDonnyy/ObjectNat/wiki/Noise-simulation>`_
+`Noise Simulation on GitHub <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`_
 
 ----
 

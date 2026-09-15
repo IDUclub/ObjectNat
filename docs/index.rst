@@ -34,8 +34,8 @@ developed by the **IDU team** at ITMO University.
    :target: https://github.com/IDUclub/ObjectNat/actions/workflows/quality.yml
    :alt: Tests and coverage
 
-.. |badge-cov| image:: https://codecov.io/gh/IDUclub/ObjectNat/graph/badge.svg?token=K6JFSJ02GU
-   :target: https://codecov.io/gh/IDUclub/ObjectNat
+.. |badge-cov| image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/python-coverage-comment-action-data/badge.svg
+   :target: https://github.com/IDUclub/ObjectNat/tree/python-coverage-comment-action-data
    :alt: Coverage
 
 .. |badge-license| image:: https://img.shields.io/badge/license-BSD--3--Clause-blue.svg
@@ -96,9 +96,9 @@ Installation
 
    pip install objectnat
 
-Requires Python 3.11+ and the standard geospatial stack (Pandas, GeoPandas,
-Shapely, NumPy). Graph-based accessibility methods consume ``UrbanGraph``
-objects from IduEdu.
+Requires Python 3.11 or 3.12 and the standard geospatial stack (Pandas, GeoPandas,
+Shapely, NumPy, SciPy). Graph-based accessibility methods consume ``UrbanGraph``
+objects from IduEdu, which is installed with ObjectNat.
 
 ----
 
@@ -108,7 +108,7 @@ Quickstart
 To ensure optimal performance of ObjectNat's geospatial analysis functions, it's recommended
 to utilize urban graphs sourced from the `IduEdu <https://pypi.org/project/iduedu/>`_ library.
 **IduEdu** is an open-source Python library designed for the creation and manipulation of complex
-city networks derived from OpenStreetMap data.
+city networks from OpenStreetMap and GTFS Schedule data.
 
 .. code-block:: python
 
@@ -163,6 +163,16 @@ License
 -------
 
 This project is open-source. See the :file:`LICENSE.txt` file for details.
+
+----
+
+Citing ObjectNat
+----------------
+
+If you use ObjectNat in research, please cite it. Citation metadata is kept in
+`CITATION.cff <https://github.com/IDUclub/ObjectNat/blob/master/CITATION.cff>`__; on GitHub,
+**Cite this repository** in the repository sidebar copies it as APA or BibTeX.
+Publications describing ObjectNat will be listed below.
 
 ----
 

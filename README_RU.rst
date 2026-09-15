@@ -16,8 +16,8 @@ Object-oriented Network Analysis Tools
    :target: https://github.com/IDUclub/ObjectNat/actions/workflows/quality.yml
    :alt: Тесты и покрытие
 
-.. |badge-codecov| image:: https://codecov.io/gh/IDUclub/ObjectNat/graph/badge.svg?token=K6JFSJ02GU
-   :target: https://codecov.io/gh/IDUclub/ObjectNat
+.. |badge-coverage| image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/python-coverage-comment-action-data/badge.svg
+   :target: https://github.com/IDUclub/ObjectNat/tree/python-coverage-comment-action-data
    :alt: Покрытие тестами
 
 .. |badge-license| image:: https://img.shields.io/badge/license-BSD--3--Clause-blue.svg
@@ -28,7 +28,7 @@ Object-oriented Network Analysis Tools
    :target: https://iduclub.github.io/ObjectNat/
    :alt: Документация
 
-|badge-black| |badge-pypi| |badge-ci| |badge-codecov| |badge-license| |badge-docs|
+|badge-black| |badge-pypi| |badge-ci| |badge-coverage| |badge-license| |badge-docs|
 
 `README (English) <https://github.com/IDUclub/ObjectNat/blob/master/README.rst>`_
 
@@ -101,7 +101,7 @@ Object-oriented Network Analysis Tools
 
    📘 `Пример <https://iduclub.github.io/ObjectNat/methods/examples/noise.html>`__
    🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/noise.html>`__
-   🧠 `Подробное описание <https://github.com/DDonnyy/ObjectNat/wiki/Noise-simulation>`__
+   🧠 `Подробное описание <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__
 
 ----
 
@@ -114,7 +114,7 @@ Object-oriented Network Analysis Tools
 NetworkX-графы внутри библиотеки.
 
 **IduEdu** — это библиотека на Python с открытым исходным кодом, предназначенная для построения и обработки
-сложных городских сетей на основе данных OpenStreetMap.
+сложных городских сетей на основе данных OpenStreetMap и расписаний GTFS Schedule.
 
 
 **IduEdu** можно установить с помощью ``pip``::
@@ -168,6 +168,14 @@ ObjectNat 2.0 заменяет NetworkX-входы на ``iduedu.UrbanGraph``, �
 - `Данила Олейников (Donny) <https://t.me/ddonny_dd>`_ — ведущий инженер-разработчик
 
 ----
+
+Цитирование ObjectNat
+---------------------
+
+Если вы используете ObjectNat в исследованиях, пожалуйста, цитируйте библиотеку. Метаданные для цитирования
+хранятся в `CITATION.cff <https://github.com/IDUclub/ObjectNat/blob/master/CITATION.cff>`__; на GitHub кнопка
+**Cite this repository** на боковой панели репозитория копирует их в формате APA или BibTeX.
+Публикации об ObjectNat будут перечислены ниже.
 
 Публикации
 ----------
