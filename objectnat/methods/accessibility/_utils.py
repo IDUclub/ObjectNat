@@ -11,26 +11,39 @@ from shapely.ops import polygonize, unary_union
 from objectnat.methods.utils.geom_utils import polygons_to_multilinestring
 
 SteppedGeometryType = Literal["radius", "ways", "separate"] | None
-
-# Graph types whose "ways" geometry must be built from pedestrian edges only.
-# On these graphs non-walk edges (transit legs) are straight lines between
-# distant stops; buffering them would create spurious corridors.
-_WALK_ONLY_WAYS_GRAPH_TYPES = {"intermodal", "walk"}
+_WALK_ONLY_GRAPH_TYPES = {"intermodal", "walk"}
 
 
-def road_edges_for_ways(urban_graph: UrbanGraph) -> gpd.GeoDataFrame:
-    """Return the edge subset used to build ``geometry_type="ways"`` geometry.
+def geometry_edges(urban_graph: UrbanGraph) -> gpd.GeoDataFrame:
+    """Return the edges that shape accessibility geometry.
 
-    For intermodal/walk graphs only pedestrian (``type == "walk"``) edges are
-    kept, so transit legs do not distort the resulting shape. Other graph types
-    (or graphs without a ``type`` column) use every edge.
+    Walk and intermodal graphs use their pedestrian (``type == "walk"``) edges; other
+    graphs, or graphs without a ``type`` column, use every edge.
     """
     edges = urban_graph.edges_gdf
-    if urban_graph.type in _WALK_ONLY_WAYS_GRAPH_TYPES and "type" in edges.columns:
+    if urban_graph.type in _WALK_ONLY_GRAPH_TYPES and "type" in edges.columns:
         walk_edges = edges[edges["type"] == "walk"]
         if not walk_edges.empty:
             return walk_edges
     return edges
+
+
+def select_geometry_nodes(urban_graph: UrbanGraph, reachable_graph_nodes_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """Keep the reachable nodes that shape geometry, one per location.
+
+    Only endpoints of :func:`geometry_edges` are kept, unless none of them is reachable,
+    and nodes sharing a location are collapsed onto the smallest ``dist``. Several route
+    nodes can sit on one stop; a Voronoi cell shared by them would otherwise be assigned
+    to every band they fall in.
+    """
+    edges = geometry_edges(urban_graph)
+    nodes = reachable_graph_nodes_gdf
+    on_geometry_edges = nodes.index.isin(edges["u"]) | nodes.index.isin(edges["v"])
+    if on_geometry_edges.any():
+        nodes = nodes.loc[on_geometry_edges]
+    ordered = nodes.iloc[np.argsort(nodes["dist"].to_numpy(dtype=float), kind="stable")]
+    location = pd.MultiIndex.from_arrays([ordered.geometry.x.to_numpy(), ordered.geometry.y.to_numpy()])
+    return ordered.iloc[np.flatnonzero(~location.duplicated())]
 
 
 def build_voronoi_cells(
@@ -42,15 +55,16 @@ def build_voronoi_cells(
     clip_geom=None,
 ) -> gpd.GeoDataFrame:
     reachable_node_index = pd.Index(reachable_graph_nodes_gdf.index)
+    edges = geometry_edges(urban_graph)
     if clip_geom is None:
-        edges = urban_graph.edges_gdf[["u", "v"]]
         edges_near_reachable = edges[edges["u"].isin(reachable_node_index) | edges["v"].isin(reachable_node_index)]
         neighbor_nodes = pd.Index(edges_near_reachable["u"]).append(pd.Index(edges_near_reachable["v"])).unique()
         boundary_nodes = neighbor_nodes.difference(reachable_node_index)
         voronoi_node_index = reachable_node_index.append(boundary_nodes).unique()
     else:
-        clip_mask = urban_graph.nodes_gdf.geometry.intersects(clip_geom)
-        voronoi_node_index = urban_graph.nodes_gdf.index[clip_mask].append(reachable_node_index).unique()
+        nodes = urban_graph.nodes_gdf
+        site_mask = (nodes.index.isin(edges["u"]) | nodes.index.isin(edges["v"])) & nodes.geometry.intersects(clip_geom)
+        voronoi_node_index = nodes.index[site_mask].append(reachable_node_index).unique()
     voronoi_nodes = urban_graph.nodes_gdf.loc[voronoi_node_index, ["geometry"]]
     voronois = gpd.GeoDataFrame(geometry=list(voronoi_nodes.geometry.voronoi_polygons()), crs=local_crs)
     reachable_cell_index = reachable_graph_nodes_gdf.reset_index(names="node").sjoin(voronois, how="inner")
@@ -119,7 +133,7 @@ def build_ways_clip_geometry(
         speed_m_per_min=speed_m_per_min,
     )
     reachable_node_index = pd.Index(reachable_graph_nodes_gdf.index)
-    edges = road_edges_for_ways(urban_graph)
+    edges = geometry_edges(urban_graph)
     edge_mask = edges["u"].isin(reachable_node_index) | edges["v"].isin(reachable_node_index)
     if not edge_mask.any():
         return GeometryCollection()
@@ -226,6 +240,7 @@ def build_stepped_accessibility_geometry(
     if reachable_graph_nodes_gdf.empty:
         return gpd.GeoDataFrame()
 
+    reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, reachable_graph_nodes_gdf)
     speed_m_per_min = edge_speed_m_per_min(urban_graph) if weight_type == "time_min" else None
 
     if geometry_type == "separate":

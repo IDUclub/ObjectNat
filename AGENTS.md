@@ -105,8 +105,10 @@ objectnat/
 - `get_graph_coverage(urban_graph, *, gdf_destinations=..., geometry_type=None|"radius"|"ways", ...)`
 - `get_stepped_graph_coverage(urban_graph, *, geometry_type=None|"radius"|"ways"|"separate", step=..., ...)`
 
-Coverage runs the search **reversed** (from destinations); isochrones run **outward** from origins. For
-`geometry_type="ways"` on intermodal/walk graphs only pedestrian (`type == "walk"`) edges shape the geometry.
+Coverage runs the search **reversed** (from destinations); isochrones run **outward** from origins. On
+intermodal/walk graphs only pedestrian (`type == "walk"`) edges shape `geometry_type="ways"`, and only their end
+nodes shape any geometry (`select_geometry_nodes` in `_utils.py`): transit route nodes carry the search but their
+distance includes the boarding wait, and several of them can share one stop location.
 
 ### Coding conventions
 

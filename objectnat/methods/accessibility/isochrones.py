@@ -12,6 +12,7 @@ from objectnat.methods.accessibility._utils import (
     build_stepped_accessibility_geometry,
     build_ways_clip_geometry,
     edge_speed_m_per_min,
+    select_geometry_nodes,
 )
 
 
@@ -98,6 +99,9 @@ def get_graph_isochrones(
         - For ``geometry_type="ways"`` the search budget is slightly extended so
           road edges are not clipped short of the boundary.
         - Origins with no reachable nodes are dropped from the result.
+        - On walk and intermodal graphs the geometry is built from nodes reachable on
+          foot; transit route nodes, whose distance includes the wait to board, only
+          carry the search.
     """
 
     if geometry_type not in {"radius", "ways", "separate"}:
@@ -144,6 +148,7 @@ def get_graph_isochrones(
         reachable_graph_nodes_gdf = urban_graph.nodes_gdf.loc[pd.Index(reachable_nodes.index), ["geometry"]].join(
             reachable_nodes, how="left"
         )
+        reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, reachable_graph_nodes_gdf)
         if geometry_type == "radius":
             geom = build_radius_clip_geometry(
                 reachable_graph_nodes_gdf,
@@ -271,6 +276,9 @@ def get_stepped_graph_isochrones(
         - Multiple origins are processed together: the bands describe the
           combined reachability of all origins (each node keeps the distance to
           its nearest origin).
+        - On walk and intermodal graphs the bands are built from nodes reachable on
+          foot, so a stop is drawn in the band it is walked to, not in the bands of the
+          waits for the vehicles that call there.
         - An empty ``GeoDataFrame`` is returned when nothing is reachable.
     """
 
