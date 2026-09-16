@@ -8,7 +8,7 @@ authors:
     orcid: "https://orcid.org/0009-0002-7881-1543"
     affiliation: "ITMO University"
     email: "ddonnyy@itmo.ru"
-version: "2.0.0"
+version: "2.0.1"
 date-released: "2026-07-10"
 repository-code: "https://github.com/IDUclub/ObjectNat"
 url: "https://iduclub.github.io/ObjectNat/"

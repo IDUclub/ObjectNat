@@ -2,6 +2,40 @@
 
 <!-- version list -->
 
+## v2.0.1 (2026-09-16)
+
+### Bug Fixes
+
+- **accessibility**: Build isochrone and coverage geometry from pedestrian nodes only
+  ([#18](https://github.com/IDUclub/ObjectNat/pull/18),
+  [`0460e92`](https://github.com/IDUclub/ObjectNat/commit/0460e92ead41b6fac2812b9238b0bde55485c870))
+
+- on walk and intermodal graphs, draw Voronoi cells and buffers around the end nodes of walk edges;
+  transit route nodes carry the search but their distance includes the boarding wait
+
+- collapse nodes that share a location onto the smallest distance, so route nodes on one stop no
+  longer put the same cell into several bands or several coverage zones
+
+- add regression tests for stepped isochrones and coverage zones, and refresh the isochrone and
+  coverage notebooks
+
+### Continuous Integration
+
+- Replace Codecov with coverage comments, point links to IDUclub and refresh examples for IduEdu 2.1
+  ([`71fb89d`](https://github.com/IDUclub/ObjectNat/commit/71fb89d105e0e9b4e83d83acb85adb1458c99ee9))
+
+- replace Codecov with python-coverage-comment-action and publish test images from a separate job
+
+- let Docs run manually and build only with the docs dependency group
+
+- keep the changelog editable, rewrite the 2.0.0 entry and bump CITATION.cff with each release
+
+- point repository, wiki and asset links to IDUclub and add a citing section
+
+- lock iduedu 2.1.0 and recompute the OD matrix and the isochrone, coverage and provision notebooks
+  with it
+
+
 ## v2.0.0 (2026-07-10)
 
 ObjectNat 2.0.0 moves every graph-based method from NetworkX to the IduEdu 2.0 `UrbanGraph` model, returns service provision as a structured `ProvisionResult`, and rebuilds packaging, CI and releases around uv and python-semantic-release. It is a breaking release; see **Upgrading from 1.x** below and the [migration guide](https://iduclub.github.io/ObjectNat/migration_1_to_2.html).
