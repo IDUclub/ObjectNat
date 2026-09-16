@@ -13,6 +13,7 @@ from objectnat.methods.accessibility._utils import (
     build_voronoi_cells,
     build_ways_clip_geometry,
     edge_speed_m_per_min,
+    select_geometry_nodes,
 )
 
 
@@ -104,6 +105,8 @@ def get_graph_coverage(
     Notes:
         - For a directed graph the search runs on the reversed edges, so a zone
           describes the area from which its source can be reached.
+        - On walk and intermodal graphs the zones are built from nodes reachable on foot,
+          so route nodes sharing a stop cannot give one place to several sources.
         - An empty ``GeoDataFrame`` is returned when nothing is reachable.
     """
 
@@ -148,6 +151,8 @@ def get_graph_coverage(
 
     if reachable_graph_nodes_gdf.empty:
         return gpd.GeoDataFrame()
+
+    reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, reachable_graph_nodes_gdf)
 
     if geometry_type == "radius":
         speed_m_per_min = edge_speed_m_per_min(urban_graph) if weight_type == "time_min" else None
@@ -285,6 +290,8 @@ def get_stepped_graph_coverage(
     Notes:
         - For a directed graph the search runs on the reversed edges; for an
           undirected graph on the original symmetric adjacency.
+        - On walk and intermodal graphs the bands are built from nodes reachable on foot,
+          so transit route nodes on a stop do not paint it with a later band.
         - An empty ``GeoDataFrame`` is returned when nothing is reachable.
     """
 
