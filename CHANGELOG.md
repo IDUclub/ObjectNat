@@ -2,6 +2,32 @@
 
 <!-- version list -->
 
+## v2.1.0 (2026-09-30)
+
+### Bug Fixes
+
+- **noise**: Replace multiprocessing queue for macOS
+  ([#19](https://github.com/IDUclub/ObjectNat/pull/19),
+  [`b403d01`](https://github.com/IDUclub/ObjectNat/commit/b403d01c52307c272800dad61857d65936e55400))
+
+### Features
+
+- Support Python 3.13 and 3.14
+  ([`32689b3`](https://github.com/IDUclub/ObjectNat/commit/32689b3c796d3e68b42a997d5cf4d743acc61dad))
+
+- expand the supported Python range to 3.11-3.14
+
+- update the IduEdu compatibility constraint
+
+- preserve compatibility with the Google Colab runtime
+
+- add Python-specific dependency floors where required
+
+- add Linux, Windows, and macOS compatibility CI jobs
+
+- update installation documentation
+
+
 ## v2.0.1 (2026-09-16)
 
 ### Bug Fixes
