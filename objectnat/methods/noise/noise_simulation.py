@@ -1,7 +1,7 @@
 import concurrent.futures
 import math
-import multiprocessing
 import time
+from collections import deque
 
 import geopandas as gpd
 import pandas as pd
@@ -178,7 +178,7 @@ def simulate_noise(
     obstacles = obstacles[["absorb_ratio", "geometry"]]
 
     # creating initial task and simulating for each point
-    task_queue = multiprocessing.Queue()
+    task_queue = deque()
     dead_area_dict = {}
     for ind, row in source_points.iterrows():
         source_point = row.geometry
@@ -208,7 +208,7 @@ def simulate_noise(
             "min_db": target_noise_db,
             "simulation_ind": ind,
         }
-        task_queue.put((_noise_from_point_task, args, kwargs))
+        task_queue.append((_noise_from_point_task, args, kwargs))
         dead_area_dict[ind] = source_point.buffer(dead_area_r, quad_segs=2)
 
     noise_gdf = _recursive_simulation_queue(
@@ -544,11 +544,9 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
     return noise_from_point, new_tasks
 
 
-def _recursive_simulation_queue(
-    task_queue: multiprocessing.Queue, dead_area_dict: dict, dead_area_r: int, use_parallel: bool
-):
+def _recursive_simulation_queue(task_queue: deque, dead_area_dict: dict, dead_area_r: int, use_parallel: bool):
     results = []
-    total_tasks = task_queue.qsize()
+    total_tasks = len(task_queue)
 
     with tqdm(total=total_tasks, desc="Simulating noise") as pbar:
         if use_parallel:
@@ -559,8 +557,8 @@ def _recursive_simulation_queue(
             max_workers = executor._max_workers  # pylint: disable=protected-access
             future_to_task = {}
             while True:
-                while not task_queue.empty() and len(future_to_task) < max_workers:
-                    func, task, kwargs = task_queue.get_nowait()
+                while task_queue and len(future_to_task) < max_workers:
+                    func, task, kwargs = task_queue.popleft()
                     future = executor.submit(func, task, **kwargs)
                     future_to_task[future] = kwargs["simulation_ind"]
                 done, _ = concurrent.futures.wait(future_to_task.keys(), return_when=concurrent.futures.FIRST_COMPLETED)
@@ -574,7 +572,7 @@ def _recursive_simulation_queue(
                         for func, new_task, new_kwargs in new_tasks:
                             new_point = new_task[0]
                             if not local_dead_area.covers(new_point):
-                                task_queue.put((func, new_task, new_kwargs))
+                                task_queue.append((func, new_task, new_kwargs))
                                 new_dead_area_points.append(new_point.buffer(dead_area_r, quad_segs=2))
                                 new_tasks_n += 1
                         dead_area_dict[simulation_ind] = unary_union(new_dead_area_points)
@@ -584,6 +582,6 @@ def _recursive_simulation_queue(
                     results.append(result)
                     pbar.update(1)
                 time.sleep(0.01)
-                if not future_to_task and task_queue.empty():
+                if not future_to_task and not task_queue:
                     break
     return results

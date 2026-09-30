@@ -1,5 +1,6 @@
 import math
 import os
+from collections import deque
 
 import geopandas as gpd
 import pandas as pd
@@ -13,11 +14,32 @@ from objectnat.methods.noise.noise_simulation import (
     _angle_from_point,
     _cut_source_buffer_from_containing_geometries,
     _iter_polygonal_geometries,
+    _recursive_simulation_queue,
     _tree_angular_span,
 )
 from tests.conftest import output_dir
 
 logger = config.logger
+
+
+def _queued_noise_task(task, simulation_ind):
+    point = task[0]
+    if point.x == 0:
+        next_task = (_queued_noise_task, (Point(10, 0),), {"simulation_ind": simulation_ind})
+        return "first", [next_task]
+    return "second", None
+
+
+def test_recursive_simulation_queue_adds_reflection_tasks():
+    source = Point(0, 0)
+    tasks = deque([(_queued_noise_task, (source,), {"simulation_ind": 0})])
+    dead_areas = {0: source.buffer(1)}
+
+    results = _recursive_simulation_queue(tasks, dead_areas, dead_area_r=1, use_parallel=False)
+
+    assert results == ["first", "second"]
+    assert not tasks
+    assert dead_areas[0].covers(Point(10, 0))
 
 
 def test_iter_polygonal_geometries():
