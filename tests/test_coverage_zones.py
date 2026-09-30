@@ -1,12 +1,14 @@
 import os
 
 import geopandas as gpd
+import pytest
 from matplotlib import pyplot as plt
 
 from objectnat import get_graph_coverage, get_radius_coverage, get_stepped_graph_coverage
 from tests.conftest import output_dir
 
 
+@pytest.mark.network
 def test_stepped_time_min_voronoi(services_data, buildings_data, intermodal_osm_1114252, boundary_osm_1114252):
     zone = gpd.GeoDataFrame(geometry=[boundary_osm_1114252], crs=4326)
     step = 2
@@ -29,6 +31,7 @@ def test_stepped_time_min_voronoi(services_data, buildings_data, intermodal_osm_
     )
 
 
+@pytest.mark.network
 def test_stepped_time_min_separate(services_data, buildings_data, intermodal_osm_1114252):
     step = 2
     result = get_stepped_graph_coverage(
@@ -49,6 +52,7 @@ def test_stepped_time_min_separate(services_data, buildings_data, intermodal_osm
     )
 
 
+@pytest.mark.network
 def test_graph_time_min(services_data, buildings_data, intermodal_osm_1114252, boundary_osm_1114252):
     zone = gpd.GeoDataFrame(geometry=[boundary_osm_1114252], crs=4326)
     weight = 10
@@ -71,6 +75,7 @@ def test_graph_time_min(services_data, buildings_data, intermodal_osm_1114252, b
     )
 
 
+@pytest.mark.network
 def test_graph_length_meter(services_data, buildings_data, intermodal_osm_1114252):
     weight = 600
     result = get_graph_coverage(
@@ -91,6 +96,7 @@ def test_graph_length_meter(services_data, buildings_data, intermodal_osm_111425
     )
 
 
+@pytest.mark.network
 def test_graph_same_crs(services_data, intermodal_osm_1114252):
     services_data = services_data.to_crs(3857)
     result = get_graph_coverage(

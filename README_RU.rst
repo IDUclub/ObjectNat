@@ -133,6 +133,8 @@ NetworkX-графы внутри библиотеки.
 Установка
 ---------
 
+ObjectNat поддерживает Python 3.11–3.14 в Windows, macOS и Linux.
+
 **ObjectNat** можно установить с помощью ``pip``::
 
     pip install ObjectNat

@@ -136,6 +136,9 @@ Example usage::
 Installation
 ------------
 
+ObjectNat supports Python 3.11–3.14 on Windows, macOS, and Linux. It installs
+IduEdu 2.2.0 or newer within the 2.x series.
+
 **ObjectNat** can be installed via ``pip``::
 
     pip install ObjectNat

@@ -96,7 +96,7 @@ Installation
 
    pip install objectnat
 
-Requires Python 3.11 or 3.12 and the standard geospatial stack (Pandas, GeoPandas,
+Requires Python 3.11–3.14 and the standard geospatial stack (Pandas, GeoPandas,
 Shapely, NumPy, SciPy). Graph-based accessibility methods consume ``UrbanGraph``
 objects from IduEdu, which is installed with ObjectNat.
 

@@ -38,7 +38,7 @@ Rules (once `graphify-out/graph.json` exists):
 isochrones, coverage zones, service provision, visibility analysis, and noise simulation.
 
 Graphs come from **[IduEdu](https://github.com/IDUclub/IduEdu)** (`UrbanGraph`); ObjectNat consumes them and never
-builds networks itself. Python 3.11–3.12 only. Package manager: **uv** (lockfile: `uv.lock`, committed). Build
+builds networks itself. Python 3.11–3.14. Package manager: **uv** (lockfile: `uv.lock`, committed). Build
 backend: hatchling.
 
 ## Commands
@@ -49,6 +49,9 @@ uv sync --all-groups            # or: make install-dev
 
 # Run the test suite (downloads an OSM graph via Overpass on first run)
 uv run pytest                   # or: make test
+
+# Run all tests that do not need Overpass
+uv run pytest -q -m "not network"
 
 # Run a single test file / a single test by name
 uv run pytest tests/test_coverage_zones.py -v

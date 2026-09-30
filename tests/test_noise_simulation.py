@@ -216,6 +216,7 @@ def test_out_of_range_values(gdf_1point, buildings_data):
     logger.info(f"Between values result: {res}")
 
 
+@pytest.mark.network
 def test_noise_frame_calculator(gdf_1point, buildings_data, intermodal_osm_1114252_edges_gdf):
     local_crs = buildings_data.estimate_utm_crs()
     buildings_data = buildings_data.to_crs(local_crs)

@@ -1,9 +1,12 @@
 import os
 
+import pytest
 from matplotlib import pyplot as plt
 
 from objectnat import get_graph_isochrones, get_stepped_graph_isochrones
 from tests.conftest import output_dir
+
+pytestmark = pytest.mark.network
 
 
 def test_1point_isochrone_radius(intermodal_osm_1114252, gdf_1point, buildings_data):

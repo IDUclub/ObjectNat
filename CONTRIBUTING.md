@@ -8,7 +8,7 @@ Never bump the version or create a tag by hand.
 
 ## Requirements
 
-- Python 3.11 or 3.12
+- Python 3.11–3.14
 - [uv](https://docs.astral.sh/uv/) (package manager; `uv.lock` is committed)
 - `make` (optional but every command below has a `make` shortcut)
 
@@ -20,15 +20,16 @@ uv sync --all-groups     # or: make install-dev
 
 ## Local development loop
 
-| Task         | Command             | Notes                                             |
-|--------------|---------------------|---------------------------------------------------|
-| Run tests    | `make test`         | builds the OSM graph via Overpass (needs internet)|
-| Coverage     | `make coverage`     | terminal report                                   |
-| Coverage CI  | `make coverage-xml` | writes `coverage.xml`                              |
-| Format       | `make format`       | isort + black                                      |
-| Format check | `make format-check` | what CI enforces                                  |
-| Lint         | `make lint`         | pylint                                            |
-| Build docs   | `make docs`         | Sphinx → `docs/_build/html`                       |
+| Task          | Command                           | Notes                                              |
+|---------------|-----------------------------------|----------------------------------------------------|
+| Run tests     | `make test`                       | builds the OSM graph via Overpass (needs internet) |
+| Offline tests | `uv run pytest -q -m "not network"` | runs without Overpass                              |
+| Coverage      | `make coverage`                   | terminal report                                    |
+| Coverage CI   | `make coverage-xml`               | writes `coverage.xml`                              |
+| Format        | `make format`                     | isort + black                                      |
+| Format check  | `make format-check`               | what CI enforces                                   |
+| Lint          | `make lint`                       | pylint                                             |
+| Build docs    | `make docs`                       | Sphinx → `docs/_build/html`                        |
 
 Line length is 120. Imports are isort-sorted (`__init__.py` files are skipped).
 
