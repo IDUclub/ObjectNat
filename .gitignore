@@ -58,8 +58,8 @@ Thumbs.db
 /graphify-out/
 
 
-# Rust core build artifacts
-/objectnat-core/target/
-/objectnat-core/python/objectnat_core/*.so
-/objectnat-core/python/objectnat_core/*.pyd
+# Rust build artifacts (maturin puts the extension next to the sources on editable installs)
+/rust/target/
+/objectnat/_rust*.so
+/objectnat/_rust*.pyd
 /benchmarks/results/*_quick.*

@@ -1,28 +1,17 @@
-import math
 from concurrent.futures import ProcessPoolExecutor
 from typing import Literal
 
 import geopandas as gpd
 import numpy as np
-import pandas as pd
 import shapely
-from shapely import LineString, MultiPolygon, Point, Polygon
-from shapely.ops import unary_union
+from shapely import LineString, Point, Polygon
 from tqdm.contrib.concurrent import process_map
 
 from objectnat import config
-from objectnat.methods.utils.geom_utils import (
-    explode_linestring,
-    get_point_from_a_thorough_b,
-    point_side_of_line,
-    polygons_to_multilinestring,
-)
 from objectnat.methods.visibility._native import (
     geometries_to_segments,
-    native_available,
     native_visibility_polygons,
     native_visibility_single,
-    use_native,
 )
 
 logger = config.logger
@@ -58,28 +47,15 @@ def dist_to_furthest_point(point_from: Point, view_polygon: Polygon) -> float:
     return round(res, 1)
 
 
-def _visibility_accurate(
-    point_from: Point, obstacles: gpd.GeoDataFrame, view_distance: float, use_native_core: bool | None = None
-) -> Polygon:
+def _visibility_accurate(point_from: Point, obstacles: gpd.GeoDataFrame, view_distance: float) -> Polygon:
     """
-    Compute a high-accuracy visibility polygon for a single observer point.
+    Compute the exact visibility polygon for a single observer point.
 
-    This function implements a detailed line-of-sight algorithm based on obstacle
-    boundaries:
-
-    * A circular buffer with radius ``view_distance`` is built around the
-      observer point.
-    * Obstacles intersecting this buffer are selected.
-    * Polygonal obstacles are converted to line boundaries and exploded into
-      individual segments.
-    * For each nearest wall segment, a visibility wedge (sector) is constructed
-      using angular relationships between wall endpoints and the observer.
-    * All wedges are combined and subtracted from the initial visibility buffer
-      together with obstacles to obtain the final visible area.
-
-    Compared to ``_visibility_simple()``, this method is more accurate in
-    complex environments (e.g., dense buildings, narrow streets), but it is also
-    significantly slower.
+    The visible area is the view disc (the same polygon ``point_from.buffer(view_distance)`` builds)
+    minus everything hidden behind obstacle walls. It is computed by the Rust extension
+    ``objectnat._rust``: obstacle walls are clipped to the disc, every wall endpoint and wall crossing
+    becomes a critical direction, and one ray per angular interval finds the nearest wall, which gives
+    the boundary exactly.
 
     Args:
         point_from (Point):
@@ -94,103 +70,17 @@ def _visibility_accurate(
     Returns:
         Polygon:
             Polygon representing the visible area around ``point_from`` within
-            ``view_distance``, after subtracting obstacles. If the result is a
-            MultiPolygon, the component intersecting the observer point is
-            returned.
+            ``view_distance``.
 
     Notes:
         It is assumed that coordinates are in a metric CRS (e.g., UTM). CRS
         management is done externally in ``get_visibility()``.
-
-        ``use_native_core`` selects the Rust core explicitly (``None`` follows
-        ``config.enable_rust_core``); worker processes receive it as an argument because
-        they do not inherit runtime config changes under the spawn/forkserver start methods.
     """
     point_buffer = point_from.buffer(view_distance)
-    sindex = obstacles.sindex
-    idx = list(sindex.query(point_buffer, predicate="intersects"))
-    if not idx:
+    idx = obstacles.sindex.query(point_buffer, predicate="intersects")
+    if len(idx) == 0:
         return point_buffer
-    obstacles = obstacles.iloc[idx].reset_index(drop=True)
-
-    if use_native() if use_native_core is None else (use_native_core and native_available()):
-        return native_visibility_single(point_from, obstacles.geometry.values, view_distance)
-
-    buildings_lines_in_buffer = gpd.GeoSeries(
-        pd.Series(
-            obstacles.geometry.apply(polygons_to_multilinestring).explode(index_parts=False).apply(explode_linestring)
-        ).explode()
-    )
-
-    buildings_lines_in_buffer = buildings_lines_in_buffer.loc[buildings_lines_in_buffer.intersects(point_buffer)]
-
-    coords = [line.coords[0] for line in buildings_lines_in_buffer.geometry] + [
-        line.coords[-1] for line in buildings_lines_in_buffer.geometry
-    ]
-
-    coords = np.asarray(coords, dtype="float64")
-    dx = coords[:, 0] - point_from.x
-    dy = coords[:, 1] - point_from.y
-    max_dist_lines = float(np.sqrt(dx * dx + dy * dy).max())
-
-    max_dist = max(view_distance, max_dist_lines)
-
-    polygons = []
-    buildings_lines_in_buffer = gpd.GeoDataFrame(geometry=buildings_lines_in_buffer, crs=obstacles.crs).reset_index()
-    logger.debug("Calculation vis polygon")
-    while not buildings_lines_in_buffer.empty:
-        gdf_sindex = buildings_lines_in_buffer.sindex
-        # TODO check if 2 walls are nearest and use the widest angle between points
-        _, nearest_wall_sind = gdf_sindex.nearest(point_from, return_all=False, max_distance=max_dist)
-        nearest_wall = buildings_lines_in_buffer.loc[nearest_wall_sind].iloc[0]
-        wall_points = [Point(coords) for coords in nearest_wall.geometry.coords]
-
-        # Calculate angles and sort by angle
-        points_with_angle = sorted(
-            [(pt, math.atan2(pt.y - point_from.y, pt.x - point_from.x)) for pt in wall_points], key=lambda x: x[1]
-        )
-        delta_angle = 2 * math.pi + points_with_angle[0][1] - points_with_angle[-1][1]
-        if round(delta_angle, 10) == round(math.pi, 10):
-            wall_b_centroid = obstacles.loc[nearest_wall["index"]].centroid
-            p1 = get_point_from_a_thorough_b(point_from, points_with_angle[0][0], max_dist)
-            p2 = get_point_from_a_thorough_b(point_from, points_with_angle[1][0], max_dist)
-            polygon = LineString([p1, p2])
-            polygon = polygon.buffer(
-                distance=max_dist * point_side_of_line(polygon, wall_b_centroid), single_sided=True
-            )
-        else:
-            if delta_angle > math.pi:
-                delta_angle = 2 * math.pi - delta_angle
-            a = math.sqrt((max_dist**2) * (1 + (math.tan(delta_angle / 2) ** 2)))
-            p1 = get_point_from_a_thorough_b(point_from, points_with_angle[0][0], a)
-            p2 = get_point_from_a_thorough_b(point_from, points_with_angle[-1][0], a)
-            polygon = Polygon([points_with_angle[0][0], p1, p2, points_with_angle[1][0]])
-
-        if not polygon.is_valid or polygon.area < 1:
-            buildings_lines_in_buffer.drop(nearest_wall_sind, inplace=True)
-            buildings_lines_in_buffer.reset_index(drop=True, inplace=True)
-            continue
-        polygons.append(polygon)
-        candidate_idx = list(gdf_sindex.query(polygon, predicate="intersects"))
-        if candidate_idx:
-            candidates = buildings_lines_in_buffer.loc[candidate_idx]
-            mask_within = candidates.within(polygon)
-            to_drop = candidates.index[mask_within]
-        else:
-            to_drop = pd.Index([])
-        to_drop = to_drop.append(pd.Index(nearest_wall_sind))
-        buildings_lines_in_buffer.drop(index=to_drop, inplace=True)
-        buildings_lines_in_buffer.reset_index(drop=True, inplace=True)
-    logger.debug("Done calculating!")
-    vis_poly = point_buffer.difference(unary_union(polygons + obstacles.geometry.to_list()))
-
-    if isinstance(vis_poly, MultiPolygon):
-        vis_poly = list(vis_poly.geoms)
-        for polygon in vis_poly:
-            if polygon.intersects(point_from):
-                vis_poly = polygon
-                break
-    return vis_poly
+    return native_visibility_single(point_from, obstacles.geometry.values[idx], view_distance)
 
 
 def _visibility_simple(
@@ -212,8 +102,8 @@ def _visibility_simple(
     * The endpoints of the remaining visible segments form an approximate
       visibility contour.
 
-    Compared to ``_visibility_accurate()``, this method is much faster but
-    less precise, especially in highly complex or detailed urban scenes.
+    Compared to ``_visibility_accurate()``, this method is less precise,
+    especially in highly complex or detailed urban scenes.
 
     Args:
         point_from (Point):
@@ -308,14 +198,14 @@ def _visibility_worker(args: tuple[Point, gpd.GeoDataFrame | None, float, str, i
     raise ValueError(f"method must be one of: {', '.join(repr(m) for m in VISIBILITY_METHODS)}; got {method!r}")
 
 
-def _visibility_accurate_native_batch(
+def _visibility_accurate_batch(
     points: gpd.GeoSeries, obstacles: gpd.GeoDataFrame, distances: list[float], max_workers: int | None
 ) -> np.ndarray:
     """
-    Batch version of ``_visibility_accurate`` on the Rust core.
+    Batch version of ``_visibility_accurate`` for many observers at once (multi-threaded in Rust).
 
     Matches ``_visibility_worker`` semantics: observers inside an obstacle get an empty polygon.
-    The core is multi-threaded; ``max_workers`` limits its thread count.
+    ``max_workers`` limits the number of threads (``None`` uses all cores).
     """
     xy = shapely.get_coordinates(points.values)
     segments, one_sided = geometries_to_segments(obstacles.geometry.values)
@@ -350,8 +240,9 @@ def get_visibility(
         * a simple ray-based approximation (``method="simple"``).
     * Supports per-point visibility radii via a dedicated column or a global
       ``view_distance`` value.
-    * Optionally parallelizes computation across points using processes and
-      can display a tqdm progress bar.
+    * ``method="accurate"`` always runs multi-threaded in the Rust extension;
+      ``method="simple"`` can be parallelized across processes and can display
+      a tqdm progress bar.
 
     Args:
         point_from (gpd.GeoDataFrame):
@@ -370,8 +261,8 @@ def get_visibility(
         method (Literal["accurate", "simple"], optional):
             Visibility algorithm to use:
 
-            * ``"accurate"`` – slower but more precise, based on obstacle
-              boundaries and visibility wedges.
+            * ``"accurate"`` – exact visible area, based on obstacle walls,
+              computed in the Rust extension.
             * ``"simple"`` – faster approximation with radial rays and
               obstacle cutting.
 
@@ -379,18 +270,13 @@ def get_visibility(
             Resolution parameter for the simple method. Passed as ``quad_segs``
             to ``Point.buffer()``; ignored when ``method="accurate"``.
         parallel (bool, optional):
-            If ``True``, compute visibility polygons for multiple points in
-            parallel using processes. If ``False``, process points
-            sequentially in the current process.
+            For ``method="simple"``: if ``True``, compute visibility polygons in
+            parallel using processes; if ``False``, process points sequentially.
+            ``method="accurate"`` is always multi-threaded and ignores it.
         max_workers (int | None, optional):
-            Maximum number of worker processes when ``parallel=True``. If
-            ``None``, the default from ``ProcessPoolExecutor`` is used.
-            With the Rust core, it caps the number of threads instead.
-
-    Note:
-        When the optional Rust core (``objectnat-core``) is installed, ``method="accurate"``
-        runs on it: the result is the same exact visible area, computed multi-threaded without
-        ``parallel``. Disable it with ``config.set_enable_rust_core(False)``.
+            Maximum number of worker processes for ``method="simple"`` with
+            ``parallel=True`` (``None``: the ``ProcessPoolExecutor`` default), or
+            maximum number of threads for ``method="accurate"`` (``None``: all cores).
 
     Returns:
         gpd.GeoDataFrame:
@@ -411,19 +297,18 @@ def get_visibility(
         * If a column named ``"visibility_distance"`` is present in
           ``point_from``, its values are used as per-point view distances and
           the ``view_distance`` argument is ignored.
-        * When ``parallel=True`` and ``enable_tqdm`` is True in the global
-          config, a progress bar is displayed using
+        * When ``parallel=True`` with ``method="simple"`` and ``enable_tqdm`` is
+          True in the global config, a progress bar is displayed using
           ``tqdm.contrib.concurrent.process_map`` during parallel execution.
 
     Differences between methods
     ---------------------------
     * ``method="accurate"``:
-        Uses obstacle boundaries and angular visibility wedges. More precise,
-        especially in dense environments and around corners, but slower.
+        Exact visible area from obstacle walls, computed in Rust. Precise in
+        dense environments and around corners, and the faster of the two.
     * ``method="simple"``:
-        Uses radial rays and line splitting. Much faster and suitable for
-        large batches or rough estimates, but may produce less detailed
-        visibility shapes.
+        Uses radial rays and line splitting in Python. An approximation whose
+        detail depends on ``resolution``.
     """
     if not isinstance(point_from, gpd.GeoDataFrame):
         raise TypeError("point_from must be a GeoDataFrame with a point geometry")
@@ -455,8 +340,8 @@ def get_visibility(
     else:
         obstacles_local = None
 
-    if method == "accurate" and obstacles_local is not None and len(obstacles_local) > 0 and use_native():
-        results = _visibility_accurate_native_batch(points_local.geometry, obstacles_local, distances, max_workers)
+    if method == "accurate" and obstacles_local is not None and len(obstacles_local) > 0:
+        results = _visibility_accurate_batch(points_local.geometry, obstacles_local, distances, max_workers)
         result_gdf = points_local.copy()
         result_gdf["geometry"] = results
         result_gdf.set_crs(local_crs, inplace=True)

@@ -9,7 +9,7 @@ COVERAGE_HTML ?= htmlcov
 
 .PHONY: help install install-dev lock update lint format format-check test \
         coverage coverage-xml coverage-html docs clean build publish \
-        version version-next changelog
+        version version-next changelog rust-check
 
 help:
 	@echo "Available targets:"
@@ -18,6 +18,7 @@ help:
 	@echo "  lock              - refresh uv.lock"
 	@echo "  update            - upgrade locked dependencies"
 	@echo "  lint              - run pylint on package code"
+	@echo "  rust-check        - cargo fmt --check, clippy and unit tests for rust/"
 	@echo "  format            - format code with isort + black"
 	@echo "  format-check      - check code formatting with isort + black"
 	@echo "  test              - run test suite"
@@ -45,6 +46,9 @@ update:
 
 lint:
 	$(UV_RUN) python -m pylint $(PACKAGE)
+
+rust-check:
+	cd rust && cargo fmt --check && cargo clippy --release --all-targets -- -D warnings && cargo test --release
 
 format:
 	$(UV_RUN) python -m isort $(FORMAT_PATHS)

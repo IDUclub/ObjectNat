@@ -4,6 +4,9 @@ name: Release
 # Runs only in the official IDUclub/ObjectNat repository, after Tests and Coverage
 # succeeds for a push to master. The release commit may include [skip ci], so docs
 # deployment is chained from this workflow instead of from push events.
+#
+# ObjectNat ships a compiled Rust extension (objectnat._rust, PyO3 abi3), so the release
+# builds one wheel per platform (valid for every supported CPython) plus the sdist.
 
 on:
   workflow_run:
@@ -19,7 +22,7 @@ permissions:
   contents: read
 
 jobs:
-  release:
+  version:
     if: >
       github.repository == 'IDUclub/ObjectNat' &&
       github.event.workflow_run.conclusion == 'success' &&
@@ -28,7 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # push the version commit + tag and create the GitHub Release
-      id-token: write # OIDC for PyPI Trusted Publishing
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      tag: ${{ steps.release.outputs.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,15 +42,125 @@ jobs:
           fetch-depth: 0 # full history + tags are required to compute the next version
 
       - name: Ensure tested commit is still master
-        run: |
-          test "$(git rev-parse HEAD)" = "${{ github.event.workflow_run.head_sha }}"
+        env:
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: test "$(git rev-parse HEAD)" = "$TESTED_SHA"
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Use current stable Rust
+        run: |
+          rustup update stable
+          rustup default stable
+
+      - name: Install Python Semantic Release
+        run: python -m pip install 'python-semantic-release==9.21.1'
+
+      # Bumps pyproject.toml, rust/Cargo.toml, objectnat/_version.py and CITATION.cff, refreshes uv.lock,
+      # updates CHANGELOG.md, commits, tags, builds the sdist (build_command) and creates the GitHub Release.
       - name: Python Semantic Release
         id: release
-        uses: python-semantic-release/python-semantic-release@v9.21.1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          before="$(git rev-parse HEAD)"
+          semantic-release version
+          after="$(git rev-parse HEAD)"
+          if [ "$before" = "$after" ]; then
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          else
+            tag="$(git tag --points-at "$after" --list 'v*')"
+            test -n "$tag"
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload source distribution
+        if: steps.release.outputs.released == 'true'
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          name: sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  wheels:
+    name: Wheel (${{ matrix.os }}, ${{ matrix.target }})
+    needs: version
+    if: needs.version.outputs.released == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64
+          - os: ubuntu-latest
+            target: aarch64
+          - os: windows-latest
+            target: x64
+          - os: macos-latest
+            target: aarch64
+          - os: macos-latest
+            target: x86_64
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build abi3 wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          target: ${{ matrix.target }}
+          args: --release --out dist
+          manylinux: auto
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.os }}-${{ matrix.target }}
+          path: dist/*.whl
+          if-no-files-found: error
+
+  publish:
+    needs: [version, wheels]
+    if: needs.version.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # attach distributions to the GitHub Release
+      id-token: write # OIDC for PyPI Trusted Publishing
+    steps:
+      - name: Download wheels
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheel-*
+          path: dist
+          merge-multiple: true
+
+      - name: Download sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+
+      - name: Attach distributions to the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+        run: gh release upload "$RELEASE_TAG" dist/* --clobber
 
       - name: Publish to PyPI (Trusted Publishing)
-        if: steps.release.outputs.released == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1

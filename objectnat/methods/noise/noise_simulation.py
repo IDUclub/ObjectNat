@@ -206,8 +206,6 @@ def simulate_noise(
             "tree_res": tree_res,
             "min_db": target_noise_db,
             "simulation_ind": ind,
-            # passed explicitly: spawn/forkserver workers do not inherit runtime config changes
-            "use_rust_core": config.enable_rust_core,
         }
         task_queue.append((_noise_from_point_task, args, kwargs))
         dead_area_dict[ind] = source_point.buffer(dead_area_r, quad_segs=2)
@@ -400,7 +398,6 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
     reflection_n = kwargs.get("reflection_n")
     geometric_mean_freq_hz = kwargs.get("geometric_mean_freq_hz")
     tree_res = kwargs.get("tree_res")
-    use_rust_core = kwargs.get("use_rust_core")
     local_crs = obstacles.crs
     dist = round(max_dist - passed_dist, 1)
 
@@ -411,7 +408,7 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
     else:
         obstacles_union = obstacles.union_all()
 
-    vis_poly = _visibility_accurate(point_from, obstacles, dist, use_native_core=use_rust_core)
+    vis_poly = _visibility_accurate(point_from, obstacles, dist)
     max_view_dist = dist_to_furthest_point(point_from, vis_poly)
     donuts_dist_values = donuts_dist_values(dist_db, passed_dist, max_view_dist)
 

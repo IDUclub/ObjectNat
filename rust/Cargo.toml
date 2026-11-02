@@ -1,15 +1,18 @@
 [package]
-name = "objectnat-core"
-version = "0.1.0"
+name = "objectnat-rs"
+# kept in sync with pyproject.toml by python-semantic-release; never bump by hand
+version = "2.1.0"
 edition = "2021"
+rust-version = "1.82"
 license = "BSD-3-Clause"
-description = "Native (Rust) computational core for ObjectNat"
+description = "Rust core of the ObjectNat Python package"
 repository = "https://github.com/IDUclub/ObjectNat"
 readme = "README.md"
 publish = false
 
 [lib]
-name = "objectnat_core"
+name = "objectnat_rust"
+path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]

@@ -21,24 +21,6 @@ def polygons_to_multilinestring(geom: Polygon | MultiPolygon) -> MultiLineString
     raise TypeError(f"Expected Polygon or MultiPolygon, got {geom.geom_type}")
 
 
-def explode_linestring(geometry: LineString) -> list[LineString]:
-    """A function to return all segments of a linestring as a list of linestrings"""
-    coords_ext = geometry.coords  # Create a list of all line node coordinates
-    result = [LineString(part) for part in zip(coords_ext, coords_ext[1:])]
-    return result
-
-
-def point_side_of_line(line: LineString, point: Point) -> int:
-    """A positive indicates the left-hand side a negative indicates the right-hand side"""
-    x1, y1 = line.coords[0]
-    x2, y2 = line.coords[-1]
-    x, y = point.coords[0]
-    cross_product = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1)
-    if cross_product > 0:
-        return 1
-    return -1
-
-
 def get_point_from_a_thorough_b(a: Point, b: Point, dist):
     """
     Func to get Point from point a thorough point b on dist

@@ -1,33 +1,14 @@
-"""Bridge to the optional Rust core (``objectnat-core``) for visibility polygons.
-
-Everything here degrades gracefully: when the core is not installed or is disabled through
-``config.set_enable_rust_core(False)``, callers use the pure-Python implementations.
-"""
+"""Bridge between GeoPandas/shapely geometries and the Rust visibility kernel (``objectnat._rust``)."""
 
 import numpy as np
 import shapely
 from shapely import Point, Polygon
 
-from objectnat import config
-
-try:  # pragma: no cover - exercised only when the optional core is installed
-    from objectnat_core import visibility_polygons as _visibility_polygons
-except ImportError:  # pragma: no cover - exercised only when the core is missing
-    _visibility_polygons = None
+from objectnat._rust import visibility_polygons as _visibility_polygons  # pylint: disable=no-name-in-module
 
 POLYGON_TYPE_ID = 3
 LINEAR_TYPE_IDS = (1, 2)  # LineString, LinearRing
 DEFAULT_QUAD_SEGS = 16  # shapely's default for Point.buffer()
-
-
-def native_available() -> bool:
-    """Return True when the Rust core is installed."""
-    return _visibility_polygons is not None
-
-
-def use_native() -> bool:
-    """Return True when the Rust core is installed and enabled in the global config."""
-    return native_available() and config.enable_rust_core
 
 
 def _oriented_rings(polygons: np.ndarray) -> np.ndarray:
@@ -53,7 +34,7 @@ def _lines_to_segments(lines: np.ndarray) -> np.ndarray:
 
 def geometries_to_segments(geometries) -> tuple[np.ndarray, np.ndarray]:
     """
-    Convert obstacle geometries to wall segments for the Rust core.
+    Convert obstacle geometries to wall segments for the Rust kernel.
 
     Polygons contribute every ring (exterior and holes); lines contribute their own segments.
     Points and empty or missing geometries are ignored.
@@ -61,7 +42,7 @@ def geometries_to_segments(geometries) -> tuple[np.ndarray, np.ndarray]:
     Returns:
         ``(segments, one_sided)``: an ``(m, 4)`` float64 array ``x1, y1, x2, y2`` and an ``(m,)`` bool
         array. ``True`` marks walls of valid polygons, oriented with the interior on the left, which
-        the core may skip when the observer is on their interior side (back-face culling). Walls of
+        the kernel may skip when the observer is on their interior side (back-face culling). Walls of
         lines and of invalid polygons stay two-sided.
     """
     empty = np.empty((0, 4), dtype="float64"), np.empty(0, dtype=bool)
@@ -95,7 +76,7 @@ def native_visibility_polygons(
     n_threads: int | None = None,
 ) -> np.ndarray:
     """
-    Compute visibility polygons for many observers with the Rust core.
+    Compute visibility polygons for many observers with the Rust kernel.
 
     Args:
         points: ``(n, 2)`` observer coordinates in a projected CRS.

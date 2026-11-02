@@ -39,7 +39,7 @@ isochrones, coverage zones, service provision, visibility analysis, and noise si
 
 Graphs come from **[IduEdu](https://github.com/IDUclub/IduEdu)** (`UrbanGraph`); ObjectNat consumes them and never
 builds networks itself. Python 3.11–3.14. Package manager: **uv** (lockfile: `uv.lock`, committed). Build
-backend: hatchling.
+backend: maturin (Python package + Rust extension `objectnat._rust` from `rust/`).
 
 ## Commands
 
@@ -68,11 +68,10 @@ uv run pylint objectnat         # or: make lint
 # Build docs
 uv run sphinx-build -b html docs docs/_build/html   # or: make docs
 
-# Optional Rust core (needs a Rust toolchain): build into the venv, run its unit tests
-uv pip install ./objectnat-core
-(cd objectnat-core && cargo fmt --check && cargo clippy --release --all-targets -- -D warnings && cargo test --release)
+# Rust extension (built automatically by `uv sync`; needs a Rust toolchain): checks and unit tests
+(cd rust && cargo fmt --check && cargo clippy --release --all-targets -- -D warnings && cargo test --release)
 
-# Benchmarks (Python vs Rust core, accuracy vs an independent oracle); results go to benchmarks/results/
+# Benchmarks (Rust vs the replaced Python code, accuracy vs an independent oracle); results in benchmarks/results/
 uv run python benchmarks/bench_visibility.py [--quick]
 uv run python benchmarks/bench_noise.py [--quick]
 ```
@@ -94,7 +93,7 @@ objectnat/
   __init__.py        — re-exports the public surface (config, _api.*, __version__)
   _api.py            — single import hub; all public symbols come from here
   _config.py         — global config (logger level, tqdm toggle)
-  _version.py        — VERSION single source of truth (semantic-release owns it)
+  _version.py        — VERSION for objectnat.__version__ (semantic-release bumps it)
   methods/
     accessibility/   — isochrones + coverage on UrbanGraph
       isochrones.py  — get_graph_isochrones, get_stepped_graph_isochrones
@@ -107,20 +106,20 @@ objectnat/
     visibility/      — get_visibility (accurate/simple methods)
     utils/
       geom_utils.py  — geometry helpers shared across methods
-objectnat-core/      — optional Rust core (PyO3 + maturin, abi3 wheels), separate package `objectnat-core`
+rust/                — Rust crate compiled by maturin into the extension `objectnat._rust` (PyO3, abi3)
   src/visibility.rs  — exact batch visibility polygons (grid index, critical directions, rayon)
-  src/lib.rs         — Python bindings (`objectnat_core.visibility_polygons`)
+  src/lib.rs         — Python bindings (`visibility_polygons`)
 benchmarks/          — reproducible speed/accuracy comparisons; committed results in benchmarks/results/
 ```
 
-### Optional Rust core
+### Rust extension
 
-`objectnat/methods/visibility/_native.py` bridges to `objectnat-core` when it is installed and
-`config.enable_rust_core` is True; every native path has a pure-Python fallback and must return the same
-geometry (tests in `tests/test_visibility_native.py` compare both; core-only tests skip without the core).
-Worker processes do not inherit runtime config changes (spawn/forkserver), so pass the switch explicitly
-into tasks (see `use_rust_core` in the noise simulation). The core is versioned separately (`Cargo.toml`)
-and is not released by semantic-release.
+ObjectNat is built with maturin (`pyproject.toml` → `[tool.maturin]`): the Python package plus one compiled
+module, `objectnat._rust`, from `rust/`. Python code converts GeoPandas/shapely data to numpy arrays and
+calls it (see `objectnat/methods/visibility/_native.py`); the public API stays in Python and does not change.
+There is no pure-Python fallback, so any machine building from source needs Rust. Accuracy is tested against
+the independent oracle in `tests/visibility_oracle.py`. Versions in `pyproject.toml`, `rust/Cargo.toml`,
+`objectnat/_version.py` and `CITATION.cff` are bumped together by semantic-release.
 
 ### Public accessibility API (all keyword-only after the graph)
 
@@ -149,6 +148,7 @@ distance includes the boarding wait, and several of them can share one stop loca
 
 ### Releases
 
-Version lives only in `objectnat/_version.py`; `pyproject.toml` reads it dynamically. Releases are automated on
-push to `master` via python-semantic-release from Conventional Commits — see CONTRIBUTING.md. Never bump the
-version or tag by hand.
+The version lives in `pyproject.toml`, `rust/Cargo.toml`, `objectnat/_version.py` and `CITATION.cff`;
+python-semantic-release bumps all four (and refreshes `uv.lock`) on push to `master` from Conventional Commits,
+then the release workflow builds the sdist and abi3 wheels for Linux/macOS/Windows and publishes them — see
+CONTRIBUTING.md. Never bump the version or tag by hand.

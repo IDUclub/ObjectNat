@@ -143,16 +143,12 @@ IduEdu 2.2.0 or newer within the 2.x series.
 
     pip install ObjectNat
 
-Optional Rust core
-~~~~~~~~~~~~~~~~~~
+Wheels with the compiled Rust extension (``objectnat._rust``, used for exact visibility and the
+noise simulation) are published for Linux, macOS and Windows; ``pip`` needs no compiler. Installing
+from a source checkout builds the extension and needs a Rust toolchain (`rustup <https://rustup.rs>`__)::
 
-The optional ``objectnat-core`` package (in ``objectnat-core/``) accelerates exact visibility
-analysis and the noise simulation that relies on it, with identical results. From a repository
-checkout, with a Rust toolchain installed::
+    pip install .
 
-    pip install ./objectnat-core
-
-ObjectNat uses it automatically; ``config.set_enable_rust_core(False)`` switches back to pure Python.
 Speed and accuracy comparisons live in `benchmarks/ <https://github.com/IDUclub/ObjectNat/tree/master/benchmarks>`__.
 
 ----
@@ -166,7 +162,6 @@ You can adjust logging and progress bar output using the config module::
 
     config.change_logger_lvl("INFO")   # mute debug logs
     config.set_enable_tqdm(False)      # disable tqdm progress bars
-    config.set_enable_rust_core(False) # use pure Python even if objectnat-core is installed
 
 Migration to ObjectNat 2.0
 --------------------------

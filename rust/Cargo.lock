@@ -120,8 +120,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "objectnat-core"
-version = "0.1.0"
+name = "objectnat-rs"
+version = "2.1.0"
 dependencies = [
  "numpy",
  "pyo3",

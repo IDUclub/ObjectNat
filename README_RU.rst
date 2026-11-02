@@ -139,17 +139,13 @@ ObjectNat поддерживает Python 3.11–3.14 в Windows, macOS и Linux
 
     pip install ObjectNat
 
-Опциональное ядро на Rust
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Для Linux, macOS и Windows публикуются готовые колёса с собранным расширением на Rust
+(``objectnat._rust``: точный расчёт видимости и шумовая модель), компилятор для ``pip`` не нужен.
+Установка из исходников собирает расширение и требует Rust (`rustup <https://rustup.rs>`__)::
 
-Опциональный пакет ``objectnat-core`` (каталог ``objectnat-core/``) ускоряет точный расчёт
-видимости и шумовую модель, которая на нём основана; результаты не меняются. Из клона
-репозитория, при установленном Rust::
+    pip install .
 
-    pip install ./objectnat-core
-
-ObjectNat подхватывает его автоматически; ``config.set_enable_rust_core(False)`` возвращает
-чистый Python. Сравнение скорости и точности — в `benchmarks/ <https://github.com/IDUclub/ObjectNat/tree/master/benchmarks>`__.
+Сравнение скорости и точности — в `benchmarks/ <https://github.com/IDUclub/ObjectNat/tree/master/benchmarks>`__.
 
 ----
 
@@ -162,7 +158,6 @@ ObjectNat подхватывает его автоматически; ``config.s
 
     config.change_logger_lvl("INFO")   # отключить отладочные логи
     config.set_enable_tqdm(False)      # отключить прогресс-бары tqdm
-    config.set_enable_rust_core(False) # чистый Python, даже если objectnat-core установлен
 
 Миграция на ObjectNat 2.0
 -------------------------

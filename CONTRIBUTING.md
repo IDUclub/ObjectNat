@@ -10,13 +10,16 @@ Never bump the version or create a tag by hand.
 
 - Python 3.11–3.14
 - [uv](https://docs.astral.sh/uv/) (package manager; `uv.lock` is committed)
+- Rust stable toolchain ([rustup](https://rustup.rs)): `uv sync` builds the extension `objectnat._rust` from `rust/`
 - `make` (optional but every command below has a `make` shortcut)
 
 ## Setup
 
 ```bash
-uv sync --all-groups     # or: make install-dev
+uv sync --all-groups     # or: make install-dev; builds the Rust extension in release mode
 ```
+
+After changing Rust code, run `uv sync` again to rebuild the extension.
 
 ## Local development loop
 
@@ -29,6 +32,7 @@ uv sync --all-groups     # or: make install-dev
 | Format        | `make format`                     | isort + black                                      |
 | Format check  | `make format-check`               | what CI enforces                                   |
 | Lint          | `make lint`                       | pylint                                             |
+| Rust checks   | `make rust-check`                 | cargo fmt, clippy, unit tests                      |
 | Build docs    | `make docs`                       | Sphinx → `docs/_build/html`                        |
 
 Line length is 120. Imports are isort-sorted (`__init__.py` files are skipped).
@@ -81,19 +85,20 @@ In the official `IDUclub/ObjectNat` repository, every successful `Tests and Cove
 `master` starts `.github/workflows/release.yml`:
 
 1. runs [python-semantic-release](https://python-semantic-release.readthedocs.io/),
-   which computes the next version, updates `objectnat/_version.py` and
-   `CHANGELOG.md`, commits `chore(release): vX.Y.Z [skip ci]`, tags `vX.Y.Z`, and
-   creates the GitHub Release;
-2. publishes the built distributions to PyPI via Trusted Publishing (OIDC);
+   which computes the next version, updates it in `pyproject.toml`, `rust/Cargo.toml`,
+   `objectnat/_version.py` and `CITATION.cff`, refreshes `uv.lock`, updates `CHANGELOG.md`,
+   commits `chore(release): vX.Y.Z [skip ci]`, tags `vX.Y.Z`, builds the sdist and creates the GitHub Release;
+2. builds abi3 wheels with the Rust extension for Linux (x86_64, aarch64), macOS (arm64, x86_64) and
+   Windows (x64), attaches them to the GitHub Release and publishes everything to PyPI via Trusted
+   Publishing (OIDC);
 3. lets `.github/workflows/docs.yml` rebuild and publish the official documentation to `gh-pages`.
 
 Development forks may run tests and documentation previews, but they do not publish releases or deploy
 the official documentation.
 
-The version lives in a **single source of truth**, `objectnat/_version.py`
-(`VERSION = "x.y.z"`); `pyproject.toml` reads it dynamically through hatchling.
-There is no manual `pyproject.toml` version and no manual `git tag`. Do not edit
-`objectnat/_version.py` by hand — the release automation owns it. `CHANGELOG.md` is updated in place: each
+The version is written in four places — `pyproject.toml`, `rust/Cargo.toml`, `objectnat/_version.py`
+and `CITATION.cff` — and the release automation keeps them identical. Do not edit any of them by hand
+and do not create tags by hand. `CHANGELOG.md` is updated in place: each
 release is inserted below `<!-- version list -->` and earlier entries are left untouched, so a released entry
 may be rewritten by hand when the generated text needs it.
 

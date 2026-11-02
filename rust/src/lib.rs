@@ -1,4 +1,4 @@
-//! Python bindings for the ObjectNat native core.
+//! Python bindings: compiled into the `objectnat._rust` extension module.
 
 pub mod visibility;
 
@@ -128,7 +128,7 @@ fn visibility_polygons<'py>(
 }
 
 #[pymodule]
-fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(visibility_polygons, m)?)?;
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())
