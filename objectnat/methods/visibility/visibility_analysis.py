@@ -20,6 +20,8 @@ from objectnat.methods.utils.geom_utils import (
 logger = config.logger
 enable_tqdm = config.enable_tqdm_bar
 
+VISIBILITY_METHODS = ("accurate", "simple")
+
 
 def dist_to_furthest_point(point_from: Point, view_polygon: Polygon) -> float:
     """
@@ -41,15 +43,11 @@ def dist_to_furthest_point(point_from: Point, view_polygon: Polygon) -> float:
             Maximum distance from ``point_from`` to the vertices of
             ``view_polygon``, rounded to one decimal place.
     """
-    try:
-        coords = np.asarray(view_polygon.exterior.coords, dtype="float64")
-        dx = coords[:, 0] - point_from.x
-        dy = coords[:, 1] - point_from.y
-        res = float(np.sqrt(dx * dx + dy * dy).max())
-        return round(res, 1)
-    except Exception as e:
-        print(view_polygon)
-        raise e
+    coords = np.asarray(view_polygon.exterior.coords, dtype="float64")
+    dx = coords[:, 0] - point_from.x
+    dy = coords[:, 1] - point_from.y
+    res = float(np.sqrt(dx * dx + dy * dy).max())
+    return round(res, 1)
 
 
 def _visibility_accurate(point_from: Point, obstacles: gpd.GeoDataFrame, view_distance: float) -> Polygon:
@@ -290,7 +288,7 @@ def _visibility_worker(args: tuple[Point, gpd.GeoDataFrame | None, float, str, i
         return _visibility_accurate(point_geom, obstacles, view_distance)
     if method == "simple":
         return _visibility_simple(point_geom, obstacles, view_distance, resolution)
-    raise ValueError("method must be one of: 'accurate', 'fast'")
+    raise ValueError(f"method must be one of: {', '.join(repr(m) for m in VISIBILITY_METHODS)}; got {method!r}")
 
 
 def get_visibility(
@@ -362,7 +360,8 @@ def get_visibility(
         TypeError:
             If ``point_from`` is not a GeoDataFrame.
         ValueError:
-            If ``point_from`` is empty, has no CRS, or neither
+            If ``method`` is not ``"accurate"`` or ``"simple"``, if
+            ``point_from`` is empty, has no CRS, or if neither
             ``view_distance`` nor the ``"visibility_distance"`` column is
             provided.
 
@@ -389,6 +388,9 @@ def get_visibility(
 
     if point_from.empty:
         raise ValueError("GeoDataFrame 'point_from' is empty.")
+
+    if method not in VISIBILITY_METHODS:
+        raise ValueError(f"method must be one of: {', '.join(repr(m) for m in VISIBILITY_METHODS)}; got {method!r}")
 
     original_crs = point_from.crs
     local_crs = point_from.estimate_utm_crs()
