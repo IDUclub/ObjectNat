@@ -7,7 +7,7 @@ from .methods.accessibility import (
     get_stepped_graph_coverage,
     get_stepped_graph_isochrones,
 )
-from .methods.noise import calculate_simplified_noise_frame, simulate_noise
+from .methods.noise import calculate_simplified_noise_frame, simulate_noise, simulate_noise_grid
 from .methods.provision import (
     ProvisionResult,
     clip_provision,

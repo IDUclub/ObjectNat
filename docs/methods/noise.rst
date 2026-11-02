@@ -10,10 +10,34 @@ The outputs are **noise exposure maps** that are useful for **urban planning**,
 
     The module provides several simulation methods depending on the required level of detail and computational performance.
 
+    - **Receiver-grid simulation** — sound levels on a regular grid of receivers from point
+      sources, with direct paths, first-order reflections, vegetation and energy summation;
+      computed in ObjectNat's Rust extension.
     - **Full wave-based simulation** — detailed point-source modeling with reflections,
       obstacle absorption, and vegetation attenuation.
     - **Simplified geometric frame** — faster approximate results for point, line,
       and polygon sources using visibility masks and distance decay.
+
+----
+
+Receiver-Grid Simulation
+------------------------
+
+Computes the level at every receiver of a regular grid (``grid_step`` metres) and groups the
+levels into bands of ``db_sim_step`` dB, returned in the same format as
+:func:`objectnat.simulate_noise`. For each source and receiver it sums, as energies:
+
+- the **direct path**, when no obstacle blocks the line of sight;
+- **first-order reflections** from obstacle walls (image-source method), with a loss of
+  ``-10 lg(1 - a)`` per reflection for the wall's absorption ratio ``a``.
+
+Every path loses ``20 lg r`` for geometric spreading, ``k r`` for air absorption (``k`` from
+temperature and frequency) and, through vegetation, a frequency-dependent rate times the length of
+foliage crossed. Two equal sources therefore add +3 dB, unlike the band maximum used by the
+wave-based simulation. Ground effect, diffraction and higher-order reflections are not modelled.
+With ``return_receivers=True`` the exact receiver levels are returned too.
+
+.. autofunction:: objectnat.simulate_noise_grid
 
 ----
 

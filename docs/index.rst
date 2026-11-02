@@ -79,7 +79,7 @@ Features
     :func:`objectnat.recalculate_links`, :func:`objectnat.clip_provision`
 - **Noise Simulation**
 
-  - :func:`objectnat.simulate_noise`, :func:`objectnat.calculate_simplified_noise_frame`
+  - :func:`objectnat.simulate_noise_grid`, :func:`objectnat.simulate_noise`, :func:`objectnat.calculate_simplified_noise_frame`
 - **Visibility Analysis**
 
   - :func:`objectnat.get_visibility`

@@ -100,7 +100,8 @@ Each feature includes a **Jupyter Notebook example** and **full documentation**.
 5. **Noise Simulation & Noise Frame**
 
    Simulation of noise propagation from sources, taking into account **obstacles**, **vegetation**,
-   and **environmental factors**.
+   and **environmental factors**. ``simulate_noise_grid`` computes levels on a receiver grid in Rust
+   (direct sound, first-order reflections, energy summation).
 
    📘 `Example <https://iduclub.github.io/ObjectNat/methods/examples/noise.html>`__
    🔗 `Documentation <https://iduclub.github.io/ObjectNat/methods/noise.html>`__
