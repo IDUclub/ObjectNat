@@ -5,6 +5,7 @@ from typing import Literal
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import shapely
 from shapely import LineString, MultiPolygon, Point, Polygon
 from shapely.ops import unary_union
 from tqdm.contrib.concurrent import process_map
@@ -15,6 +16,13 @@ from objectnat.methods.utils.geom_utils import (
     get_point_from_a_thorough_b,
     point_side_of_line,
     polygons_to_multilinestring,
+)
+from objectnat.methods.visibility._native import (
+    geometries_to_segments,
+    native_available,
+    native_visibility_polygons,
+    native_visibility_single,
+    use_native,
 )
 
 logger = config.logger
@@ -50,7 +58,9 @@ def dist_to_furthest_point(point_from: Point, view_polygon: Polygon) -> float:
     return round(res, 1)
 
 
-def _visibility_accurate(point_from: Point, obstacles: gpd.GeoDataFrame, view_distance: float) -> Polygon:
+def _visibility_accurate(
+    point_from: Point, obstacles: gpd.GeoDataFrame, view_distance: float, use_native_core: bool | None = None
+) -> Polygon:
     """
     Compute a high-accuracy visibility polygon for a single observer point.
 
@@ -91,6 +101,10 @@ def _visibility_accurate(point_from: Point, obstacles: gpd.GeoDataFrame, view_di
     Notes:
         It is assumed that coordinates are in a metric CRS (e.g., UTM). CRS
         management is done externally in ``get_visibility()``.
+
+        ``use_native_core`` selects the Rust core explicitly (``None`` follows
+        ``config.enable_rust_core``); worker processes receive it as an argument because
+        they do not inherit runtime config changes under the spawn/forkserver start methods.
     """
     point_buffer = point_from.buffer(view_distance)
     sindex = obstacles.sindex
@@ -98,6 +112,9 @@ def _visibility_accurate(point_from: Point, obstacles: gpd.GeoDataFrame, view_di
     if not idx:
         return point_buffer
     obstacles = obstacles.iloc[idx].reset_index(drop=True)
+
+    if use_native() if use_native_core is None else (use_native_core and native_available()):
+        return native_visibility_single(point_from, obstacles.geometry.values, view_distance)
 
     buildings_lines_in_buffer = gpd.GeoSeries(
         pd.Series(
@@ -291,6 +308,25 @@ def _visibility_worker(args: tuple[Point, gpd.GeoDataFrame | None, float, str, i
     raise ValueError(f"method must be one of: {', '.join(repr(m) for m in VISIBILITY_METHODS)}; got {method!r}")
 
 
+def _visibility_accurate_native_batch(
+    points: gpd.GeoSeries, obstacles: gpd.GeoDataFrame, distances: list[float], max_workers: int | None
+) -> np.ndarray:
+    """
+    Batch version of ``_visibility_accurate`` on the Rust core.
+
+    Matches ``_visibility_worker`` semantics: observers inside an obstacle get an empty polygon.
+    The core is multi-threaded; ``max_workers`` limits its thread count.
+    """
+    xy = shapely.get_coordinates(points.values)
+    segments, one_sided = geometries_to_segments(obstacles.geometry.values)
+    radii = np.asarray(distances, dtype="float64")
+    results = native_visibility_polygons(xy, radii, segments, one_sided, n_threads=max_workers)
+    inside, _ = obstacles.sindex.query(points.values, predicate="within")
+    if len(inside):
+        results[np.unique(inside)] = Polygon()
+    return results
+
+
 def get_visibility(
     point_from: gpd.GeoDataFrame,
     obstacles: gpd.GeoDataFrame,
@@ -349,6 +385,12 @@ def get_visibility(
         max_workers (int | None, optional):
             Maximum number of worker processes when ``parallel=True``. If
             ``None``, the default from ``ProcessPoolExecutor`` is used.
+            With the Rust core, it caps the number of threads instead.
+
+    Note:
+        When the optional Rust core (``objectnat-core``) is installed, ``method="accurate"``
+        runs on it: the result is the same exact visible area, computed multi-threaded without
+        ``parallel``. Disable it with ``config.set_enable_rust_core(False)``.
 
     Returns:
         gpd.GeoDataFrame:
@@ -412,6 +454,13 @@ def get_visibility(
         obstacles_local = obstacles_local[obstacles_local.geom_type.isin(allowed_geom_types)]
     else:
         obstacles_local = None
+
+    if method == "accurate" and obstacles_local is not None and len(obstacles_local) > 0 and use_native():
+        results = _visibility_accurate_native_batch(points_local.geometry, obstacles_local, distances, max_workers)
+        result_gdf = points_local.copy()
+        result_gdf["geometry"] = results
+        result_gdf.set_crs(local_crs, inplace=True)
+        return result_gdf.to_crs(original_crs)
 
     tasks = [(geom, obstacles_local, dist, method, resolution) for geom, dist in zip(points_local.geometry, distances)]
 

@@ -44,6 +44,29 @@ Both methods are accessed via a single API:
 
 ----
 
+Optional Rust core
+------------------
+
+When the optional ``objectnat-core`` package is installed, ``method="accurate"`` (and the visibility
+step of the noise simulation) runs on a native, multi-threaded implementation. It computes the same
+exact visible area: on the example buildings its polygons match the Python implementation and an
+independent brute-force reference with IoU 1.0, while running 15–145× faster per observer
+end to end and handling thousands of observers per second.
+See ``benchmarks/results/visibility.md`` in the repository for the full comparison.
+
+.. code-block:: bash
+
+    pip install ./objectnat-core    # from a repository checkout; needs a Rust toolchain
+
+The core is used automatically. To force the pure-Python implementation:
+
+.. code-block:: python
+
+    from objectnat import config
+    config.set_enable_rust_core(False)
+
+----
+
 Catchment Visibility from Multiple Points
 -----------------------------------------
 

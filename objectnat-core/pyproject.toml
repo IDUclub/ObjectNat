@@ -1,0 +1,29 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "objectnat-core"
+description = "Optional native (Rust) computational core for ObjectNat."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "BSD-3-Clause"
+dynamic = ["version"]
+dependencies = ["numpy>=2.0.0"]
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+
+[project.urls]
+Repository = "https://github.com/IDUclub/ObjectNat"
+
+[tool.maturin]
+python-source = "python"
+module-name = "objectnat_core._core"
+features = ["pyo3/extension-module"]
+
+[tool.uv]
+# rebuild when the Rust sources change, not only when pyproject.toml does
+cache-keys = [{ file = "pyproject.toml" }, { file = "Cargo.toml" }, { file = "src/**/*.rs" }, { file = "python/**/*.py" }]

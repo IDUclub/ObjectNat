@@ -67,6 +67,14 @@ uv run pylint objectnat         # or: make lint
 
 # Build docs
 uv run sphinx-build -b html docs docs/_build/html   # or: make docs
+
+# Optional Rust core (needs a Rust toolchain): build into the venv, run its unit tests
+uv pip install ./objectnat-core
+(cd objectnat-core && cargo fmt --check && cargo clippy --release --all-targets -- -D warnings && cargo test --release)
+
+# Benchmarks (Python vs Rust core, accuracy vs an independent oracle); results go to benchmarks/results/
+uv run python benchmarks/bench_visibility.py [--quick]
+uv run python benchmarks/bench_noise.py [--quick]
 ```
 
 ## Architecture
@@ -99,7 +107,20 @@ objectnat/
     visibility/      — get_visibility (accurate/simple methods)
     utils/
       geom_utils.py  — geometry helpers shared across methods
+objectnat-core/      — optional Rust core (PyO3 + maturin, abi3 wheels), separate package `objectnat-core`
+  src/visibility.rs  — exact batch visibility polygons (grid index, critical directions, rayon)
+  src/lib.rs         — Python bindings (`objectnat_core.visibility_polygons`)
+benchmarks/          — reproducible speed/accuracy comparisons; committed results in benchmarks/results/
 ```
+
+### Optional Rust core
+
+`objectnat/methods/visibility/_native.py` bridges to `objectnat-core` when it is installed and
+`config.enable_rust_core` is True; every native path has a pure-Python fallback and must return the same
+geometry (tests in `tests/test_visibility_native.py` compare both; core-only tests skip without the core).
+Worker processes do not inherit runtime config changes (spawn/forkserver), so pass the switch explicitly
+into tasks (see `use_rust_core` in the noise simulation). The core is versioned separately (`Cargo.toml`)
+and is not released by semantic-release.
 
 ### Public accessibility API (all keyword-only after the graph)
 

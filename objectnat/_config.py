@@ -13,6 +13,8 @@ class Config:
     ----------
     enable_tqdm_bar : bool
         Enables or disables progress bars (via tqdm). Defaults to True.
+    enable_rust_core : bool
+        Use the optional Rust core (``objectnat-core``) when it is installed. Defaults to True.
     logger : Logger
         Logging instance to handle application logging.
 
@@ -22,13 +24,17 @@ class Config:
         Changes the logging level to the specified value.
     set_enable_tqdm(enable: bool)
         Enables or disables progress bars in the application.
+    set_enable_rust_core(enable: bool)
+        Enables or disables the optional Rust core; when disabled, pure-Python implementations are used.
     """
 
     def __init__(
         self,
         enable_tqdm_bar=True,
+        enable_rust_core=True,
     ):
         self.enable_tqdm_bar = enable_tqdm_bar
+        self.enable_rust_core = enable_rust_core
         self.logger = logger
 
     def change_logger_lvl(self, lvl: Literal["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]):
@@ -37,6 +43,9 @@ class Config:
 
     def set_enable_tqdm(self, enable: bool):
         self.enable_tqdm_bar = enable
+
+    def set_enable_rust_core(self, enable: bool):
+        self.enable_rust_core = enable
 
 
 config = Config()

@@ -57,3 +57,9 @@ Thumbs.db
 # graphify knowledge graph (generated locally, not committed)
 /graphify-out/
 
+
+# Rust core build artifacts
+/objectnat-core/target/
+/objectnat-core/python/objectnat_core/*.so
+/objectnat-core/python/objectnat_core/*.pyd
+/benchmarks/results/*_quick.*
