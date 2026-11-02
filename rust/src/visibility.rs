@@ -439,6 +439,34 @@ pub struct Runs {
     pub runs: Vec<(Option<u32>, Pt, Pt)>,
 }
 
+impl Runs {
+    /// The visibility polygon ring (counter-clockwise, not closed) these runs bound.
+    pub fn ring(&self, r: f64) -> Vec<Pt> {
+        let eps = r * 1e-9;
+        let mut ring: Vec<Pt> = Vec::with_capacity(2 * self.runs.len());
+        let mut push = |p: Pt| {
+            if let Some(last) = ring.last() {
+                if (last[0] - p[0]).abs() <= eps && (last[1] - p[1]).abs() <= eps {
+                    return;
+                }
+            }
+            ring.push(p);
+        };
+        for &(_, pa, pb) in &self.runs {
+            push(pa);
+            push(pb);
+        }
+        if ring.len() > 1 {
+            let (f, l) = (ring[0], ring[ring.len() - 1]);
+            if (f[0] - l[0]).abs() <= eps && (f[1] - l[1]).abs() <= eps {
+                ring.pop();
+            }
+        }
+        // Obstacle vertices are kept even when collinear (e.g. OSM nodes on a straight wall).
+        ring
+    }
+}
+
 /// Global obstacle index shared by all observers.
 pub struct Obstacles {
     pub segs: Vec<Seg>,
@@ -546,28 +574,7 @@ impl Obstacles {
         let Some(runs) = self.visible_runs(o, r, quad_segs, sc) else {
             return disc_polygon(o, r, quad_segs);
         };
-        let eps = r * 1e-9;
-        let mut ring: Vec<Pt> = Vec::with_capacity(2 * runs.runs.len());
-        let mut push = |p: Pt| {
-            if let Some(last) = ring.last() {
-                if (last[0] - p[0]).abs() <= eps && (last[1] - p[1]).abs() <= eps {
-                    return;
-                }
-            }
-            ring.push(p);
-        };
-        for &(_, pa, pb) in &runs.runs {
-            push(pa);
-            push(pb);
-        }
-        if ring.len() > 1 {
-            let (f, l) = (ring[0], ring[ring.len() - 1]);
-            if (f[0] - l[0]).abs() <= eps && (f[1] - l[1]).abs() <= eps {
-                ring.pop();
-            }
-        }
-        // Obstacle vertices are kept even when collinear (e.g. OSM nodes on a straight wall).
-        ring
+        runs.ring(r)
     }
 
     /// Straight runs of the visibility boundary (absolute coordinates, counter-clockwise); `None` when

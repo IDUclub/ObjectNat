@@ -25,17 +25,24 @@ Receiver-Grid Simulation
 
 Computes the level at every receiver of a regular grid (``grid_step`` metres) and groups the
 levels into bands of ``db_sim_step`` dB, returned in the same format as
-:func:`objectnat.simulate_noise`. For each source and receiver it sums, as energies:
+:func:`objectnat.simulate_noise`. Sources may be points, lines (roads, railways) or polygons
+(industrial sites, noisy buildings, radiating from their outline). For each source and receiver it
+sums, as energies:
 
 - the **direct path**, when no obstacle blocks the line of sight;
-- **first-order reflections** from obstacle walls (image-source method), with a loss of
-  ``-10 lg(1 - a)`` per reflection for the wall's absorption ratio ``a``.
+- **first-order reflections** from obstacle walls within ``reflection_max_dist`` (default 50 m) of the
+  source (image-source method), with a loss of ``-10 lg(1 - a)`` for the wall's absorption ratio ``a``.
 
 Every path loses ``20 lg r`` for geometric spreading, ``k r`` for air absorption (``k`` from
 temperature and frequency) and, through vegetation, a frequency-dependent rate times the length of
-foliage crossed. Two equal sources therefore add +3 dB, unlike the band maximum used by the
-wave-based simulation. Ground effect, diffraction and higher-order reflections are not modelled.
-With ``return_receivers=True`` the exact receiver levels are returned too.
+foliage crossed. Lines are sampled every ``source_spacing`` metres with levels calibrated so that a long
+line follows the line-source law ``L - 10 lg d - k d``. Two equal sources add +3 dB, unlike the band
+maximum used by the other two functions. Ground effect, diffraction and higher-order reflections are
+not modelled. With ``return_receivers=True`` the exact receiver levels are returned too.
+
+Computation time grows with the number of receivers times the number of point and line samples in
+reach; for large road networks use a coarser ``grid_step`` / ``source_spacing`` or
+:func:`objectnat.calculate_simplified_noise_frame` for a quick estimate.
 
 .. autofunction:: objectnat.simulate_noise_grid
 

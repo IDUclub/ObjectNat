@@ -394,13 +394,16 @@ fn provision_allocate<'py>(
 ///     segments: ``(m, 4)`` walls; ``one_sided``: ``(m,)`` back-face flags; ``wall_loss_db``: ``(m,)``.
 ///     tree_segments: ``(t, 4)`` boundaries of non-overlapping vegetation polygons (may be empty).
 ///     grid: ``(x0, y0, step, nx, ny)``; ``active``: ``(ny * nx,)`` bool, receivers to compute.
-///     reflections: include first-order reflections; floor_db: paths below it are skipped.
+///     reflections: include first-order reflections from walls within ``reflection_max_dist`` of a source;
+///     floor_db: paths below it are skipped; reflection_reach: ``(n,)`` reach of each source's image
+///     sources (defaults to ``max_dist``).
 ///
 /// Returns:
 ///     ``(ny, nx)`` float64 energy, ``sum(10 ** (L / 10))``; 0 where nothing arrives.
 #[pyfunction]
 #[pyo3(signature = (sources, source_db, air_db_per_m, veg_db_per_m, max_dist, segments, one_sided, wall_loss_db,
-    tree_segments, grid, active, reflections=true, floor_db=0.0, n_threads=None))]
+    tree_segments, grid, active, reflections=true, reflection_max_dist=50.0, floor_db=0.0, n_threads=None,
+    reflection_reach=None))]
 #[allow(clippy::too_many_arguments)]
 fn noise_grid_energy<'py>(
     py: Python<'py>,
@@ -416,8 +419,10 @@ fn noise_grid_energy<'py>(
     grid: (f64, f64, f64, usize, usize),
     active: PyReadonlyArray1<'py, bool>,
     reflections: bool,
+    reflection_max_dist: f64,
     floor_db: f64,
     n_threads: Option<usize>,
+    reflection_reach: Option<PyReadonlyArray1<'py, f64>>,
 ) -> PyResult<Bound<'py, PyArray2<f64>>> {
     let src = sources.as_array();
     let n = src.nrows();
@@ -456,6 +461,15 @@ fn noise_grid_energy<'py>(
         ));
     }
 
+    let image_reach: Vec<f64> = match &reflection_reach {
+        Some(r) => r.as_array().iter().copied().collect(),
+        None => reach.iter().copied().collect(),
+    };
+    if image_reach.len() != n {
+        return Err(PyValueError::new_err(
+            "reflection_reach must have one value per source",
+        ));
+    }
     let sources: Vec<noise::Source> = (0..n)
         .map(|k| noise::Source {
             at: [src[[k, 0]], src[[k, 1]]],
@@ -463,6 +477,7 @@ fn noise_grid_energy<'py>(
             air_db_per_m: air[k],
             veg_db_per_m: veg[k],
             max_dist: reach[k],
+            reflection_reach: image_reach[k],
         })
         .collect();
     let typical = reach.iter().copied().fold(0.0, f64::max);
@@ -508,7 +523,8 @@ fn noise_grid_energy<'py>(
             },
             active: &active,
             reflections,
-            floor_db,
+            reflection_max_dist,
+            floor_energy: 10f64.powf(floor_db / 10.0),
         };
         let run = || noise::receiver_energy(&input);
         match n_threads {

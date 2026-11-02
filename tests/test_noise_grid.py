@@ -1,7 +1,7 @@
 import geopandas as gpd
 import numpy as np
 import pytest
-from shapely import Point, box
+from shapely import LineString, Point, box
 
 from objectnat import simulate_noise_grid
 from objectnat.methods.noise import dist_to_target_db
@@ -51,3 +51,15 @@ def test_building_shadow_and_reflection():
     assert _level_at(reflected, 10, 0) > _level_at(direct, 10, 0) + 0.3
     # no receivers inside the building
     assert not reflected.within(building.geometry.iloc[0]).any()  # facade receivers are allowed
+
+
+def test_line_source_follows_the_line_law():
+    road = gpd.GeoDataFrame(
+        {"source_noise_db": [60], "geometric_mean_freq_hz": [1000]},
+        geometry=[LineString([(X0 - 300, Y0), (X0 + 300, Y0)])],
+        crs=CRS,
+    )
+    _, receivers = simulate_noise_grid(road, None, grid_step=1.0, source_spacing=2.0, return_receivers=True)
+    near_middle = receivers[receivers.geometry.x.between(X0 - 20, X0 + 20)]
+    at_10m = near_middle[(near_middle.geometry.y - Y0 - 10).abs() < 0.5]["noise_level"].mean()
+    assert at_10m == pytest.approx(60 - 10 - 10 * 0.0052, abs=0.5)

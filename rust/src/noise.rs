@@ -33,7 +33,12 @@ pub struct Source {
     pub air_db_per_m: f64,
     pub veg_db_per_m: f64,
     pub max_dist: f64,
+    /// Reach of the image sources (reflections) of this source, metres.
+    pub reflection_reach: f64,
 }
+
+/// `10^(-x/10)` for an attenuation of `x` dB per metre over `m` metres, as `exp(-K x m)`.
+const DB_TO_NEPER: f64 = std::f64::consts::LN_10 / 10.0;
 
 pub struct NoiseInput<'a> {
     pub walls: &'a Obstacles,
@@ -46,8 +51,82 @@ pub struct NoiseInput<'a> {
     /// `true` for receivers to compute (`nx * ny`, row-major by `j`).
     pub active: &'a [bool],
     pub reflections: bool,
-    /// Paths quieter than this are skipped (they cannot matter for the output).
-    pub floor_db: f64,
+    /// Only walls closer than this to a source reflect it (metres).
+    pub reflection_max_dist: f64,
+    /// Paths quieter than this energy (`10^(floor_db/10)`) are skipped.
+    pub floor_energy: f64,
+}
+
+/// Monotonic stand-in for the angle of `d` in [0, 4): cheaper than `atan2`, same order.
+#[inline]
+fn pseudo_angle(d: Pt) -> f64 {
+    let p = d[0] / (d[0].abs() + d[1].abs());
+    if d[1] < 0.0 {
+        3.0 + p
+    } else {
+        1.0 - p
+    }
+}
+
+/// A visibility polygon, star-shaped around its source: point-in test by angular binary search.
+struct Star {
+    center: Pt,
+    angles: Vec<f64>,
+    verts: Vec<Pt>,
+}
+
+impl Star {
+    fn new(center: Pt, ring: Vec<Pt>) -> Option<Star> {
+        if ring.len() < 3 {
+            return None;
+        }
+        let raw: Vec<f64> = ring.iter().map(|v| pseudo_angle(sub(*v, center))).collect();
+        let start = (0..raw.len())
+            .min_by(|&a, &b| {
+                raw[a]
+                    .partial_cmp(&raw[b])
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
+            .unwrap_or(0);
+        let n = ring.len();
+        let mut angles = Vec::with_capacity(n);
+        let mut verts = Vec::with_capacity(n);
+        let mut prev = raw[start];
+        for k in 0..n {
+            let i = (start + k) % n;
+            let mut a = raw[i];
+            // unwrap against the previous vertex: a radial edge at the starting angle closes the
+            // ring with a vertex whose angle equals the first one and must come after it
+            while a < prev - 2.0 {
+                a += 4.0;
+            }
+            angles.push(a);
+            verts.push(ring[i]);
+            prev = a;
+        }
+        Some(Star {
+            center,
+            angles,
+            verts,
+        })
+    }
+
+    fn contains(&self, p: Pt) -> bool {
+        let d = sub(p, self.center);
+        if d[0] == 0.0 && d[1] == 0.0 {
+            return true;
+        }
+        let mut a = pseudo_angle(d);
+        if a < self.angles[0] {
+            a += 4.0;
+        }
+        let n = self.verts.len();
+        let k = self.angles.partition_point(|&x| x <= a).max(1) - 1;
+        let (v0, v1) = (self.verts[k], self.verts[(k + 1) % n]);
+        let e = sub(v1, v0);
+        let scale = e[0].hypot(e[1]) * sub(p, v0)[0].hypot(sub(p, v0)[1]);
+        cross(e, sub(p, v0)) >= -1e-9 * scale.max(1e-12)
+    }
 }
 
 #[inline]
@@ -65,9 +144,25 @@ fn dist(p: Pt, q: Pt) -> f64 {
     (p[0] - q[0]).hypot(p[1] - q[1])
 }
 
+fn point_segment_dist(p: Pt, a: Pt, b: Pt) -> f64 {
+    let ab = sub(b, a);
+    let len2 = ab[0] * ab[0] + ab[1] * ab[1];
+    let t = if len2 > 0.0 {
+        ((p[0] - a[0]) * ab[0] + (p[1] - a[1]) * ab[1]) / len2
+    } else {
+        0.0
+    };
+    let t = t.clamp(0.0, 1.0);
+    dist(p, [a[0] + t * ab[0], a[1] + t * ab[1]])
+}
+
 /// Something that sends sound into a region: a source (direct path) or an image source (reflection).
 struct Emitter {
     source: usize,
+    /// Source power `10^(L0/10)`, minus the reflection loss for image sources.
+    power: f64,
+    /// Direct path: where the source is visible from (`None` = everywhere within reach).
+    star: Option<Star>,
     /// Point the path length is measured from (source or image).
     origin: Pt,
     /// Reflection: visible wall part `(a, b)`, wall id, loss; `None` for the direct path.
@@ -118,10 +213,7 @@ pub fn receiver_energy(input: &NoiseInput) -> Vec<f64> {
                     let r = [g.x0 + i as f64 * g.step, g.y0 + j as f64 * g.step];
                     let mut energy = 0.0;
                     for &k in &tiles[t] {
-                        if let Some(level) = path_level(input, &emitters[k as usize], r, crossings)
-                        {
-                            energy += 10f64.powf(level / 10.0);
-                        }
+                        energy += path_energy(input, &emitters[k as usize], r, crossings);
                     }
                     if energy > 0.0 {
                         out.push((idx, energy));
@@ -148,20 +240,34 @@ fn build_emitters(input: &NoiseInput) -> Vec<Emitter> {
         .enumerate()
         .map_init(Scratch::default, |sc, (s, src)| {
             let r = src.max_dist;
+            let runs = if r > 0.0 {
+                input.walls.visible_runs(src.at, r, 64, sc)
+            } else {
+                None
+            };
+            let star = runs
+                .as_ref()
+                .and_then(|runs| Star::new(src.at, runs.ring(r)));
+            let power = 10f64.powf(src.level_db / 10.0);
             let mut out = vec![Emitter {
                 source: s,
+                power,
+                star,
                 origin: src.at,
                 reflection: None,
                 bbox: [src.at[0] - r, src.at[1] - r, src.at[0] + r, src.at[1] + r],
             }];
-            if !input.reflections || r <= 0.0 {
-                return out;
-            }
-            let Some(runs) = input.walls.visible_runs(src.at, r, 16, sc) else {
+            let Some(runs) = runs else {
                 return out;
             };
+            if !input.reflections {
+                return out;
+            }
             for (wall, a, b) in runs.runs {
                 let Some(w) = wall else { continue };
+                if point_segment_dist(src.at, a, b) > input.reflection_max_dist {
+                    continue;
+                }
                 let seg = &input.walls.segs[w as usize];
                 let e = sub(seg.b, seg.a);
                 let len2 = e[0] * e[0] + e[1] * e[1];
@@ -178,7 +284,7 @@ fn build_emitters(input: &NoiseInput) -> Vec<Emitter> {
                 }
                 let loss = input.wall_loss_db.get(w as usize).copied().unwrap_or(0.0);
                 // wedge from the image through the visible part, cut at the reach of the image
-                let reach = r;
+                let reach = src.reflection_reach.min(r);
                 let mut xs = vec![a[0], b[0]];
                 let mut ys = vec![a[1], b[1]];
                 for k in 0..=8 {
@@ -199,6 +305,8 @@ fn build_emitters(input: &NoiseInput) -> Vec<Emitter> {
                 ];
                 out.push(Emitter {
                     source: s,
+                    power: power * 10f64.powf(-loss / 10.0),
+                    star: None,
                     origin: image,
                     reflection: Some((a, b, w, loss)),
                     bbox,
@@ -210,52 +318,65 @@ fn build_emitters(input: &NoiseInput) -> Vec<Emitter> {
     per_source.into_iter().flatten().collect()
 }
 
-/// Level (dB) delivered by an emitter to receiver `r`, if the path exists.
-fn path_level(input: &NoiseInput, e: &Emitter, r: Pt, crossings: &mut Vec<f64>) -> Option<f64> {
+/// Energy (`10^(L/10)`) delivered by an emitter to receiver `r`; 0 when the path does not exist.
+fn path_energy(input: &NoiseInput, e: &Emitter, r: Pt, crossings: &mut Vec<f64>) -> f64 {
     let src = &input.sources[e.source];
     let length = dist(e.origin, r);
-    if length > src.max_dist {
-        return None;
+    let reach = if e.reflection.is_some() {
+        src.reflection_reach.min(src.max_dist)
+    } else {
+        src.max_dist
+    };
+    if length > reach {
+        return 0.0;
     }
-    let spread = 20.0 * length.max(1.0).log10() + src.air_db_per_m * length;
-    let base = src.level_db - spread;
+    let l = length.max(1.0);
+    let mut energy = e.power / (l * l) * (-DB_TO_NEPER * src.air_db_per_m * length).exp();
+    if energy < input.floor_energy {
+        return 0.0;
+    }
     match e.reflection {
         None => {
-            if base < input.floor_db || input.walls.segment_blocked(src.at, r, None) {
-                return None;
+            if let Some(star) = &e.star {
+                if !star.contains(r) {
+                    return 0.0;
+                }
             }
-            Some(base - vegetation_db(input, src, src.at, r, crossings))
+            let veg = vegetation_db(input, src, src.at, r, crossings);
+            if veg > 0.0 {
+                energy *= (-DB_TO_NEPER * veg).exp();
+            }
+            energy
         }
-        Some((a, b, wall, loss)) => {
-            let level = base - loss;
-            if level < input.floor_db {
-                return None;
-            }
+        Some((a, b, wall, _)) => {
             // receiver on the source's side of the wall, path image -> receiver through the visible part
             let side_src = cross(sub(b, a), sub(src.at, a));
             let side_rcv = cross(sub(b, a), sub(r, a));
             if side_src * side_rcv <= 0.0 {
-                return None;
+                return 0.0;
             }
             let d = sub(r, e.origin);
             let ab = sub(b, a);
             let den = cross(d, ab);
             if den == 0.0 {
-                return None;
+                return 0.0;
             }
             let w = sub(a, e.origin);
             let t = cross(w, ab) / den;
             let u = cross(w, d) / den;
             if !(0.0..=1.0).contains(&u) || t <= 0.0 || t >= 1.0 {
-                return None;
+                return 0.0;
             }
             let p = [a[0] + u * ab[0], a[1] + u * ab[1]];
             if input.walls.segment_blocked(p, r, Some(wall)) {
-                return None;
+                return 0.0;
             }
             let veg = vegetation_db(input, src, src.at, p, crossings)
                 + vegetation_db(input, src, p, r, crossings);
-            Some(level - veg)
+            if veg > 0.0 {
+                energy *= (-DB_TO_NEPER * veg).exp();
+            }
+            energy
         }
     }
 }
@@ -338,6 +459,7 @@ mod tests {
             air_db_per_m: 0.0,
             veg_db_per_m: 0.1,
             max_dist: 70.0,
+            reflection_reach: 70.0,
         };
         let input = NoiseInput {
             walls: &obstacles,
@@ -347,7 +469,8 @@ mod tests {
             grid,
             active: &vec![true; grid.nx * grid.ny],
             reflections,
-            floor_db: 0.0,
+            reflection_max_dist: 1e9,
+            floor_energy: 1.0,
         };
         (receiver_energy(&input), grid)
     }
@@ -356,6 +479,44 @@ mod tests {
         let i = ((x - g.x0) / g.step).round() as usize;
         let j = ((y - g.y0) / g.step).round() as usize;
         10.0 * e[j * g.nx + i].log10()
+    }
+
+    #[test]
+    fn star_test_matches_segment_blocking() {
+        // a few buildings around the source; compare the star polygon with direct blocking tests
+        let mut walls = square(20.0, 0.0, 5.0);
+        walls.extend(square(-15.0, 12.0, 4.0));
+        walls.extend(square(3.0, -25.0, 6.0));
+        walls.extend(square(30.0, 30.0, 3.0));
+        let obstacles = Obstacles::from_walls(walls, 80.0);
+        let mut sc = Scratch::default();
+        let src = [0.5, 0.25];
+        let runs = obstacles.visible_runs(src, 80.0, 64, &mut sc).unwrap();
+        let star = Star::new(src, runs.ring(80.0)).unwrap();
+        let mut mismatches = 0;
+        let mut total = 0;
+        for i in 0..121 {
+            for j in 0..121 {
+                let p = [-60.0 + i as f64 * 1.0 + 0.3, -60.0 + j as f64 * 1.0 + 0.7];
+                if dist(p, src) > 75.0 {
+                    continue;
+                }
+                let inside_any = |c: Pt, h: f64| (p[0] - c[0]).abs() < h && (p[1] - c[1]).abs() < h;
+                if inside_any([20.0, 0.0], 5.0)
+                    || inside_any([-15.0, 12.0], 4.0)
+                    || inside_any([3.0, -25.0], 6.0)
+                    || inside_any([30.0, 30.0], 3.0)
+                {
+                    continue;
+                }
+                total += 1;
+                if star.contains(p) == obstacles.segment_blocked(src, p, None) {
+                    mismatches += 1;
+                }
+            }
+        }
+        assert!(total > 1000);
+        assert_eq!(mismatches, 0, "{mismatches} of {total}");
     }
 
     #[test]
