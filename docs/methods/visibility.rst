@@ -50,7 +50,7 @@ Optional Rust core
 When the optional ``objectnat-core`` package is installed, ``method="accurate"`` (and the visibility
 step of the noise simulation) runs on a native, multi-threaded implementation. It computes the same
 exact visible area: on the example buildings its polygons match the Python implementation and an
-independent brute-force reference with IoU 1.0, while running 15–145× faster per observer
+independent brute-force reference with IoU 1.0, while running 13–154× faster per observer
 end to end and handling thousands of observers per second.
 See ``benchmarks/results/visibility.md`` in the repository for the full comparison.
 

@@ -1,0 +1,64 @@
+{
+  "machine": {
+    "python": "3.13.18",
+    "platform": "Linux-6.18.44-fc-v185-x86_64-with-glibc2.39",
+    "cpu_count": 4,
+    "shapely": "2.1.2",
+    "geos": "3.13.1",
+    "objectnat_core": "0.1.0"
+  },
+  "rows": [
+    {
+      "case": "simulate_noise (reflection_n=1)",
+      "python_s": 3.16,
+      "rust_s": 2.44,
+      "speedup": 1.3,
+      "levels": 239,
+      "area_m2": 42675.6,
+      "same_level_share": 1.0,
+      "max_level_area_diff_m2": 0.0,
+      "py_vs_py_same_level_share": 1.0,
+      "py_vs_py_max_level_area_diff_m2": 0.0,
+      "rust_vs_rust_same_level_share": 1.0
+    },
+    {
+      "case": "simulate_noise (reflection_n=2)",
+      "python_s": 4.99,
+      "rust_s": 4.07,
+      "speedup": 1.2,
+      "levels": 239,
+      "area_m2": 48542.8,
+      "same_level_share": 1.0,
+      "max_level_area_diff_m2": 0.022,
+      "py_vs_py_same_level_share": 1.0,
+      "py_vs_py_max_level_area_diff_m2": 0.0,
+      "rust_vs_rust_same_level_share": 1.0
+    },
+    {
+      "case": "simulate_noise (reflection_n=3)",
+      "python_s": 6.75,
+      "rust_s": 5.28,
+      "speedup": 1.3,
+      "levels": 239,
+      "area_m2": 48668.1,
+      "same_level_share": 1.0,
+      "max_level_area_diff_m2": 0.022,
+      "py_vs_py_same_level_share": 1.0,
+      "py_vs_py_max_level_area_diff_m2": 0.0,
+      "rust_vs_rust_same_level_share": 1.0
+    },
+    {
+      "case": "noise_frame",
+      "python_s": 2.65,
+      "rust_s": 0.44,
+      "speedup": 6.0,
+      "levels": 10,
+      "area_m2": 202456.7,
+      "same_level_share": 1.0,
+      "max_level_area_diff_m2": 0.0,
+      "py_vs_py_same_level_share": 1.0,
+      "py_vs_py_max_level_area_diff_m2": 0.0,
+      "rust_vs_rust_same_level_share": 1.0
+    }
+  ]
+}
