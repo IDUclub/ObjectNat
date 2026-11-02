@@ -3,6 +3,7 @@ from typing import Any, Literal
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import shapely
 from iduedu import UrbanGraph
 from shapely import convex_hull
 from shapely.geometry import GeometryCollection, MultiPolygon, Polygon
@@ -84,6 +85,23 @@ def edge_speed_m_per_min(urban_graph: UrbanGraph) -> float:
     return float(edge_speeds.median())
 
 
+def radius_buffers(
+    reachable_graph_nodes_gdf: gpd.GeoDataFrame,
+    *,
+    weight_value: float,
+    weight_type: str,
+    speed_m_per_min: float | None,
+) -> np.ndarray:
+    """Buffers of the reachable nodes by their remaining budget (the parts of a radius isochrone)."""
+    buffer_size = (float(weight_value) - reachable_graph_nodes_gdf["dist"].to_numpy(dtype=float)).clip(min=0.0)
+
+    if weight_type == "time_min":
+        if speed_m_per_min is None:
+            raise ValueError("speed_m_per_min is required for weight_type='time_min'")
+        buffer_size = buffer_size * float(speed_m_per_min)
+    return shapely.buffer(reachable_graph_nodes_gdf.geometry.values, buffer_size, quad_segs=4)
+
+
 def build_radius_clip_geometry(
     reachable_graph_nodes_gdf: gpd.GeoDataFrame,
     *,
@@ -91,13 +109,14 @@ def build_radius_clip_geometry(
     weight_type: str,
     speed_m_per_min: float | None,
 ):
-    buffer_size = (float(weight_value) - reachable_graph_nodes_gdf["dist"].astype(float)).clip(lower=0.0)
-
-    if weight_type == "time_min":
-        if speed_m_per_min is None:
-            raise ValueError("speed_m_per_min is required for weight_type='time_min'")
-        buffer_size = buffer_size * float(speed_m_per_min)
-    return reachable_graph_nodes_gdf.geometry.buffer(buffer_size, resolution=4).union_all()
+    return shapely.union_all(
+        radius_buffers(
+            reachable_graph_nodes_gdf,
+            weight_value=weight_value,
+            weight_type=weight_type,
+            speed_m_per_min=speed_m_per_min,
+        )
+    )
 
 
 def remove_inner_geom(geom):
@@ -117,6 +136,38 @@ def remove_inner_geom(geom):
     return geom
 
 
+def ways_road_buffers(
+    urban_graph: UrbanGraph, reachable_graph_nodes_gdf: gpd.GeoDataFrame, road_buffer_size: float
+) -> np.ndarray:
+    """
+    Buffers of the geometry edges touching reachable nodes. Edges stored once per direction share
+    their geometry; each is kept once, which halves the union work without changing its result.
+    """
+    reachable_node_index = pd.Index(reachable_graph_nodes_gdf.index)
+    edges = geometry_edges(urban_graph)
+    edge_mask = edges["u"].isin(reachable_node_index) | edges["v"].isin(reachable_node_index)
+    lines = shapely.normalize(edges.geometry.values[edge_mask.to_numpy()])
+    if len(lines) == 0:
+        return lines
+    _, first = np.unique(shapely.to_wkb(lines), return_index=True)
+    return shapely.buffer(lines[np.sort(first)], float(road_buffer_size), quad_segs=1)
+
+
+def finish_ways_clip_geometry(radius_geom, roads_geom, reachable_graph_nodes_gdf: gpd.GeoDataFrame, crs):
+    """Keep the parts of the road buffers inside the radius isochrone that hold a reachable node."""
+    if roads_geom is None or roads_geom.is_empty:
+        return GeometryCollection()
+    roads = gpd.GeoDataFrame(geometry=[roads_geom], crs=crs)
+    clipped_roads = roads.clip(radius_geom, keep_geom_type=True).explode(ignore_index=True)
+    if clipped_roads.empty:
+        return GeometryCollection()
+
+    geom_to_keep = clipped_roads.sjoin(reachable_graph_nodes_gdf[["geometry"]], how="inner").index.unique()
+    if len(geom_to_keep) == 0:
+        return GeometryCollection()
+    return remove_inner_geom(clipped_roads.loc[geom_to_keep].union_all())
+
+
 def build_ways_clip_geometry(
     urban_graph: UrbanGraph,
     reachable_graph_nodes_gdf: gpd.GeoDataFrame,
@@ -132,24 +183,12 @@ def build_ways_clip_geometry(
         weight_type=weight_type,
         speed_m_per_min=speed_m_per_min,
     )
-    reachable_node_index = pd.Index(reachable_graph_nodes_gdf.index)
-    edges = geometry_edges(urban_graph)
-    edge_mask = edges["u"].isin(reachable_node_index) | edges["v"].isin(reachable_node_index)
-    if not edge_mask.any():
+    road_buffers = ways_road_buffers(urban_graph, reachable_graph_nodes_gdf, road_buffer_size)
+    if len(road_buffers) == 0:
         return GeometryCollection()
-
-    roads = gpd.GeoDataFrame(
-        geometry=[edges.loc[edge_mask].geometry.buffer(float(road_buffer_size), resolution=1).union_all()],
-        crs=urban_graph.edges_gdf.crs,
+    return finish_ways_clip_geometry(
+        radius_geom, shapely.union_all(road_buffers), reachable_graph_nodes_gdf, urban_graph.edges_gdf.crs
     )
-    clipped_roads = roads.clip(radius_geom, keep_geom_type=True).explode(ignore_index=True)
-    if clipped_roads.empty:
-        return GeometryCollection()
-
-    geom_to_keep = clipped_roads.sjoin(reachable_graph_nodes_gdf[["geometry"]], how="inner").index.unique()
-    if len(geom_to_keep) == 0:
-        return GeometryCollection()
-    return remove_inner_geom(clipped_roads.loc[geom_to_keep].union_all())
 
 
 def build_separated_dist_polygons(
