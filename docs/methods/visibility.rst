@@ -9,50 +9,30 @@ It is commonly used in studies of **visual accessibility**, **urban perception**
 ----
 
     The module provides a unified interface for visibility computation through
-    the :func:`objectnat.get_visibility` function, supporting both high-accuracy
-    and fast approximate algorithms. The user can compute visibility from
-    a single point or from a large batch of points in parallel.
+    the :func:`objectnat.get_visibility` function. The user can compute exact
+    visibility from a single point or from a large batch of points in parallel.
 
 ----
 
-Visibility Methods
-------------------
+Method
+------
 
-Two algorithmic modes are available through the ``method`` parameter:
+:func:`objectnat.get_visibility` returns, for each observer, the exact area visible within its
+viewing radius: the view disc minus everything hidden behind obstacle walls. Obstacles may be
+polygons (with holes) or lines. The calculation runs in ObjectNat's compiled Rust extension
+(``objectnat._rust``), multi-threaded over observers, and handles thousands of observers per second.
 
-**Accurate method (``method="accurate"``)**
-    Performs detailed visibility computation based on obstacle boundaries,
-    angular relations, and iterative polygon subtraction.
-    This method captures narrow occlusions, corners, and complex geometry
-    with high precision, making it ideal for **urban micro-scale** analysis.
-
-**Simple method (``method="simple"``)**
-    Computes visibility using radial rays projected from the observer.
-    It is significantly faster and suitable for **large datasets**,
-    **noise modelling**, and **regional-scale visibility studies**.
-
-Both methods are accessed via a single API:
+``method="simple"`` (a ray-based approximation) is deprecated: the exact algorithm is now faster than
+it was, so both values of ``method`` return the exact result.
 
 .. autofunction:: objectnat.get_visibility
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_comparison_methods.png
-   :alt: visibility_comparison_methods
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_example.png
+   :alt: visibility_example
    :align: center
    :width: 80%
 
-   Comparison between accurate (boundary-based) and simple (ray-based) methods.
-
-----
-
-Implementation
---------------
-
-``method="accurate"`` runs in ObjectNat's compiled Rust extension (``objectnat._rust``), multi-threaded
-over observers. It computes the exact visible area inside the same view polygon
-``Point.buffer(view_distance)`` builds: on the example buildings its polygons match an independent
-brute-force reference with IoU 1.0, 11–182× faster per observer than the pure-Python implementation
-of ObjectNat 2.1.0, and it handles thousands of observers per second. Obstacles may be polygons
-(with holes) or lines. See ``benchmarks/results/visibility.md`` in the repository for the comparison.
+   Area visible from one point within 800 m among the example buildings.
 
 ----
 

@@ -77,11 +77,11 @@ def calculate_simplified_noise_frame(
             represent the full sound-emitting area.
 
         visibility_parallel (bool, optional):
-            If True, visibility polygons for all distributed sample points are computed in parallel using
-            multiprocessing. Recommended when the number of sample points is large. Default is True.
+            Ignored, kept for compatibility: visibility for all sample points is always computed
+            multi-threaded by the Rust extension.
 
         visibility_max_workers (int | None, optional):
-            Maximum number of parallel worker processes for visibility computation. None uses the system default.
+            Maximum number of threads for the visibility computation. None uses all cores.
 
     Returns:
         gpd.GeoDataFrame:
@@ -95,8 +95,6 @@ def calculate_simplified_noise_frame(
           visibility (line-of-sight) and a layered distance-decay approach for rapid estimation.
         - Obstacles are used for visibility masking only, not as reflectors or absorbers.
         - Output resolution and accuracy depend heavily on the geometry type and point distribution settings.
-        - Parallel visibility significantly improves performance for line and
-          polygon sources with many sample points.
         - Results are useful for quick noise mapping or for generating initial noise envelopes prior to more
           detailed simulations.
     """

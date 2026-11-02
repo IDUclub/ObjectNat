@@ -7,7 +7,7 @@ from shapely import LineString, Point, box
 
 from objectnat import calculate_simplified_noise_frame, get_visibility, simulate_noise
 from objectnat.methods.visibility import visibility_analysis
-from objectnat.methods.visibility.visibility_analysis import _visibility_worker, dist_to_furthest_point
+from objectnat.methods.visibility.visibility_analysis import dist_to_furthest_point
 
 SOURCE_LON_LAT = (30.27, 59.935)
 
@@ -108,21 +108,13 @@ def test_dist_to_furthest_point_error_is_not_printed(capsys):
     assert capsys.readouterr().out == ""
 
 
-def test_visibility_worker_error_lists_valid_methods():
-    obstacles = gpd.GeoDataFrame(geometry=[box(10, 10, 20, 20)], crs=32636)
-    with pytest.raises(ValueError, match="'accurate', 'simple'") as exc_info:
-        _visibility_worker((Point(0, 0), obstacles, 100, "fast", 32))
-    assert "'fast'" in str(exc_info.value)
-
-
-@pytest.mark.parametrize("parallel", [False, True])
-def test_get_visibility_rejects_invalid_method_before_work(monkeypatch, source_point_4326, parallel):
+def test_get_visibility_rejects_invalid_method_before_work(monkeypatch, source_point_4326):
     def fail(*_args, **_kwargs):
         raise AssertionError("no work must be done for an invalid method")
 
-    monkeypatch.setattr(visibility_analysis, "_visibility_worker", fail)
+    monkeypatch.setattr(visibility_analysis, "_visibility_accurate_batch", fail)
     monkeypatch.setattr(gpd.GeoDataFrame, "to_crs", fail)
     monkeypatch.setattr(gpd.GeoDataFrame, "estimate_utm_crs", fail)
 
     with pytest.raises(ValueError, match="'accurate', 'simple'"):
-        get_visibility(source_point_4326, gpd.GeoDataFrame(), 100, method="fast", parallel=parallel)
+        get_visibility(source_point_4326, gpd.GeoDataFrame(), 100, method="fast")
