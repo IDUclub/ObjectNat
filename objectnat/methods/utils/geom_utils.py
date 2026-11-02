@@ -1,12 +1,36 @@
 import math
 
 import geopandas as gpd
+import numpy as np
+import shapely
 from shapely import LineString, MultiLineString, MultiPolygon, Point, Polygon
 from shapely.ops import polygonize, unary_union
 
 from objectnat import config
 
 logger = config.logger
+
+
+POLYGON_TYPE_ID = 3
+
+
+def clip_polygons(geometries, mask) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Vectorised ``GeoDataFrame.clip(mask, keep_geom_type=True).explode()`` for polygonal geometries.
+
+    Returns the polygon parts of ``geometry ∩ mask`` (collections and multi-parts flattened, lines and
+    points dropped) and, for each part, the position of the input geometry it comes from.
+    """
+    geometries = np.asarray(geometries, dtype=object)
+    if geometries.size == 0 or mask is None or mask.is_empty:
+        return np.empty(0, dtype=object), np.empty(0, dtype=np.int64)
+    clipped = shapely.intersection(geometries, mask)
+    parts, owner = shapely.get_parts(clipped, return_index=True)
+    # collections may hold multi-parts: flatten once more
+    parts, inner = shapely.get_parts(parts, return_index=True)
+    owner = np.asarray(owner, dtype=np.int64)[inner]
+    keep = (shapely.get_type_id(parts) == POLYGON_TYPE_ID) & ~shapely.is_empty(parts)
+    return parts[keep], owner[keep]
 
 
 def polygons_to_multilinestring(geom: Polygon | MultiPolygon) -> MultiLineString:
@@ -37,23 +61,19 @@ def gdf_to_circle_zones_from_point(
     """n_segments = 4*resolution,e.g. if resolution = 4 that means there will be 16 segments"""
     crs = gdf.crs
     buffer = point_from.buffer(zone_radius, quad_segs=resolution)
-    gdf_unary = gdf.clip(buffer, keep_geom_type=True).union_all()
-    gdf_geometry = (
-        gpd.GeoDataFrame(geometry=[gdf_unary], crs=crs)
-        .explode(index_parts=True)
-        .geometry.apply(polygons_to_multilinestring)
-        .union_all()
-    )
+    parts, _ = clip_polygons(gdf.geometry.values, buffer)
+    gdf_unary = shapely.union_all(parts)
+    if gdf_unary.is_empty:
+        return gpd.GeoDataFrame(geometry=[], crs=crs)
+    boundaries = shapely.boundary(shapely.get_parts(gdf_unary))
     zones_lines = [LineString([Point(coords1), Point(point_from)]) for coords1 in buffer.exterior.coords[:-1]]
+    zones = np.asarray(list(polygonize(unary_union(list(boundaries) + zones_lines))), dtype=object)
     if explode_multigeom:
-        return (
-            gpd.GeoDataFrame(geometry=list(polygonize(unary_union([gdf_geometry] + zones_lines))), crs=crs)
-            .clip(gdf_unary, keep_geom_type=True)
-            .explode(index_parts=False)
-        )
-    return gpd.GeoDataFrame(geometry=list(polygonize(unary_union([gdf_geometry] + zones_lines))), crs=crs).clip(
-        gdf_unary, keep_geom_type=True
-    )
+        zone_parts, _ = clip_polygons(zones, gdf_unary)
+        return gpd.GeoDataFrame(geometry=zone_parts, crs=crs)
+    clipped = shapely.intersection(zones, gdf_unary)
+    clipped = clipped[~shapely.is_empty(clipped)]
+    return gpd.GeoDataFrame(geometry=clipped, crs=crs)
 
 
 def remove_inner_geom(polygon: Polygon | MultiPolygon):
