@@ -17,4 +17,4 @@ from .methods.provision import (
     get_service_provision,
     recalculate_links,
 )
-from .methods.visibility import get_visibility
+from .methods.visibility import get_observer_points, get_visibility, get_visibility_catchment
