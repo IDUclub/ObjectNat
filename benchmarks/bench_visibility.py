@@ -1,15 +1,16 @@
 """
-Visibility benchmark: pure-Python ``get_visibility`` vs the Rust core (``objectnat-core``).
+Visibility benchmark: ``get_visibility(method="accurate")`` on the Rust kernel vs the pure-Python
+implementation it replaced (frozen copy of ObjectNat 2.1.0 in ``legacy_visibility.py``).
 
 For every scene and view radius it measures, on the same observer points:
 
-* wall time of ``get_visibility(method="accurate")`` — Python sequential, Python ``parallel=True``,
-  Rust core (all threads) — and of ``method="simple"`` for context;
+* wall time of ``method="accurate"`` — legacy Python sequential, legacy Python ``parallel=True``,
+  Rust (all threads) — and of ``method="simple"`` for context;
 * accuracy against an independent brute-force oracle (view disc minus the union of all wall shadows,
   see ``common.oracle_visibility``): IoU and symmetric-difference area;
-* agreement between the Rust core and the current Python ``accurate`` implementation.
+* agreement between the Rust kernel and the legacy Python ``accurate`` implementation.
 
-A separate throughput run feeds many more points to the Rust core only.
+A separate throughput run feeds many more points to the Rust kernel only.
 
 Usage::
 
@@ -31,10 +32,10 @@ sys.path.insert(0, os.path.dirname(__file__))
 from common import (  # noqa: E402  pylint: disable=wrong-import-position
     EXAMPLES_DATA,
     iou_many,
+    legacy_get_visibility,
     machine_info,
     markdown_table,
     oracle_visibility,
-    rust_core,
     sym_diff_area,
     timed,
     write_results,
@@ -106,8 +107,7 @@ def run(quick: bool) -> None:
 
     # warm up the native core and the process pool machinery
     warm_obstacles, warm_pts = scene_wall(rng, 2)
-    with rust_core(True):
-        get_visibility(points_gdf(warm_pts, CRS), warm_obstacles, 50)
+    get_visibility(points_gdf(warm_pts, CRS), warm_obstacles, 50)
 
     for scene_name, (factory, radii) in SCENES.items():
         obstacles, xy_all = factory(rng, max(n_accuracy, n_throughput))
@@ -119,15 +119,13 @@ def run(quick: bool) -> None:
             oracle = np.array(
                 [oracle_visibility(p, obstacles.geometry.values, radius) for p in pts.geometry], dtype=object
             )
-            with rust_core(False):
-                print(f"[{scene_name} r={radius}] python accurate...", flush=True)
-                py_acc, t_py = timed(get_visibility, pts, obstacles, radius, "accurate")
-                print(f"[{scene_name} r={radius}] python accurate parallel...", flush=True)
-                _, t_py_par = timed(get_visibility, pts, obstacles, radius, "accurate", parallel=True)
-                print(f"[{scene_name} r={radius}] python simple...", flush=True)
-                py_simple, t_simple = timed(get_visibility, pts, obstacles, radius, "simple")
-            with rust_core(True):
-                rs_acc, t_rs = timed(get_visibility, pts, obstacles, radius, "accurate")
+            print(f"[{scene_name} r={radius}] python accurate (legacy)...", flush=True)
+            py_acc, t_py = timed(legacy_get_visibility, pts, obstacles, radius)
+            print(f"[{scene_name} r={radius}] python accurate parallel (legacy)...", flush=True)
+            _, t_py_par = timed(legacy_get_visibility, pts, obstacles, radius, parallel=True)
+            print(f"[{scene_name} r={radius}] python simple...", flush=True)
+            py_simple, t_simple = timed(get_visibility, pts, obstacles, radius, "simple")
+            rs_acc, t_rs = timed(get_visibility, pts, obstacles, radius, "accurate")
 
             py_g, rs_g, simple_g = (g.to_crs(crs).geometry.values for g in (py_acc, rs_acc, py_simple))
             iou_py, iou_rs, iou_simple = (iou_many(g, oracle) for g in (py_g, rs_g, simple_g))
@@ -156,9 +154,8 @@ def run(quick: bool) -> None:
             print(row, flush=True)
 
             big = points_gdf(xy_all[:n_throughput], crs)
-            with rust_core(True):
-                _, t_all = timed(get_visibility, big, obstacles, radius, "accurate")
-                _, t_one = timed(get_visibility, big, obstacles, radius, "accurate", max_workers=1)
+            _, t_all = timed(get_visibility, big, obstacles, radius, "accurate")
+            _, t_one = timed(get_visibility, big, obstacles, radius, "accurate", max_workers=1)
             segments, one_sided = geometries_to_segments(obstacles.geometry.values)
             big_xy, big_r = xy_all[:n_throughput], np.full(n_throughput, float(radius))
             _, k_one = timed(native_visibility_polygons, big_xy, big_r, segments, one_sided, n_threads=1)
@@ -188,7 +185,9 @@ def run(quick: bool) -> None:
         "",
         "## Speed and accuracy on the same points",
         "",
-        "Times are per observer, end to end through `get_visibility` (reprojection included). "
+        "Times are per observer, end to end (reprojection included). *Python accurate* is the "
+        "implementation ObjectNat 2.1.0 shipped (frozen in `benchmarks/legacy_visibility.py`); *Rust* is "
+        'the current `get_visibility(method="accurate")`. '
         "IoU is against the independent brute-force oracle (disc minus the union of every wall shadow); "
         "1.0 means identical polygons.",
         "",
@@ -213,7 +212,7 @@ def run(quick: bool) -> None:
             ],
         ),
         "",
-        "## Rust core throughput",
+        "## Rust throughput",
         "",
         "End to end through `get_visibility`, plus the bare kernel (`native_visibility_polygons` on prepared "
         "segments) to separate the algorithm from GeoPandas overhead (reprojection, spatial index, conversion).",

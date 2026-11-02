@@ -1,6 +1,6 @@
 """
-Noise benchmark: ``simulate_noise`` and ``calculate_simplified_noise_frame`` with the pure-Python
-visibility vs the Rust core (``objectnat-core``).
+Noise benchmark: ``simulate_noise`` and ``calculate_simplified_noise_frame`` on the Rust visibility
+kernel vs the pure-Python visibility of ObjectNat 2.1.0 (frozen in ``legacy_visibility.py``).
 
 The noise model itself is unchanged; only the visibility step (``_visibility_accurate`` for every source
 and reflection point, and ``get_visibility`` for the noise frame) switches implementation. Agreement is
@@ -19,6 +19,7 @@ Usage::
 """
 
 import argparse
+import multiprocessing
 import os
 import sys
 
@@ -31,9 +32,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from common import (  # noqa: E402  pylint: disable=wrong-import-position
     EXAMPLES_DATA,
+    legacy_visibility_in_noise,
     machine_info,
     markdown_table,
-    rust_core,
     timed,
     write_results,
 )
@@ -75,6 +76,8 @@ def sources_points():
 
 
 def run(quick: bool) -> None:
+    # The legacy visibility is swapped in by patching module attributes; only forked workers inherit it.
+    multiprocessing.set_start_method("fork", force=True)
     config.set_enable_tqdm(False)
     buildings = gpd.read_parquet(EXAMPLES_DATA / "buildings.parquet")
     trees = gpd.read_parquet(EXAMPLES_DATA / "trees.parquet")
@@ -122,13 +125,12 @@ def run(quick: bool) -> None:
 
         label = name if reflections is None else f"{name} (reflection_n={reflections})"
         print(f"[{label}] python...", flush=True)
-        with rust_core(False):
+        with legacy_visibility_in_noise():
             py_result, t_py = timed(call)
             py_again, t_py2 = timed(call)
         print(f"[{label}] rust...", flush=True)
-        with rust_core(True):
-            rs_result, t_rs = timed(call)
-            rs_again, t_rs2 = timed(call)
+        rs_result, t_rs = timed(call)
+        rs_again, t_rs2 = timed(call)
         t_py, t_rs = (t_py + t_py2) / 2, (t_rs + t_rs2) / 2
         row = {"case": label, "python_s": round(t_py, 2), "rust_s": round(t_rs, 2), "speedup": round(t_py / t_rs, 1)}
         row.update(agreement(py_result, rs_result))
@@ -149,7 +151,8 @@ def run(quick: bool) -> None:
         "Machine: " + ", ".join(f"{k} {v}" for k, v in info.items()),
         "",
         "Same inputs as the noise example notebook (two point sources, example buildings and trees). "
-        "Only the visibility step changes between the runs. *Same level share* is the fraction of the "
+        "Only the visibility step changes between the runs; `simulate_noise` runs in its default process "
+        "pool (fork start method, so the legacy visibility reaches the workers). *Same level share* is the fraction of the "
         "noise area where both runs assign the same level. Times are the mean of two runs. With "
         "reflections the default parallel mode is not deterministic, so the run-to-run agreement of the "
         "same implementation is shown as the baseline.",
@@ -159,7 +162,7 @@ def run(quick: bool) -> None:
             [
                 ("case", "Case"),
                 ("python_s", "Python visibility, s"),
-                ("rust_s", "Rust core, s"),
+                ("rust_s", "Rust, s"),
                 ("speedup", "Speed-up"),
                 ("levels", "Noise levels"),
                 ("area_m2", "Noise area, m²"),
