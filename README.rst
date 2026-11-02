@@ -91,8 +91,8 @@ Each feature includes a **Jupyter Notebook example** and **full documentation**.
 
    A function for evaluating visibility from a given point or set of points to nearby buildings within a given radius.
    It is used to assess visual accessibility in urban environments.
-   The unified ``get_visibility`` API supports accurate and simplified methods,
-   including parallel execution for batches of observer points.
+   ``get_visibility`` computes the exact visible area in a compiled Rust extension,
+   multi-threaded over batches of observer points.
 
    📘 `Example <https://iduclub.github.io/ObjectNat/methods/examples/visibility.html>`__
    🔗 `Documentation <https://iduclub.github.io/ObjectNat/methods/visibility.html>`__
@@ -149,7 +149,6 @@ from a source checkout builds the extension and needs a Rust toolchain (`rustup 
 
     pip install .
 
-Speed and accuracy comparisons live in `benchmarks/ <https://github.com/IDUclub/ObjectNat/tree/master/benchmarks>`__.
 
 ----
 

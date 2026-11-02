@@ -89,8 +89,8 @@ Object-oriented Network Analysis Tools
 4. **Анализ видимости**
 
    Функция оценки видимости от заданной точки или множества точек до близлежащих зданий в пределах заданного радиуса.
-   Применяется для оценки визуальной доступности в городской среде. Единый API ``get_visibility`` поддерживает
-   точный и упрощённый методы, а также параллельный расчёт для набора точек наблюдения.
+   Применяется для оценки визуальной доступности в городской среде. ``get_visibility`` считает
+   точную область видимости в скомпилированном расширении на Rust, параллельно для набора точек наблюдения.
 
    📘 `Пример <https://iduclub.github.io/ObjectNat/methods/examples/visibility.html>`__
    🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/visibility.html>`__
@@ -145,7 +145,6 @@ ObjectNat поддерживает Python 3.11–3.14 в Windows, macOS и Linux
 
     pip install .
 
-Сравнение скорости и точности — в `benchmarks/ <https://github.com/IDUclub/ObjectNat/tree/master/benchmarks>`__.
 
 ----
 

@@ -62,4 +62,6 @@ Thumbs.db
 /rust/target/
 /objectnat/_rust*.so
 /objectnat/_rust*.pyd
-/benchmarks/results/*_quick.*
+
+# local benchmarks (not part of the repository)
+/benchmarks/

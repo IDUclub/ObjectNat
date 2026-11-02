@@ -71,9 +71,6 @@ uv run sphinx-build -b html docs docs/_build/html   # or: make docs
 # Rust extension (built automatically by `uv sync`; needs a Rust toolchain): checks and unit tests
 (cd rust && cargo fmt --check && cargo clippy --release --all-targets -- -D warnings && cargo test --release)
 
-# Benchmarks (Rust vs the replaced Python code, accuracy vs an independent oracle); results in benchmarks/results/
-uv run python benchmarks/bench_visibility.py [--quick]
-uv run python benchmarks/bench_noise.py [--quick]
 ```
 
 ## Architecture
@@ -103,13 +100,12 @@ objectnat/
     provision/       — get_service_provision, recalculate_links, clip_provision, ProvisionResult
                        (provision_calculating.py + provision_result.py + exceptions)
     noise/           — simulate_noise, calculate_simplified_noise_frame, noise_reduce helpers
-    visibility/      — get_visibility (accurate/simple methods)
+    visibility/      — get_visibility (exact visibility; method="simple" is a deprecated alias)
     utils/
       geom_utils.py  — geometry helpers shared across methods
 rust/                — Rust crate compiled by maturin into the extension `objectnat._rust` (PyO3, abi3)
   src/visibility.rs  — exact batch visibility polygons (grid index, critical directions, rayon)
   src/lib.rs         — Python bindings (`visibility_polygons`)
-benchmarks/          — reproducible speed/accuracy comparisons; committed results in benchmarks/results/
 ```
 
 ### Rust extension
@@ -117,8 +113,7 @@ benchmarks/          — reproducible speed/accuracy comparisons; committed resu
 ObjectNat is built with maturin (`pyproject.toml` → `[tool.maturin]`): the Python package plus one compiled
 module, `objectnat._rust`, from `rust/`. Python code converts GeoPandas/shapely data to numpy arrays and
 calls it (see `objectnat/methods/visibility/_native.py`); the public API stays in Python and does not change.
-There is no pure-Python fallback, so any machine building from source needs Rust. Accuracy is tested against
-the independent oracle in `tests/visibility_oracle.py`. Versions in `pyproject.toml`, `rust/Cargo.toml`,
+There is no pure-Python fallback, so any machine building from source needs Rust. Versions in `pyproject.toml`, `rust/Cargo.toml`,
 `objectnat/_version.py` and `CITATION.cff` are bumped together by semantic-release.
 
 ### Public accessibility API (all keyword-only after the graph)
