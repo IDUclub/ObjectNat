@@ -101,6 +101,8 @@ def calculate_simplified_noise_frame(
           detailed simulations.
     """
 
+    noise_sources = noise_sources.copy()
+
     required_columns = ["source_noise_db", "geometric_mean_freq_hz"]
     for col in required_columns:
         if col not in noise_sources.columns:
@@ -121,7 +123,6 @@ def calculate_simplified_noise_frame(
     else:
         local_crs = noise_sources.estimate_utm_crs()
         noise_sources.to_crs(local_crs, inplace=True)
-        noise_sources.reset_index(drop=True)
 
     noise_sources = noise_sources.explode(ignore_index=True)
     noise_sources["geom_type"] = noise_sources.geom_type

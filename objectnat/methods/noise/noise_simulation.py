@@ -149,9 +149,7 @@ def simulate_noise(
 
     original_crs = source_points.crs
     source_points = source_points.copy()
-
-    source_points = source_points.copy()
-    if len(obstacles) > 0:
+    if obstacles is not None and len(obstacles) > 0:
         obstacles = obstacles.copy()
         local_crs = obstacles.estimate_utm_crs()
         obstacles.to_crs(local_crs, inplace=True)
@@ -160,8 +158,10 @@ def simulate_noise(
     else:
         local_crs = source_points.estimate_utm_crs()
         source_points.to_crs(local_crs, inplace=True)
-        source_points.reset_index(drop=True)
+        source_points = source_points.reset_index(drop=True)
         source_points.geometry = source_points.centroid
+        # Fresh empty frame in the local CRS: never touches the caller's object, and tasks read their CRS from it.
+        obstacles = gpd.GeoDataFrame(geometry=[], crs=local_crs)
 
     # Simplifying trees
     if trees is not None:
@@ -171,7 +171,7 @@ def simulate_noise(
     else:
         trees = gpd.GeoDataFrame()
 
-    if absorb_ratio_column is None:
+    if absorb_ratio_column is None or obstacles.empty:
         obstacles["absorb_ratio"] = standart_absorb_ratio
     else:
         obstacles["absorb_ratio"] = obstacles[absorb_ratio_column].fillna(standart_absorb_ratio)
