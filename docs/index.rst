@@ -82,7 +82,8 @@ Features
   - :func:`objectnat.simulate_noise`, :func:`objectnat.calculate_simplified_noise_frame`
 - **Visibility Analysis**
 
-  - :func:`objectnat.get_visibility`
+  - :func:`objectnat.get_visibility`, :func:`objectnat.get_visibility_catchment`,
+    :func:`objectnat.get_observer_points`
 - **Utilities**
 
   - Geometry helpers used by accessibility, visibility, and noise workflows
