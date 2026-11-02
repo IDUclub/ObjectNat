@@ -1,8 +1,8 @@
 """Unit tests for the pure provision-calculation layer.
 
 These tests build tiny in-memory buildings/services/matrix DataFrames and never touch
-the network graph, parquet fixtures, or rendering. The gravity model is seeded
-(``np.random.default_rng(seed=0)``), so results are deterministic.
+the network graph, parquet fixtures, or rendering. The gravity model runs in the Rust extension with a
+seeded random stream, so results are deterministic.
 """
 
 import numpy as np
@@ -12,8 +12,6 @@ from scipy import sparse
 
 from objectnat import ProvisionResult
 from objectnat.methods.provision.provision_calculating import (
-    _balance_flows_to_demand,
-    _calculate_flows_for_service,
     _summarize_flow,
     _validate_inputs,
     calculate_provision,
@@ -321,48 +319,25 @@ def test_recalculate_provision_tightens_links(buildings, services, matrix):
 
 
 # --------------------------------------------------------------------------- #
-# Helper functions
+# Seeds and sparse input
 # --------------------------------------------------------------------------- #
-def test_calculate_flows_for_service_zero_capacity():
-    distances = pd.Series([1.0, 2.0, 3.0], index=[1, 2, 3])
-    assert _calculate_flows_for_service(distances, capacity=0, best_houses=0, seed=0).empty
-
-
-def test_calculate_flows_for_service_all_unreachable():
-    distances = pd.Series([np.inf, np.inf], index=[1, 2])
-    assert _calculate_flows_for_service(distances, capacity=5, best_houses=0, seed=0).empty
-
-
-def test_calculate_flows_for_service_distributes_full_capacity():
-    distances = pd.Series([1.0, 2.0, 4.0], index=[1, 2, 3])
-    flows = _calculate_flows_for_service(distances, capacity=10, best_houses=0, seed=0)
-    # Every unit of capacity is placed somewhere, closest buildings favoured.
-    assert flows.sum() == 10
-    assert (flows >= 0).all()
-    assert flows.loc[1] >= flows.loc[3]
-
-
-def test_balance_flows_to_demand_caps_at_original_flows():
-    building_flows = pd.Series([4, 2, 0], index=[10, 11, 12])
-    balanced = _balance_flows_to_demand(building_flows, demand=3, seed=0)
-    # Never assigns more than the original flow and never exceeds demand.
-    assert (balanced <= building_flows.loc[balanced.index]).all()
-    assert balanced.sum() <= 3
-    assert (balanced >= 0).all()
-
-
-def test_balance_flows_to_demand_zero_demand():
-    building_flows = pd.Series([4, 2, 0], index=[10, 11, 12])
-    balanced = _balance_flows_to_demand(building_flows, demand=0, seed=0)
-    # demand <= 0 short-circuits: the positive flows are returned unchanged.
-    pd.testing.assert_series_equal(balanced, building_flows[building_flows > 0])
-
-
 def test_calculate_provision_seed_is_reproducible(buildings, services, matrix):
     # Same seed -> identical flows; the seed threads through the whole allocation.
     first = _run(buildings, services, matrix, seed=7)
     second = _run(buildings, services, matrix, seed=7)
     pd.testing.assert_frame_equal(first.flow.sparse.to_dense(), second.flow.sparse.to_dense())
+
+
+def test_sparse_distance_matrix_gives_the_same_result(buildings, services, matrix):
+    # Unreachable pairs are simply absent from a sparse matrix (NaN fill value).
+    sparse_matrix = matrix.where(matrix <= 15).astype(pd.SparseDtype(float, np.nan))
+    dense_result = _run(buildings, services, matrix.where(matrix <= 15, np.inf))
+    sparse_result = _run(buildings, services, sparse_matrix)
+
+    pd.testing.assert_frame_equal(dense_result.flow.sparse.to_dense(), sparse_result.flow.sparse.to_dense())
+    pd.testing.assert_frame_equal(dense_result.demand_rows, sparse_result.demand_rows)
+    pd.testing.assert_frame_equal(dense_result.capacity_rows, sparse_result.capacity_rows)
+    assert isinstance(sparse_result.distance_matrix.dtypes.iloc[0], pd.SparseDtype)
 
 
 # --------------------------------------------------------------------------- #

@@ -1,5 +1,6 @@
 //! Python bindings: compiled into the `objectnat._rust` extension module.
 
+pub mod provision;
 pub mod visibility;
 
 use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
@@ -127,9 +128,100 @@ fn visibility_polygons<'py>(
     Ok((coords.into_pyarray(py), offsets.into_pyarray(py)))
 }
 
+/// Sparse building-service flows as ``(rows, cols, units)``.
+type Flows<'py> = (
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray1<i64>>,
+);
+
+/// Gravity-probabilistic service provision on sparse OD entries.
+///
+/// Args:
+///     rows, cols: ``(k,)`` int64 building / service positions of the OD entries.
+///     cost: ``(k,)`` float64 OD costs (non-finite entries are unreachable).
+///     demand: ``(n_buildings,)`` int64 demand per building.
+///     capacity: ``(n_services,)`` int64 capacity per service.
+///     threshold: normative cost; links above ``3 * threshold`` are never used.
+///     seed: random seed; the result does not depend on ``n_threads``.
+///     n_threads: worker threads; ``None`` or ``0`` uses all cores.
+///
+/// Returns:
+///     ``(rows, cols, units)`` of allocated flows; a pair can repeat (sum duplicates).
+#[pyfunction]
+#[pyo3(signature = (rows, cols, cost, demand, capacity, threshold, seed=0, n_threads=None))]
+#[allow(clippy::too_many_arguments)]
+fn provision_allocate<'py>(
+    py: Python<'py>,
+    rows: PyReadonlyArray1<'py, i64>,
+    cols: PyReadonlyArray1<'py, i64>,
+    cost: PyReadonlyArray1<'py, f64>,
+    demand: PyReadonlyArray1<'py, i64>,
+    capacity: PyReadonlyArray1<'py, i64>,
+    threshold: f64,
+    seed: u64,
+    n_threads: Option<usize>,
+) -> PyResult<Flows<'py>> {
+    let (rows, cols, cost) = (rows.as_array(), cols.as_array(), cost.as_array());
+    if rows.len() != cols.len() || rows.len() != cost.len() {
+        return Err(PyValueError::new_err(
+            "rows, cols and cost must have the same length",
+        ));
+    }
+    let demand: Vec<i64> = demand.as_array().iter().copied().collect();
+    let capacity: Vec<i64> = capacity.as_array().iter().copied().collect();
+    let to_index =
+        |values: numpy::ndarray::ArrayView1<i64>, n: usize, name: &str| -> PyResult<Vec<u32>> {
+            values
+                .iter()
+                .map(|&v| {
+                    if v < 0 || v as usize >= n {
+                        Err(PyValueError::new_err(format!(
+                            "{name} index {v} is out of range"
+                        )))
+                    } else {
+                        Ok(v as u32)
+                    }
+                })
+                .collect()
+        };
+    let rows = to_index(rows, demand.len(), "building")?;
+    let cols = to_index(cols, capacity.len(), "service")?;
+    let cost: Vec<f64> = cost.iter().copied().collect();
+    if threshold.is_nan() || threshold < 0.0 {
+        return Err(PyValueError::new_err("threshold must be >= 0"));
+    }
+
+    let (b, s, v) = py.detach(|| {
+        let run = || {
+            provision::allocate(&provision::ProvisionInput {
+                rows: &rows,
+                cols: &cols,
+                cost: &cost,
+                demand: &demand,
+                capacity: &capacity,
+                threshold,
+                seed,
+            })
+        };
+        match n_threads {
+            Some(n) if n > 0 => rayon::ThreadPoolBuilder::new()
+                .num_threads(n)
+                .build()
+                .map(|pool| pool.install(run))
+                .unwrap_or_else(|_| run()),
+            _ => run(),
+        }
+    });
+    let b: Vec<i64> = b.into_iter().map(i64::from).collect();
+    let s: Vec<i64> = s.into_iter().map(i64::from).collect();
+    Ok((b.into_pyarray(py), s.into_pyarray(py), v.into_pyarray(py)))
+}
+
 #[pymodule]
 fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(visibility_polygons, m)?)?;
+    m.add_function(wrap_pyfunction!(provision_allocate, m)?)?;
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())
 }
