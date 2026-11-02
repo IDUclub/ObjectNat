@@ -1,5 +1,6 @@
 import math
 import os
+import time
 from collections import deque
 
 import geopandas as gpd
@@ -40,6 +41,30 @@ def test_recursive_simulation_queue_adds_reflection_tasks():
     assert results == ["first", "second"]
     assert not tasks
     assert dead_areas[0].covers(Point(10, 0))
+
+
+def test_recursive_simulation_queue_is_independent_of_worker_timing():
+    # Both parents propose a reflection inside the same dead area. The parent queued first must win
+    # even though it finishes last.
+    def make(name, delay, child_name, child_x):
+        child = (child_name, Point(child_x, 0))
+        return (_ordered_parent_task, (Point(-1, 0), name, delay, child), {"simulation_ind": 0})
+
+    tasks = deque([make("slow-first", 0.3, "child-of-first", 10.0), make("fast-second", 0.0, "child-of-second", 10.5)])
+    dead_areas = {0: Point(-1, 0).buffer(1)}
+
+    results = _recursive_simulation_queue(tasks, dead_areas, dead_area_r=2, use_parallel=False)
+
+    assert results == ["slow-first", "fast-second", "child-of-first"]
+
+
+def _ordered_parent_task(task, simulation_ind):
+    _, name, delay, child = task
+    time.sleep(delay)
+    if child is None:
+        return name, None
+    child_name, child_point = child
+    return name, [(_ordered_parent_task, (child_point, child_name, 0.0, None), {"simulation_ind": simulation_ind})]
 
 
 def test_iter_polygonal_geometries():

@@ -1,6 +1,5 @@
 import concurrent.futures
 import math
-import time
 from collections import deque
 
 import geopandas as gpd
@@ -207,6 +206,8 @@ def simulate_noise(
             "tree_res": tree_res,
             "min_db": target_noise_db,
             "simulation_ind": ind,
+            # passed explicitly: spawn/forkserver workers do not inherit runtime config changes
+            "use_rust_core": config.enable_rust_core,
         }
         task_queue.append((_noise_from_point_task, args, kwargs))
         dead_area_dict[ind] = source_point.buffer(dead_area_r, quad_segs=2)
@@ -399,6 +400,7 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
     reflection_n = kwargs.get("reflection_n")
     geometric_mean_freq_hz = kwargs.get("geometric_mean_freq_hz")
     tree_res = kwargs.get("tree_res")
+    use_rust_core = kwargs.get("use_rust_core")
     local_crs = obstacles.crs
     dist = round(max_dist - passed_dist, 1)
 
@@ -409,7 +411,7 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
     else:
         obstacles_union = obstacles.union_all()
 
-    vis_poly = _visibility_accurate(point_from, obstacles, dist)
+    vis_poly = _visibility_accurate(point_from, obstacles, dist, use_native_core=use_rust_core)
     max_view_dist = dist_to_furthest_point(point_from, vis_poly)
     donuts_dist_values = donuts_dist_values(dist_db, passed_dist, max_view_dist)
 
@@ -520,7 +522,14 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
 
     new_obs = pd.concat([obstacles, gpd.GeoDataFrame(geometry=[vis_poly], crs=local_crs)], ignore_index=True)
 
-    # Creating new reflection tasks
+    # Creating new reflection tasks. Candidates are put in a canonical order (distance, then
+    # coordinates) instead of the polygon's vertex order, which depends on how the visibility
+    # polygon was built; the dead-area filter downstream is order-sensitive.
+    vis_poly_points["_x"] = vis_poly_points.geometry.x
+    vis_poly_points["_y"] = vis_poly_points.geometry.y
+    vis_poly_points = vis_poly_points.sort_values(
+        ["dist", "_x", "_y", "reduce", "noise_level"], kind="mergesort", na_position="last"
+    )
     new_tasks = []
     for _, loc in vis_poly_points.iterrows():
         if not isinstance(loc.geometry, Point):
@@ -548,22 +557,22 @@ def _recursive_simulation_queue(task_queue: deque, dead_area_dict: dict, dead_ar
     results = []
     total_tasks = len(task_queue)
 
-    with tqdm(total=total_tasks, desc="Simulating noise") as pbar:
+    with tqdm(total=total_tasks, desc="Simulating noise", disable=not config.enable_tqdm_bar) as pbar:
         if use_parallel:
-            executor_class = concurrent.futures.ProcessPoolExecutor()
+            executor_class = concurrent.futures.ProcessPoolExecutor
         else:
-            executor_class = concurrent.futures.ThreadPoolExecutor()
-        with executor_class as executor:
-            max_workers = executor._max_workers  # pylint: disable=protected-access
-            future_to_task = {}
-            while True:
-                while task_queue and len(future_to_task) < max_workers:
-                    func, task, kwargs = task_queue.popleft()
-                    future = executor.submit(func, task, **kwargs)
-                    future_to_task[future] = kwargs["simulation_ind"]
-                done, _ = concurrent.futures.wait(future_to_task.keys(), return_when=concurrent.futures.FIRST_COMPLETED)
-                for future in done:
-                    simulation_ind = future_to_task.pop(future)
+            executor_class = concurrent.futures.ThreadPoolExecutor
+        with executor_class() as executor:
+            # Tasks run in waves (one reflection generation at a time) and results are consumed in
+            # submission order, not completion order. The dead-area filter below therefore sees the
+            # same sequence on every run and on every machine, whatever the worker timing; this is
+            # exactly the order a single worker would process the queue in.
+            while task_queue:
+                wave = list(task_queue)
+                task_queue.clear()
+                futures = [executor.submit(func, task, **kwargs) for func, task, kwargs in wave]
+                for (_, _, kwargs), future in zip(wave, futures):
+                    simulation_ind = kwargs["simulation_ind"]
                     result, new_tasks = future.result()
                     if new_tasks:
                         new_tasks_n = 0
@@ -581,7 +590,4 @@ def _recursive_simulation_queue(task_queue: deque, dead_area_dict: dict, dead_ar
                         pbar.refresh()
                     results.append(result)
                     pbar.update(1)
-                time.sleep(0.01)
-                if not future_to_task and not task_queue:
-                    break
     return results
