@@ -1,10 +1,12 @@
 # simplified version
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 from shapely.ops import polygonize, unary_union
 
 from objectnat.methods.noise.noise_reduce import dist_to_target_db
 from objectnat.methods.utils.geom_utils import (
+    clip_polygons,
     distribute_points_on_linestrings,
     distribute_points_on_polygons,
     polygons_to_multilinestring,
@@ -269,9 +271,7 @@ def _eval_donuts_gdf(initial_geometry, dist_db, local_crs, clip_poly) -> gpd.Geo
         donuts.append(cur_buffer.difference(to_cut_off))
         don_values.append(dist_db[i][1])
         to_cut_off = cur_buffer
-    noise_from_feature = (
-        gpd.GeoDataFrame(geometry=donuts, data={"noise_level": don_values}, crs=local_crs)
-        .clip(clip_poly, keep_geom_type=True)
-        .explode(ignore_index=True)
+    parts, owner = clip_polygons(donuts, clip_poly)
+    return gpd.GeoDataFrame(
+        geometry=parts, data={"noise_level": np.asarray(don_values, dtype=float)[owner]}, crs=local_crs
     )
-    return noise_from_feature

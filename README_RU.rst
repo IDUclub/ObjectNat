@@ -98,6 +98,8 @@ Object-oriented Network Analysis Tools
 5. **Моделирование шума**
 
    Симуляция распространения шума от источников с учётом **препятствий**, **растительности** и **факторов окружающей среды**.
+   ``simulate_noise_grid`` считает уровни на сетке приёмников в Rust (прямой звук, отражения первого порядка,
+   энергетическое сложение).
 
    📘 `Пример <https://iduclub.github.io/ObjectNat/methods/examples/noise.html>`__
    🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/noise.html>`__

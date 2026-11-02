@@ -1,10 +1,13 @@
 from dataclasses import dataclass
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
-from shapely import LineString
+import shapely
 
 from objectnat import config
+
+from ._matrix import _lookup_distances
 
 logger = config.logger
 
@@ -29,8 +32,9 @@ class ProvisionResult:
             original capacity, remaining capacity, carried capacity
             inside/outside the threshold, and total service load.
         distance_matrix:
-            Aligned OD cost matrix used for the calculation. Its index and
-            columns must match ``flow``.
+            Aligned OD cost matrix used for the calculation (dense, or pandas
+            sparse when a sparse matrix was passed). Its index and columns
+            must match ``flow``.
         threshold:
             Normative distance or time threshold used to split flows into
             within-threshold and outside-threshold metrics.
@@ -151,7 +155,7 @@ def get_provision_links(
     service_points = services_for_links.representative_point()
     building_labels = provision_result.flow.index.to_numpy()[flow_coo.row]
     service_labels = provision_result.flow.columns.to_numpy()[flow_coo.col]
-    distance_values = provision_result.distance_matrix.to_numpy(dtype=float)[flow_coo.row, flow_coo.col]
+    distance_values = _lookup_distances(provision_result.distance_matrix, flow_coo.row, flow_coo.col)
 
     links = pd.DataFrame(
         {
@@ -167,8 +171,7 @@ def get_provision_links(
     if links.empty:
         return gpd.GeoDataFrame()
 
-    links["geometry"] = [
-        LineString([building_points.loc[building_index], service_points.loc[service_index]])
-        for building_index, service_index in zip(links["building_index"], links["service_index"])
-    ]
+    start = shapely.get_coordinates(building_points.loc[links["building_index"]].values)
+    end = shapely.get_coordinates(service_points.loc[links["service_index"]].values)
+    links["geometry"] = shapely.linestrings(np.stack([start, end], axis=1))
     return gpd.GeoDataFrame(links, geometry="geometry", crs=buildings_gdf.crs)

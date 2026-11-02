@@ -213,7 +213,7 @@ def test_get_provision_links_requires_geodataframe(result, services_gdf):
 def test_clip_provision_crs_mismatch(result, buildings_gdf, services_gdf):
     links = get_provision_links(buildings_gdf, services_gdf, result)
     zone = gpd.GeoDataFrame(geometry=[Point(0, 0).buffer(5)], crs=4326)
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         clip_provision(buildings_gdf, services_gdf, links, zone)
 
 

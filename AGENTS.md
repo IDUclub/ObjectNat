@@ -98,14 +98,18 @@ objectnat/
       radius.py      — get_radius_coverage (graph-free: points + radius + Voronoi)
       _utils.py      — shared geometry builders (Voronoi cells, radius/ways/separate/stepped)
     provision/       — get_service_provision, recalculate_links, clip_provision, ProvisionResult
-                       (provision_calculating.py + provision_result.py + exceptions)
-    noise/           — simulate_noise, calculate_simplified_noise_frame, noise_reduce helpers
+                       (provision_calculating.py + provision_result.py + exceptions; _matrix.py reads
+                       dense or pandas-sparse OD matrices without densifying them)
+    noise/           — simulate_noise_grid (Rust receiver grid), simulate_noise, calculate_simplified_noise_frame,
+                       noise_reduce helpers
     visibility/      — get_visibility (exact visibility; method="simple" is a deprecated alias)
     utils/
       geom_utils.py  — geometry helpers shared across methods
 rust/                — Rust crate compiled by maturin into the extension `objectnat._rust` (PyO3, abi3)
   src/visibility.rs  — exact batch visibility polygons (grid index, critical directions, rayon)
-  src/lib.rs         — Python bindings (`visibility_polygons`)
+  src/provision.rs   — gravity-probabilistic provision allocation on sparse OD entries (rayon)
+  src/noise.rs       — receiver-grid noise: direct paths + first-order reflections, energy sum (rayon)
+  src/lib.rs         — Python bindings (`visibility_polygons`, `provision_allocate`, `noise_grid_energy`)
 ```
 
 ### Rust extension

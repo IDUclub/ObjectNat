@@ -11,28 +11,32 @@ LINEAR_TYPE_IDS = (1, 2)  # LineString, LinearRing
 DEFAULT_QUAD_SEGS = 16  # shapely's default for Point.buffer()
 
 
-def _oriented_rings(polygons: np.ndarray) -> np.ndarray:
-    """Rings of valid polygons oriented with the polygon interior on their left (exterior CCW, holes CW)."""
+def _oriented_rings(polygons: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Rings of valid polygons oriented with the polygon interior on their left (exterior CCW, holes CW),
+    with the position of the polygon each ring belongs to.
+    """
     if polygons.size == 0:
-        return np.empty(0, dtype=object)
+        return np.empty(0, dtype=object), np.empty(0, dtype=np.int64)
     rings, owner = shapely.get_rings(polygons, return_index=True)
     is_exterior = np.r_[True, owner[1:] != owner[:-1]]
     ccw = shapely.is_ccw(rings)
     flip = (is_exterior & ~ccw) | (~is_exterior & ccw)
     if flip.any():
         rings[flip] = shapely.reverse(rings[flip])
-    return rings
+    return rings, owner
 
 
-def _lines_to_segments(lines: np.ndarray) -> np.ndarray:
+def _lines_to_segments(lines: np.ndarray, owner: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     if lines.size == 0:
-        return np.empty((0, 4), dtype="float64")
+        return np.empty((0, 4), dtype="float64"), np.empty(0, dtype=np.int64)
     coords, index = shapely.get_coordinates(lines, return_index=True)
     same_line = index[1:] == index[:-1]
-    return np.hstack([coords[:-1][same_line], coords[1:][same_line]]).astype("float64", copy=False)
+    segments = np.hstack([coords[:-1][same_line], coords[1:][same_line]]).astype("float64", copy=False)
+    return segments, owner[index[:-1][same_line]]
 
 
-def geometries_to_segments(geometries) -> tuple[np.ndarray, np.ndarray]:
+def geometries_to_segments(geometries, return_owner: bool = False):
     """
     Convert obstacle geometries to wall segments for the Rust kernel.
 
@@ -43,26 +47,39 @@ def geometries_to_segments(geometries) -> tuple[np.ndarray, np.ndarray]:
         ``(segments, one_sided)``: an ``(m, 4)`` float64 array ``x1, y1, x2, y2`` and an ``(m,)`` bool
         array. ``True`` marks walls of valid polygons, oriented with the interior on the left, which
         the kernel may skip when the observer is on their interior side (back-face culling). Walls of
-        lines and of invalid polygons stay two-sided.
+        lines and of invalid polygons stay two-sided. With ``return_owner=True`` a third ``(m,)`` array
+        gives the position of the input geometry each wall comes from.
     """
-    empty = np.empty((0, 4), dtype="float64"), np.empty(0, dtype=bool)
+    empty = np.empty((0, 4), dtype="float64"), np.empty(0, dtype=bool), np.empty(0, dtype=np.int64)
     geoms = np.asarray(geometries, dtype=object)
-    if geoms.size == 0:
-        return empty
-    geoms = geoms[~shapely.is_missing(geoms)]
-    geoms = geoms[~shapely.is_empty(geoms)]
-    parts = shapely.get_parts(geoms)
-    if parts.size == 0:
-        return empty
+    keep = ~shapely.is_missing(geoms) & ~shapely.is_empty(geoms) if geoms.size else np.zeros(0, dtype=bool)
+    geom_positions = np.nonzero(keep)[0]
+    parts, part_owner = shapely.get_parts(geoms[keep], return_index=True) if keep.any() else (np.empty(0), [])
+    if len(parts) == 0:
+        return empty if return_owner else empty[:2]
+    part_owner = geom_positions[np.asarray(part_owner, dtype=np.int64)]
     type_ids = shapely.get_type_id(parts)
-    polygons = parts[type_ids == POLYGON_TYPE_ID]
+    is_polygon = type_ids == POLYGON_TYPE_ID
+    polygons, polygon_owner = parts[is_polygon], part_owner[is_polygon]
     valid = shapely.is_valid(polygons)
-    one_sided = _lines_to_segments(_oriented_rings(polygons[valid]))
-    two_sided = _lines_to_segments(
-        np.concatenate([shapely.get_rings(polygons[~valid]), parts[np.isin(type_ids, LINEAR_TYPE_IDS)]])
+
+    rings, ring_polygon = _oriented_rings(polygons[valid])
+    one_sided, one_owner = _lines_to_segments(rings, polygon_owner[valid][ring_polygon])
+
+    invalid_rings, invalid_ring_polygon = (
+        shapely.get_rings(polygons[~valid], return_index=True) if (~valid).any() else (np.empty(0), [])
     )
+    is_line = np.isin(type_ids, LINEAR_TYPE_IDS)
+    two_lines = np.concatenate([np.asarray(invalid_rings, dtype=object), parts[is_line]])
+    two_owner = np.concatenate(
+        [polygon_owner[~valid][np.asarray(invalid_ring_polygon, dtype=np.int64)], part_owner[is_line]]
+    )
+    two_sided, two_owner = _lines_to_segments(two_lines, two_owner)
+
     segments = np.vstack([one_sided, two_sided])
     flags = np.r_[np.ones(len(one_sided), dtype=bool), np.zeros(len(two_sided), dtype=bool)]
+    if return_owner:
+        return segments, flags, np.r_[one_owner, two_owner].astype(np.int64)
     return segments, flags
 
 

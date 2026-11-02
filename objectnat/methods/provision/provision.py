@@ -21,14 +21,19 @@ def get_service_provision(
     The function implements a **gravity-based allocation model**: service capacity is
     distributed across nearby demand points with weights that **decay with the square
     of distance (or generalized cost)**. Closer buildings receive proportionally
-    higher shares of the available capacity.
+    higher shares of the available capacity. Only building-service pairs within
+    ``3 * threshold`` take part in the allocation, which runs in ObjectNat's Rust
+    extension over those pairs only.
 
     Args:
         buildings:
             GeoDataFrame of demand locations. Must include a numeric demand column.
         distance_matrix:
             OD cost matrix where rows are ``buildings.index`` and columns are
-            ``services.index``. Units must match ``threshold``.
+            ``services.index``. Units must match ``threshold``. Either a dense
+            DataFrame (``inf``/``NaN`` = unreachable) or, for large areas, a pandas
+            sparse DataFrame (``SparseDtype`` with a ``NaN`` or ``inf`` fill value)
+            that stores only the reachable pairs.
         services:
             GeoDataFrame of service facilities. Must include a numeric capacity column.
         threshold:
@@ -38,9 +43,9 @@ def get_service_provision(
         services_capacity_column:
             Column name of service capacity values. Default is ``"capacity"``.
         seed:
-            Seed for the random number generator used to allocate demand across
-            services. The model is otherwise deterministic, so a fixed seed yields
-            reproducible results; vary it to sample alternative allocations. Default is ``0``.
+            Seed of the random draws in the allocation. A fixed seed yields
+            reproducible results (independent of the number of CPU cores); vary it
+            to sample alternative allocations. Default is ``0``.
 
     Returns:
         ProvisionResult:
@@ -67,12 +72,13 @@ def clip_provision(
     Keeps only buildings that intersect ``selection_zone``, links that connect
     to the kept buildings, and services referenced by those links.
     """
-    assert selection_zone.crs == buildings.crs == services.crs == links.crs, (
-        f"CRS mismatch: buildings_crs:{buildings.crs}, "
-        f"links_crs:{links.crs} , "
-        f"services_crs:{services.crs}, "
-        f"selection_zone_crs:{selection_zone.crs}"
-    )
+    if not selection_zone.crs == buildings.crs == services.crs == links.crs:
+        raise ValueError(
+            f"CRS mismatch: buildings_crs:{buildings.crs}, "
+            f"links_crs:{links.crs} , "
+            f"services_crs:{services.crs}, "
+            f"selection_zone_crs:{selection_zone.crs}"
+        )
     buildings = buildings.copy()
     links = links.copy()
     services = services.copy()

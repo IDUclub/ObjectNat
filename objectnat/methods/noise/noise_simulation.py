@@ -3,7 +3,9 @@ import math
 from collections import deque
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
+import shapely
 from shapely import GEOSException
 from shapely.geometry import GeometryCollection, MultiPolygon, Point, Polygon
 from shapely.ops import polygonize, unary_union
@@ -13,6 +15,7 @@ from objectnat import config
 from objectnat.methods.noise.noise_reduce import dist_to_target_db, green_noise_reduce_db
 from objectnat.methods.noise.noise_simulation_simplified import _eval_donuts_gdf
 from objectnat.methods.utils.geom_utils import (
+    clip_polygons,
     gdf_to_circle_zones_from_point,
     get_point_from_a_thorough_b,
     polygons_to_multilinestring,
@@ -373,9 +376,93 @@ def _append_layered_reduce_polygons(
         prev_buffer = cur_buffer
 
 
+def _pairs_sorted(tree_geoms: np.ndarray, query_geoms: np.ndarray, predicate: str) -> tuple[np.ndarray, np.ndarray]:
+    """``(query, tree)`` position pairs ordered like ``GeoDataFrame.sjoin`` (by query, then tree position)."""
+    if len(tree_geoms) == 0 or len(query_geoms) == 0:
+        return np.empty(0, dtype=np.int64), np.empty(0, dtype=np.int64)
+    left, right = shapely.STRtree(tree_geoms).query(query_geoms, predicate=predicate)
+    order = np.lexsort((right, left))
+    return left[order], right[order]
+
+
+def _reflection_candidates(points, obstacles, obstacles_union, vis_poly, point_from, max_dist):
+    """
+    Visibility-polygon vertices that touch an obstacle and can seed a reflection, with the absorption
+    ratio of the first obstacle they touch and their distance from the current source.
+    Returns ``None`` when the geometry operations fail.
+    """
+    buffers = shapely.buffer(points, 1, quad_segs=1)
+    left, right = _pairs_sorted(obstacles.geometry.values, buffers, "intersects")
+    first = np.r_[True, left[1:] != left[:-1]] if len(left) else np.empty(0, dtype=bool)
+    left, right = left[first], right[first]
+    absorb = obstacles["absorb_ratio"].to_numpy(dtype=float)[right]
+    has_ratio = ~np.isnan(absorb)
+    left, absorb = left[has_ratio], absorb[has_ratio]
+    nearby_poly = point_from.buffer(1.1, quad_segs=2)
+    try:
+        free = shapely.difference(
+            shapely.difference(shapely.difference(buffers[left], vis_poly), obstacles_union), nearby_poly
+        )
+    except GEOSException:
+        return None
+    keep = ~shapely.is_empty(free) & (shapely.area(free) >= 0.01)
+    left, absorb = left[keep], absorb[keep]
+    dist = shapely.distance(points[left], point_from)
+    near = dist < max_dist - 5
+    return {"point": points[left][near], "absorb_ratio": absorb[near], "dist": dist[near]}
+
+
+def _join_noise_levels(candidates: dict, noise_from_point: gpd.GeoDataFrame, crs) -> gpd.GeoDataFrame:
+    """Left join of candidate points with the noise pieces they touch (one row per touched piece)."""
+    points = candidates["point"]
+    left, right = _pairs_sorted(noise_from_point.geometry.values, points, "intersects")
+    unmatched = np.setdiff1d(np.arange(len(points)), left)
+    rows = np.r_[left, unmatched]
+    matched = np.r_[np.ones(len(left), dtype=bool), np.zeros(len(unmatched), dtype=bool)]
+    order = np.argsort(rows, kind="stable")
+    rows, matched = rows[order], matched[order]
+    pieces = np.r_[right, np.zeros(len(unmatched), dtype=np.int64)][order]
+    level = np.full(len(rows), np.nan)
+    reduce = np.full(len(rows), np.nan)
+    level[matched] = noise_from_point["noise_level"].to_numpy(dtype=float)[pieces[matched]]
+    reduce[matched] = noise_from_point["reduce"].to_numpy(dtype=float)[pieces[matched]]
+    return gpd.GeoDataFrame(
+        {
+            "absorb_ratio": candidates["absorb_ratio"][rows],
+            "dist": candidates["dist"][rows],
+            "noise_level": level,
+            "reduce": reduce,
+        },
+        geometry=points[rows],
+        crs=crs,
+    )
+
+
+def _rows_intersecting(gdf: gpd.GeoDataFrame, geometry) -> gpd.GeoDataFrame:
+    """Rows of ``gdf`` intersecting ``geometry``, in their original order (spatial-index lookup)."""
+    positions = np.sort(gdf.sindex.query(geometry, predicate="intersects"))
+    return gdf.iloc[positions]
+
+
+def _cut_notch(obstacles: gpd.GeoDataFrame, notch) -> gpd.GeoDataFrame:
+    """Obstacles with ``notch`` cut out (only the rows it touches are recomputed)."""
+    positions = obstacles.sindex.query(notch, predicate="intersects")
+    if len(positions) == 0:
+        return obstacles
+    obstacles = obstacles.copy()
+    column = obstacles.geometry.name
+    rows = obstacles.index[positions]
+    obstacles.loc[rows, column] = obstacles.loc[rows, column].difference(notch)
+    return obstacles
+
+
 def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple] | None]:
     # Unpacking task
-    point_from, obstacles, trees_orig, passed_dist, deep, dist_db = task
+    point_from, obstacles, trees_orig, passed_dist, deep, dist_db = task[:6]
+    if len(task) > 6 and task[6] is not None:
+        # reflection tasks carry the notch to cut around their point; it is applied here, lazily,
+        # because most candidate reflections are dropped by the dead-area filter before they run
+        obstacles = _cut_notch(obstacles, task[6])
 
     def donuts_dist_values(dist_db, passed_dist, max_view_dist):
         new_dist_db = dist_db + [(passed_dist, None), (max_view_dist + passed_dist, None)]
@@ -401,7 +488,7 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
     local_crs = obstacles.crs
     dist = round(max_dist - passed_dist, 1)
 
-    obstacles = obstacles[obstacles.intersects(point_from.buffer(dist, quad_segs=8))]
+    obstacles = _rows_intersecting(obstacles, point_from.buffer(dist, quad_segs=8))
 
     if len(obstacles) == 0:
         obstacles_union = Polygon()
@@ -417,16 +504,15 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
     # Trees noise reduce
     reduce_polygons = []
     if len(trees_orig) > 0:
-        trees_orig = trees_orig[trees_orig.intersects(point_from.buffer(dist, quad_segs=8))]
+        trees_orig = _rows_intersecting(trees_orig, point_from.buffer(dist, quad_segs=8))
         if len(trees_orig) > 0:
             try:
-                trees = gdf_to_circle_zones_from_point(trees_orig, point_from, dist, resolution=tree_res)
-                trees = trees.clip(vis_poly, keep_geom_type=True).explode(index_parts=False)
+                tree_zones = gdf_to_circle_zones_from_point(trees_orig, point_from, dist, resolution=tree_res)
+                tree_geoms, _ = clip_polygons(tree_zones.geometry.values, vis_poly)
             except TypeError:
-                trees = gpd.GeoDataFrame()
+                tree_geoms = []
 
-            for _, row in trees.iterrows():
-                tree_geom = row.geometry
+            for tree_geom in tree_geoms:
                 if tree_geom.area < 1:
                     continue
                 dist_to_centroid = tree_geom.centroid.distance(point_from)
@@ -458,28 +544,23 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
             + noise_from_point.geometry.apply(polygons_to_multilinestring).tolist()
         )
 
-        cutted_polygons = gpd.GeoDataFrame(geometry=list(polygonize(unary_union(all_lines))), crs=local_crs)
-
-        cutted_polygons_points = cutted_polygons.copy()
-        cutted_polygons_points.geometry = cutted_polygons.representative_point()
-
-        joined = (
-            cutted_polygons_points.sjoin(noise_from_point, predicate="within", how="left")
-            .drop(columns="index_right")
-            .sjoin(reduce_polygons, predicate="within", how="left")
-            .drop(columns="index_right")
+        cut_polygons = np.asarray(list(polygonize(unary_union(all_lines))), dtype=object)
+        cut_points = shapely.point_on_surface(cut_polygons)
+        # level of the donut each piece lies in (donut parts never overlap: at most one)
+        level = np.full(len(cut_polygons), np.nan)
+        piece, donut = shapely.STRtree(noise_from_point.geometry.values).query(cut_points, predicate="within")
+        level[piece] = noise_from_point["noise_level"].to_numpy(dtype=float)[donut]
+        # total vegetation reduction of the layers covering each piece
+        piece, layer = shapely.STRtree(reduce_polygons.geometry.values).query(cut_points, predicate="within")
+        reduce = np.bincount(
+            piece, weights=reduce_polygons["reduce"].to_numpy(dtype=float)[layer], minlength=len(cut_polygons)
         )
-        joined.geometry = cutted_polygons.geometry
-        joined = (
-            joined.reset_index().groupby("index").agg({"geometry": "first", "reduce": "sum", "noise_level": "first"})
+        has_level = ~np.isnan(level)
+        noise_from_point = gpd.GeoDataFrame(
+            {"reduce": reduce[has_level], "noise_level": level[has_level] - reduce[has_level]},
+            geometry=cut_polygons[has_level],
+            crs=local_crs,
         )
-        joined = gpd.GeoDataFrame(joined, geometry="geometry", crs=local_crs)
-        noise_from_point = joined.copy()
-
-        noise_from_point = noise_from_point.dropna(subset=["noise_level"])
-
-        noise_from_point["reduce"] = noise_from_point["reduce"].fillna(0)
-        noise_from_point["noise_level"] = noise_from_point["noise_level"] - noise_from_point["reduce"]
     else:
         noise_from_point["reduce"] = 0
     noise_from_point = noise_from_point[noise_from_point.geom_type.isin(allowed_geom_types)]
@@ -492,27 +573,12 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
         vis_poly_points = [Point(coords) for coords in vis_poly.exterior.coords]
     else:
         vis_poly_points = [Point(coords) for geom in vis_poly.geoms for coords in geom.exterior.coords]
-    vis_poly_points = gpd.GeoDataFrame(geometry=vis_poly_points, crs=local_crs)
-
-    # Generating reflection points
-    vis_poly_points["point"] = vis_poly_points["geometry"].copy()
-    vis_poly_points.geometry = vis_poly_points.geometry.buffer(1, resolution=1)
-    vis_poly_points = vis_poly_points.sjoin(obstacles, predicate="intersects").drop(columns="index_right")
-    vis_poly_points = vis_poly_points[~vis_poly_points.index.duplicated(keep="first")]
-    vis_poly_points.dropna(subset=["absorb_ratio"], inplace=True)
-    nearby_poly = point_from.buffer(1.1, quad_segs=2)
-    try:
-        vis_poly_points.geometry = (
-            vis_poly_points.difference(vis_poly).difference(obstacles_union).difference(nearby_poly)
-        )
-    except GEOSException:
+    vis_poly_points = _reflection_candidates(
+        np.asarray(vis_poly_points, dtype=object), obstacles, obstacles_union, vis_poly, point_from, max_dist
+    )
+    if vis_poly_points is None:
         return noise_from_point, None
-    vis_poly_points = vis_poly_points[~vis_poly_points.is_empty]
-    vis_poly_points = vis_poly_points[vis_poly_points.area >= 0.01]
-    vis_poly_points["geometry"] = vis_poly_points["point"]
-    vis_poly_points["dist"] = vis_poly_points.distance(point_from)
-    vis_poly_points = vis_poly_points[vis_poly_points["dist"] < max_dist - 5]
-    vis_poly_points = vis_poly_points.sjoin(noise_from_point, predicate="intersects", how="left")
+    vis_poly_points = _join_noise_levels(vis_poly_points, noise_from_point, local_crs)
 
     if len(vis_poly_points) == 0:
         return noise_from_point, None
@@ -537,12 +603,11 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
             db_change = loc["reduce"]
             dist_change = loc["absorb_ratio"] * dist_last
             new_dist_db = [(dist - dist_change, db - db_change) for dist, db in dist_db]
-            task_obs = new_obs.copy()
-            task_obs.geometry = task_obs.difference(loc.geometry.buffer(1, quad_segs=1))
+            notch = loc.geometry.buffer(1, quad_segs=1)
             new_tasks.append(
                 (
                     _noise_from_point_task,
-                    (loc.geometry, task_obs, trees_orig, new_passed_dist, deep + 1, new_dist_db),
+                    (loc.geometry, new_obs, trees_orig, new_passed_dist, deep + 1, new_dist_db, notch),
                     kwargs,
                 )
             )

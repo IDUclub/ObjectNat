@@ -162,6 +162,90 @@ impl Grid {
         }
     }
 
+    /// Visits the cells crossed by the segment `p -> q` in order; `visit` returns `true` to stop.
+    pub(crate) fn walk_segment(&self, p: Pt, q: Pt, mut visit: impl FnMut(&[u32]) -> bool) {
+        // clip to the grid rectangle first, so the walk starts where the segment enters it
+        let d0 = sub(q, p);
+        let (x1, y1) = (
+            self.x0 + self.nx as f64 * self.cell,
+            self.y0 + self.ny as f64 * self.cell,
+        );
+        let (mut t0, mut t1) = (0.0f64, 1.0f64);
+        for (den, num) in [
+            (-d0[0], p[0] - self.x0),
+            (d0[0], x1 - p[0]),
+            (-d0[1], p[1] - self.y0),
+            (d0[1], y1 - p[1]),
+        ] {
+            if den == 0.0 {
+                if num < 0.0 {
+                    return;
+                }
+            } else {
+                let t = num / den;
+                if den < 0.0 {
+                    t0 = t0.max(t);
+                } else {
+                    t1 = t1.min(t);
+                }
+            }
+        }
+        if t0 > t1 {
+            return;
+        }
+        let (p, q) = (
+            [p[0] + t0 * d0[0], p[1] + t0 * d0[1]],
+            [p[0] + t1 * d0[0], p[1] + t1 * d0[1]],
+        );
+        let d = sub(q, p);
+        let mut i = self.clamp_i(p[0]) as isize;
+        let mut j = self.clamp_j(p[1]) as isize;
+        let (ti, tj) = (self.clamp_i(q[0]) as isize, self.clamp_j(q[1]) as isize);
+        let step_i: isize = if d[0] > 0.0 { 1 } else { -1 };
+        let step_j: isize = if d[1] > 0.0 { 1 } else { -1 };
+        let next_x = self.x0 + (i + if d[0] > 0.0 { 1 } else { 0 }) as f64 * self.cell;
+        let next_y = self.y0 + (j + if d[1] > 0.0 { 1 } else { 0 }) as f64 * self.cell;
+        let mut t_max_x = if d[0] != 0.0 {
+            (next_x - p[0]) / d[0]
+        } else {
+            f64::INFINITY
+        };
+        let mut t_max_y = if d[1] != 0.0 {
+            (next_y - p[1]) / d[1]
+        } else {
+            f64::INFINITY
+        };
+        let t_delta_x = if d[0] != 0.0 {
+            self.cell / d[0].abs()
+        } else {
+            f64::INFINITY
+        };
+        let t_delta_y = if d[1] != 0.0 {
+            self.cell / d[1].abs()
+        } else {
+            f64::INFINITY
+        };
+        let max_steps = (self.nx + self.ny) * 2 + 4;
+        for _ in 0..max_steps {
+            if visit(self.cell_items(i as usize, j as usize)) {
+                return;
+            }
+            if (i == ti && j == tj) || t_max_x.min(t_max_y) > 1.0 {
+                return;
+            }
+            if t_max_x < t_max_y {
+                i += step_i;
+                t_max_x += t_delta_x;
+            } else {
+                j += step_j;
+                t_max_y += t_delta_y;
+            }
+            if i < 0 || j < 0 || i >= self.nx as isize || j >= self.ny as isize {
+                return;
+            }
+        }
+    }
+
     /// Nearest hit of the ray `o + t*d` (t > 0) with the segments, via Amanatides–Woo traversal.
     /// Returns `(segment id, t)`.
     fn ray_cast(&self, segs: &[Seg], o: Pt, d: Pt) -> Option<(usize, f64)> {
@@ -220,6 +304,19 @@ impl Grid {
             }
         }
     }
+}
+
+/// Parameters `(t, u)` where segment `p + t (q - p)` meets segment `s` at `s.a + u (s.b - s.a)`.
+#[inline]
+pub(crate) fn segment_params(p: Pt, q: Pt, s: &Seg) -> Option<(f64, f64)> {
+    let d = sub(q, p);
+    let e = sub(s.b, s.a);
+    let den = cross(d, e);
+    if den == 0.0 {
+        return None;
+    }
+    let w = sub(s.a, p);
+    Some((cross(w, e) / den, cross(w, d) / den))
 }
 
 /// Ray parameter `t > 0` where `o + t*d` meets segment `s`, if it does.
@@ -332,14 +429,21 @@ pub struct Scratch {
     epoch: u32,
     cand: Vec<u32>,
     local: Vec<Seg>,
+    local_ids: Vec<u32>,
     dirs: Vec<(f64, Pt)>,
+}
+
+/// Visible parts of the walls around an observer, as straight runs in angular order.
+pub struct Runs {
+    /// `(wall, start, end)`; `wall` is a global wall index, or `None` for the edge of the view disc.
+    pub runs: Vec<(Option<u32>, Pt, Pt)>,
 }
 
 /// Global obstacle index shared by all observers.
 pub struct Obstacles {
     pub segs: Vec<Seg>,
-    one_sided: Vec<bool>,
-    grid: Grid,
+    pub(crate) one_sided: Vec<bool>,
+    pub(crate) grid: Grid,
 }
 
 impl Obstacles {
@@ -392,13 +496,86 @@ impl Obstacles {
         }
     }
 
+    /// True when the segment `p -> q` crosses a wall strictly between its ends (walls in `skip` ignored).
+    pub fn segment_blocked(&self, p: Pt, q: Pt, skip: Option<u32>) -> bool {
+        let len = norm(sub(q, p));
+        if len == 0.0 {
+            return false;
+        }
+        let eps = 1e-9 / len.max(1e-9) + 1e-12;
+        let mut blocked = false;
+        self.grid.walk_segment(p, q, |items| {
+            for &id in items {
+                if Some(id) == skip {
+                    continue;
+                }
+                if let Some((t, u)) = segment_params(p, q, &self.segs[id as usize]) {
+                    if t > eps && t < 1.0 - eps && (-1e-12..=1.0 + 1e-12).contains(&u) {
+                        blocked = true;
+                        return true;
+                    }
+                }
+            }
+            false
+        });
+        blocked
+    }
+
+    /// Parameters along `p -> q` where it crosses any segment (for parity / inside-length tests).
+    pub fn segment_crossings(&self, p: Pt, q: Pt, out: &mut Vec<f64>) {
+        out.clear();
+        self.grid.walk_segment(p, q, |items| {
+            for &id in items {
+                if let Some((t, u)) = segment_params(p, q, &self.segs[id as usize]) {
+                    if (0.0..=1.0).contains(&t) && (0.0..1.0).contains(&u) {
+                        out.push(t);
+                    }
+                }
+            }
+            false
+        });
+        out.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+        out.dedup_by(|b, a| (*b - *a).abs() < 1e-12);
+    }
+
     /// Visibility polygon ring (counter-clockwise, not closed) of observer `o` within radius `r`.
     pub fn visibility(&self, o: Pt, r: f64, quad_segs: usize, sc: &mut Scratch) -> Vec<Pt> {
         if r.is_nan() || r <= 0.0 {
             return Vec::new();
         }
-        let disc = disc_polygon(o, r, quad_segs);
+        let Some(runs) = self.visible_runs(o, r, quad_segs, sc) else {
+            return disc_polygon(o, r, quad_segs);
+        };
+        let eps = r * 1e-9;
+        let mut ring: Vec<Pt> = Vec::with_capacity(2 * runs.runs.len());
+        let mut push = |p: Pt| {
+            if let Some(last) = ring.last() {
+                if (last[0] - p[0]).abs() <= eps && (last[1] - p[1]).abs() <= eps {
+                    return;
+                }
+            }
+            ring.push(p);
+        };
+        for &(_, pa, pb) in &runs.runs {
+            push(pa);
+            push(pb);
+        }
+        if ring.len() > 1 {
+            let (f, l) = (ring[0], ring[ring.len() - 1]);
+            if (f[0] - l[0]).abs() <= eps && (f[1] - l[1]).abs() <= eps {
+                ring.pop();
+            }
+        }
+        // Obstacle vertices are kept even when collinear (e.g. OSM nodes on a straight wall).
+        ring
+    }
 
+    /// Straight runs of the visibility boundary (absolute coordinates, counter-clockwise); `None` when
+    /// no wall is within reach (the boundary is the view disc).
+    pub fn visible_runs(&self, o: Pt, r: f64, quad_segs: usize, sc: &mut Scratch) -> Option<Runs> {
+        if r.is_nan() || r <= 0.0 {
+            return None;
+        }
         // 1. candidate segments (deduplicated with an epoch stamp)
         if sc.stamp.len() < self.segs.len() {
             sc.stamp.resize(self.segs.len(), 0);
@@ -427,6 +604,7 @@ impl Obstacles {
         //    observer: UTM-sized coordinates would otherwise eat most of the f64 precision.
         let disc_rel = disc_polygon([0.0, 0.0], r, quad_segs);
         sc.local.clear();
+        sc.local_ids.clear();
         let r2 = r * r;
         for &id in &sc.cand {
             let s = &self.segs[id as usize];
@@ -443,12 +621,13 @@ impl Obstacles {
             if let Some(c) = clip_to_convex(&rel, &disc_rel) {
                 if c.a != c.b {
                     sc.local.push(c);
+                    sc.local_ids.push(id);
                 }
             }
         }
         let n_obstacle = sc.local.len();
         if n_obstacle == 0 {
-            return disc;
+            return None;
         }
         let nd = disc_rel.len();
         for k in 0..nd {
@@ -534,24 +713,15 @@ impl Obstacles {
             spans.push((sid, pa, pb));
         }
         if spans.is_empty() {
-            return disc;
+            return None;
         }
 
-        // 5. consecutive intervals on the same wall form one straight edge: keep only its ends
+        // 5. consecutive intervals on the same wall form one straight run: keep only its ends
         let ns = spans.len();
         let start = (0..ns)
             .find(|&k| spans[k].0 != spans[(k + ns - 1) % ns].0)
             .unwrap_or(0);
-        let eps = r * 1e-9;
-        let mut ring: Vec<Pt> = Vec::with_capacity(2 * ns);
-        let mut push = |p: Pt| {
-            if let Some(last) = ring.last() {
-                if (last[0] - p[0]).abs() <= eps && (last[1] - p[1]).abs() <= eps {
-                    return;
-                }
-            }
-            ring.push(p);
-        };
+        let mut runs = Vec::with_capacity(ns);
         let mut k = 0;
         while k < ns {
             let (sid, pa, mut pb) = spans[(start + k) % ns];
@@ -560,21 +730,15 @@ impl Obstacles {
                 pb = spans[(start + j) % ns].2;
                 j += 1;
             }
-            push(pa);
-            push(pb);
+            let wall = (sid < n_obstacle).then(|| sc.local_ids[sid]);
+            runs.push((
+                wall,
+                [pa[0] + o[0], pa[1] + o[1]],
+                [pb[0] + o[0], pb[1] + o[1]],
+            ));
             k = j;
         }
-        if ring.len() > 1 {
-            let (f, l) = (ring[0], ring[ring.len() - 1]);
-            if (f[0] - l[0]).abs() <= eps && (f[1] - l[1]).abs() <= eps {
-                ring.pop();
-            }
-        }
-        // Obstacle vertices are kept even when collinear (e.g. OSM nodes on a straight wall): the
-        // noise model seeds reflections from polygon vertices, and the reference keeps them too.
-        ring.into_iter()
-            .map(|p| [p[0] + o[0], p[1] + o[1]])
-            .collect()
+        Some(Runs { runs })
     }
 }
 
