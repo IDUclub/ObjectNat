@@ -39,147 +39,126 @@ Object-oriented Network Analysis Tools
 
 ----
 
-**ObjectNat** — это библиотека с открытым исходным кодом, разработанная командой **IDU**
-для пространственного и сетевого анализа в городских исследованиях.
-Библиотека предоставляет инструменты для анализа **доступности**, **видимости**,
-**распространения шума** и **обеспеченности сервисами**.
+**ObjectNat** — библиотека Python с открытым исходным кодом для пространственного анализа городских объектов
+(зданий, сервисов, наблюдателей на улицах, источников шума), разрабатываемая командой IDU Университета ИТМО.
+Она рассчитывает доступность, зоны покрытия и обеспеченность сервисами на графах улиц из
+`IduEdu <https://github.com/IDUclub/IduEdu>`__, видимость в 2D и с учётом высот зданий, уровни шума и
+инсоляцию. Входные и выходные данные — GeoDataFrame библиотеки GeoPandas; ресурсоёмкие вычисления выполняются
+в скомпилированном расширении на Rust.
+
+`Документация <https://iduclub.github.io/ObjectNat/>`__ · `Примеры <https://iduclub.github.io/ObjectNat/methods/examples/index.html>`__ ·
+`Переход с версии 1.x <https://iduclub.github.io/ObjectNat/migration_1_to_2.html>`__ (на английском)
+
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21.gif
+   :align: center
+   :width: 520
+   :alt: Тени жилого района 21 июня, кадры через 15 минут
 
 ----
 
-Основные функции
-----------------
+Методы
+------
 
-Каждая функция сопровождается **примером в Jupyter Notebook** и **документацией**.
+**Изохроны** (`документация <https://iduclub.github.io/ObjectNat/methods/isochrones.html>`__, `пример <https://iduclub.github.io/ObjectNat/methods/examples/isochrones.html>`__).
+``get_graph_isochrones`` и ``get_stepped_graph_isochrones`` возвращают территорию, достижимую из точек отправления
+за заданное время (мин) или сетевое расстояние (м) по графу ``iduedu.UrbanGraph``: один полигон на точку или
+пояса шириной ``step``. Полигон строится по буферам остаточного расстояния вокруг достижимых узлов
+(``"radius"``), по буферам достижимых улиц (``"ways"``) или по объединённым буферам (``"separate"``).
 
-1. **Изохроны и транспортная доступность**
+**Зоны покрытия** (`документация <https://iduclub.github.io/ObjectNat/methods/coverage.html>`__, `пример <https://iduclub.github.io/ObjectNat/methods/examples/coverage.html>`__).
+``get_graph_coverage`` и ``get_stepped_graph_coverage`` относят каждое место к сервису, до которого сетевая
+стоимость в пределах заданного бюджета минимальна (поиск по обращённому графу, ячейки Вороного узлов графа),
+поэтому зоны не перекрываются. ``get_radius_coverage`` строит зоны без графа, по фиксированному радиусу.
 
-   Изохроны представляют собой области, достижимые из исходной точки за заданное время по транспортной сети.
-   Эта функция позволяет анализировать транспортную доступность с использованием графов пешеходного, автомобильного,
-   общественного транспорта или их комбинации, подготовленных в формате ``UrbanGraph`` через IduEdu.
+**Обеспеченность сервисами** (`документация <https://iduclub.github.io/ObjectNat/methods/provision.html>`__,
+`пример <https://iduclub.github.io/ObjectNat/methods/examples/provision.html>`__). ``get_service_provision`` распределяет спрос зданий между
+сервисами с ограниченной вместимостью по гравитационной вероятностной модели на плотной или разреженной
+(pandas sparse) матрице стоимостей с нормативным порогом. Результат — ``ProvisionResult`` с разреженной матрицей
+потоков и показателями по зданиям и сервисам (``provision_value`` — доля спроса, обеспеченная в пределах порога).
+Вспомогательные функции присоединяют показатели к GeoDataFrame, строят линии связей, удаляют связи длиннее
+нового порога и обрезают результат по территории.
 
-   Библиотека поддерживает несколько методов построения изохрон:
+**Видимость** (`документация <https://iduclub.github.io/ObjectNat/methods/visibility.html>`__, примеры: `2D <https://iduclub.github.io/ObjectNat/methods/examples/visibility.html>`__,
+`2.5D <https://iduclub.github.io/ObjectNat/methods/examples/viewshed.html>`__). ``get_visibility`` вычисляет точный полигон видимости (изовисту)
+каждого наблюдателя среди препятствий, которые считаются стенами бесконечной высоты, а при
+``isovist_metrics=True`` — площадь, компактность, окклюзивность, радиальные статистики, смещение центроида
+(drift) и долю видимого круга. ``get_viewshed`` учитывает высоты зданий и рельеф: ячейка сетки видна, если луч
+зрения от глаз наблюдателя (по умолчанию 1,6 м над землёй или над крышей) до ячейки проходит выше всех стен и
+поверхности земли. ``get_visibility_catchment`` и ``get_viewshed_catchment`` подсчитывают для каждой ячейки
+число наблюдателей, которые её видят (наблюдателей вдоль улиц размещает ``get_observer_points``), и возвращают
+зоны одного класса видимости.
 
-   - **Базовые изохроны**: отображают одну зону, достижимую за заданное время.
-   - **Шаговые изохроны**: делят зону доступности на интервалы времени (например, 3, 5, 10 минут).
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/viewshed_vs_visibility.png
+   :align: center
+   :width: 100%
+   :alt: Полигон видимости 2D, область видимости с уровня улицы и с крыши
 
-   📘 `Пример <https://iduclub.github.io/ObjectNat/methods/examples/isochrones.html>`__
-   🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/isochrones.html>`__
+**Шум** (`документация <https://iduclub.github.io/ObjectNat/methods/noise.html>`__, `пример <https://iduclub.github.io/ObjectNat/methods/examples/noise.html>`__).
+``simulate_noise_grid`` рассчитывает уровни звука в узлах сетки приёмников от точечных, линейных и площадных
+источников: прямой путь и отражения первого порядка с учётом геометрического расхождения, поглощения в воздухе,
+поглощения стенами и ослабления растительностью, с энергетическим суммированием. ``simulate_noise`` —
+волновая модель для точечных источников с многократными отражениями, ``calculate_simplified_noise_frame`` —
+быстрая оценка по маскам видимости и затуханию с расстоянием. Влияние земли и дифракция не моделируются.
+Подробнее: `вики <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__.
 
-2. **Зоны покрытия**
+**Инсоляция** (`документация <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__, `пример <https://iduclub.github.io/ObjectNat/methods/examples/insolation.html>`__).
+``get_insolation`` прослеживает положение солнца (алгоритм NOAA) в течение дня или периода и возвращает для
+сетки точек на земле среди зданий известной высоты и, при необходимости, рельефа (GeoDataFrame, GeoTIFF или
+массив) зоны продолжительности прямого солнечного освещения в часах за сутки, включая участки, на которые прямое
+солнце не попадает. Для точек также доступны часы в худший день и наибольшая непрерывная продолжительность
+инсоляции, которую ограничивают нормативы. ``get_facade_insolation`` рассчитывает те же величины для точек на
+фасадах по этажам и проверяет их по нормативу.
 
-   Функция генерации **зон покрытия** от набора исходных точек с использованием транспортной сети. Вычисляет область,
-   достижимую из каждой точки по **времени в пути** или **дистанции**, затем строит полигоны с помощью
-   **диаграмм Вороного** и обрезает их по заданной границе, если она указана.
-
-   📘 `Пример <https://iduclub.github.io/ObjectNat/methods/examples/coverage.html>`__
-   🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/coverage.html>`__
-
-3. **Анализ обеспеченности сервисами**
-
-   Функция оценки обеспеченности жилых зданий и их населения услугами (например, школы, поликлиники),
-   которые имеют ограниченную **вместимость** и заданный **порог доступности** (в минутах или метрах).
-   Функция моделирует **баланс спроса и предложения**, оценивая, насколько хорошо услуги удовлетворяют потребности
-   близлежащих зданий в пределах допустимого времени.
-   В ObjectNat 2.0 результат возвращается как структурированный ``ProvisionResult`` со sparse-матрицей потоков
-   и helper-функциями для зданий, сервисов и геометрий связей.
-
-   📘 `Пример <https://iduclub.github.io/ObjectNat/methods/examples/provision.html>`__
-   🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/provision.html>`__
-
-4. **Анализ видимости**
-
-   Функция оценки видимости от заданной точки или множества точек до близлежащих зданий в пределах заданного радиуса.
-   Применяется для оценки визуальной доступности в городской среде. ``get_visibility`` считает
-   точную область видимости в скомпилированном расширении на Rust, параллельно для набора точек наблюдения,
-   и может добавить метрики изовиста (площадь, компактность, окклюзивность, статистики радиусов, смещение).
-   ``get_visibility_catchment`` собирает видимость множества наблюдателей в бассейны видимости,
-   ``get_viewshed`` и ``get_viewshed_catchment`` считают 2.5D-видимость и бассейны видимости с учётом
-   высоты зданий и рельефа.
-
-   📘 `Пример <https://iduclub.github.io/ObjectNat/methods/examples/visibility.html>`__
-   🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/visibility.html>`__
-
-5. **Моделирование шума**
-
-   Симуляция распространения шума от источников с учётом **препятствий**, **растительности** и **факторов окружающей среды**.
-   ``simulate_noise_grid`` считает уровни на сетке приёмников в Rust (прямой звук, отражения первого порядка,
-   энергетическое сложение).
-
-   📘 `Пример <https://iduclub.github.io/ObjectNat/methods/examples/noise.html>`__
-   🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/noise.html>`__
-   🧠 `Подробное описание <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__
-
-6. **Инсоляция**
-
-   ``get_insolation`` проходит за солнцем в течение выбранного дня и показывает, сколько часов прямого
-   солнца получает каждое место среди зданий заданной высоты и рельефа, включая участки, которые весь
-   день остаются в тени. ``get_facade_insolation`` считает то же по этажам на фасадах, для проверки
-   инсоляции окон.
-
-   🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__
-
-----
-
-Городские графы с помощью *IduEdu*
-----------------------------------
-
-Для оптимальной работы **ObjectNat** рекомендуется использовать графы,
-созданные библиотекой `IduEdu <https://github.com/IDUclub/IduEdu>`__.
-Графовые методы ObjectNat принимают ``iduedu.UrbanGraph`` напрямую; ObjectNat больше не строит
-NetworkX-графы внутри библиотеки.
-
-**IduEdu** — это библиотека на Python с открытым исходным кодом, предназначенная для построения и обработки
-сложных городских сетей на основе данных OpenStreetMap и расписаний GTFS Schedule.
-
-
-**IduEdu** можно установить с помощью ``pip``::
-
-    pip install IduEdu
-
-Пример использования::
-
-    from iduedu import get_4326_boundary, get_intermodal_graph
-
-    poly = get_4326_boundary(osm_id=1114252)
-    urban_graph = get_intermodal_graph(territory=poly, clip_by_territory=True)
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_day_sun_hours.png
+   :align: center
+   :width: 100%
+   :alt: Классы продолжительности прямого солнечного освещения 21 марта и 21 июня
 
 ----
 
 Установка
 ---------
 
-ObjectNat поддерживает Python 3.11–3.14 в Windows, macOS и Linux.
+::
 
-**ObjectNat** можно установить с помощью ``pip``::
+    pip install objectnat
 
-    pip install ObjectNat
-
-Для Linux, macOS и Windows публикуются готовые колёса с собранным расширением на Rust
-(``objectnat._rust``: точный расчёт видимости и шумовая модель), компилятор для ``pip`` не нужен.
-Установка из исходников собирает расширение и требует Rust (`rustup <https://rustup.rs>`__)::
-
-    pip install .
-
+ObjectNat поддерживает Python 3.11–3.14 в Linux, macOS и Windows и устанавливает IduEdu версии 2.2 или новее
+в пределах серии 2.x. Колёса (wheels) содержат скомпилированное расширение ``objectnat._rust``, поэтому
+компилятор для ``pip`` не нужен. Установка из исходного кода (``pip install .``) собирает расширение и требует
+инструментов Rust (`rustup <https://rustup.rs>`__). Для чтения рельефа из GeoTIFF нужен необязательный пакет
+``rasterio``.
 
 ----
 
-Конфигурация
-------------
+Графы улиц из IduEdu
+--------------------
 
-Настройте вывод логов и прогресс-бары через модуль конфигурации::
+Методы, работающие с графом, принимают ``iduedu.UrbanGraph`` (узлы и рёбра в виде GeoDataFrame, веса рёбер
+``time_min`` и ``length_meter``) и используют алгоритмы Дейкстры из IduEdu; ObjectNat сам графы не строит.
+IduEdu 2.4 и новее загружает выгрузку Geofabrik и вырезает из неё территорию, поэтому запросы к Overpass не нужны
+(для вырезания требуется ``pip install "iduedu[pbf]"``)::
+
+    from iduedu import config, download_osm_pbf, get_4326_boundary, get_intermodal_graph
+
+    pbf = download_osm_pbf(osm_id=1114252, region="northwestern-fed-district")
+    with config.use_pbf(pbf):
+        boundary = get_4326_boundary(osm_id=1114252)
+        graph = get_intermodal_graph(territory=boundary, clip_by_territory=True)
+
+Без блока ``with`` те же вызовы обращаются к Overpass API.
+
+----
+
+Настройка
+---------
+
+::
 
     from objectnat import config
 
-    config.change_logger_lvl("INFO")   # отключить отладочные логи
-    config.set_enable_tqdm(False)      # отключить прогресс-бары tqdm
-
-Миграция на ObjectNat 2.0
--------------------------
-
-ObjectNat 2.0 заменяет NetworkX-входы на ``iduedu.UrbanGraph``, переименовывает
-функции доступности и возвращает ``ProvisionResult`` из анализа обеспеченности.
-См. migration guide в документации:
-`Migration 1.x to 2.0 <https://iduclub.github.io/ObjectNat/migration_1_to_2.html>`__.
+    config.change_logger_lvl("INFO")   # скрыть отладочные сообщения
+    config.set_enable_tqdm(False)      # отключить индикаторы выполнения
 
 ----
 
@@ -188,20 +167,18 @@ ObjectNat 2.0 заменяет NetworkX-входы на ``iduedu.UrbanGraph``, �
 
 - `НЦКР <https://actcognitive.org/>`_ — Национальный центр когнитивных исследований
 - `ИДУ <https://idu.itmo.ru/>`_ — Институт дизайна и урбанистики
-- `Наталья Чичкова <https://t.me/nancy_nat>`_ — менеджер проекта
-- `Данила Олейников (Donny) <https://t.me/ddonny_dd>`_ — ведущий инженер-разработчик
+- `Наталья Чичкова <https://t.me/nancy_nat>`_ — руководитель проекта
+- `Данила Олейников (Donny) <https://t.me/ddonny_dd>`_ — ведущий инженер-программист
+
+Порядок участия в разработке описан в
+`CONTRIBUTING.md <https://github.com/IDUclub/ObjectNat/blob/master/CONTRIBUTING.md>`__.
 
 ----
 
-Цитирование ObjectNat
----------------------
+Цитирование
+-----------
 
-Если вы используете ObjectNat в исследованиях, пожалуйста, цитируйте библиотеку. Метаданные для цитирования
-хранятся в `CITATION.cff <https://github.com/IDUclub/ObjectNat/blob/master/CITATION.cff>`__; на GitHub кнопка
-**Cite this repository** на боковой панели репозитория копирует их в формате APA или BibTeX.
-Публикации об ObjectNat будут перечислены ниже.
-
-Публикации
-----------
-
-Скоро будут опубликованы.
+Метаданные для цитирования находятся в
+`CITATION.cff <https://github.com/IDUclub/ObjectNat/blob/master/CITATION.cff>`__; на GitHub кнопка
+**Cite this repository** на боковой панели репозитория выдаёт их в формате APA или BibTeX. Публикации об ObjectNat
+будут перечислены здесь.
