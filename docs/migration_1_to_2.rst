@@ -82,13 +82,12 @@ back to source objects when needed.
 Visibility API
 --------------
 
-Visibility is exposed through one public function:
-
-- :func:`objectnat.get_visibility`
-
-Older names such as ``get_visibility_accurate`` and
-``get_visibilities_from_points`` are replaced by the unified ``method`` and
-parallel execution parameters of ``get_visibility``.
+``get_visibility_accurate`` and ``get_visibilities_from_points`` are replaced by :func:`objectnat.get_visibility`,
+which accepts one or many observers and computes exact visibility polygons in the Rust extension, multi-threaded.
+``method="simple"`` is deprecated: both values of ``method`` return the exact result, and ``resolution`` and
+``parallel`` have no effect. Releases of the 2.x series added :func:`objectnat.get_visibility_catchment`,
+:func:`objectnat.get_observer_points`, isovist metrics (``isovist_metrics=True``) and the 2.5D functions
+:func:`objectnat.get_viewshed` and :func:`objectnat.get_viewshed_catchment`; see :doc:`methods/visibility`.
 
 Removed in 2.0
 --------------
@@ -104,11 +103,7 @@ The following APIs and dependencies have been removed in the 2.0 release:
 Noise
 -----
 
-Noise simulation keeps the public :func:`objectnat.simulate_noise` and
-:func:`objectnat.calculate_simplified_noise_frame` entrypoints, but the
-documentation now distinguishes their roles:
-
-- ``simulate_noise`` is the detailed point-source model with reflections,
-  obstacles, absorption ratios, and layered vegetation attenuation.
-- ``calculate_simplified_noise_frame`` is the faster visibility-and-decay frame
-  for point, line, and polygon noise sources.
+:func:`objectnat.simulate_noise` (wave-front model for point sources) and
+:func:`objectnat.calculate_simplified_noise_frame` (visibility masks and distance decay for point, line and polygon
+sources) keep their signatures. Releases of the 2.x series added :func:`objectnat.simulate_noise_grid`, a
+receiver-grid model with direct paths, first-order reflections and energy summation; see :doc:`methods/noise`.

@@ -1,117 +1,132 @@
-Service Provision Analysis
-==========================
+Service Provision
+=================
 
-This module evaluates how well **services** (e.g., schools, clinics, shops)
-cover **residential buildings** based on their **capacity** and **accessibility**.
-It models **demand–supply relationships** and provides tools to analyze, visualize,
-and adjust service coverage.
+Overview
+--------
 
-----
+Service provision analysis allocates the **demand** of buildings (for example, the number of school-age children)
+to **services** with limited **capacity** (school places), given a matrix of travel costs between them and a
+normative **threshold** (minutes or metres). It shows which buildings are provided within the threshold, which are
+provided only by services farther away, and which services are overloaded or underused.
 
-    Service provision analysis helps estimate how effectively urban infrastructure
-    meets population needs.
+:func:`objectnat.get_service_provision` computes the allocation and returns a :class:`objectnat.ProvisionResult`.
+Helper functions join the metrics back to the buildings and services and build link geometries;
+:func:`objectnat.recalculate_links` and :func:`objectnat.clip_provision` adjust a computed result.
 
-----
+Inputs
+------
 
-Evaluate Initial Provision
---------------------------
+- ``buildings``: GeoDataFrame with a numeric demand column (``buildings_demand_column``, default ``"demand"``);
+- ``services``: GeoDataFrame with a numeric capacity column (``services_capacity_column``, default ``"capacity"``);
+- ``distance_matrix``: costs with rows ``buildings.index`` and columns ``services.index``, in the units of
+  ``threshold``. It may be a dense DataFrame (``inf`` or ``NaN`` for unreachable pairs) or a pandas sparse
+  DataFrame (``SparseDtype`` with ``NaN`` or ``inf`` as fill value) that stores only reachable pairs. Sparse
+  matrices are read entry by entry without densifying, so large areas fit in memory. IduEdu's ``od_matrix``
+  returns such a sparse matrix (see :doc:`examples/calculate_od_matrix`).
 
-Calculates **provision scores** between population points and service facilities
-and returns a :class:`objectnat.ProvisionResult`. The result keeps the sparse
-building-service allocation matrix together with per-building and per-service
-summary tables. This separates the calculation step from the materialization of
-GeoDataFrames for mapping or export.
+Method
+------
 
-The calculation considers:
+The allocation is a gravity-based probabilistic model computed in ObjectNat's Rust extension over the sparse
+matrix entries:
 
-- **Distance or time thresholds**
-- **Facility capacity**
-- **Demand distribution**
+1. Candidate links are building–service pairs with a finite cost ``d <= 3 * threshold``; the model uses
+   ``a = d + 1``.
+2. In each iteration every service with remaining capacity distributes it over the buildings with remaining
+   demand within the current selection range, keeping the buildings whose gravity weight ``1 / a²`` is in the upper
+   quantile of its candidates, by weighted random draws.
+3. Every building accepts at most its remaining demand from the offers, again by weighted draws.
+4. Buildings and services with no remaining demand, capacity or candidates drop out; the selection range grows by
+   a factor of 1.5, and the iterations continue until nothing can be allocated.
+
+The random streams are seeded per object and iteration from ``seed``, so a fixed seed gives the same result
+regardless of the number of CPU cores. Different seeds give alternative allocations with the same model.
+
+Outputs
+-------
+
+:class:`objectnat.ProvisionResult` holds
+
+- ``flow``: sparse building × service matrix of allocated demand;
+- ``demand_rows``: per building ``demand``, ``demand_left``, ``supplied_demands_within`` and
+  ``supplied_demands_without`` (allocated from services within / beyond ``threshold``), ``min_dist`` (cost to the
+  nearest service), ``avg_dist`` (flow-weighted mean cost) and ``provision_value`` =
+  ``supplied_demands_within / demand``;
+- ``capacity_rows``: per service ``capacity``, ``capacity_left``, ``carried_capacity_within``,
+  ``carried_capacity_without`` and ``service_load`` (total allocated demand);
+- ``distance_matrix`` and ``threshold`` used for the calculation.
+
+:func:`objectnat.get_provision_buildings` and :func:`objectnat.get_provision_services` join these metrics to copies
+of the input GeoDataFrames; :func:`objectnat.get_provision_links` returns one straight line per non-zero flow, from the
+representative point of the building to the service, with ``building_index``, ``service_index``, ``demand``
+(allocated units) and ``distance`` (cost).
 
 .. autofunction:: objectnat.get_service_provision
-
-Provision Result
-----------------
-
-``ProvisionResult`` is the central output of service provision analysis. It is
-designed to be lightweight enough for recalculation and explicit enough for
-downstream joins.
 
 .. autoclass:: objectnat.ProvisionResult
    :members:
 
-The main fields are:
-
-- ``flow`` — sparse building-service matrix. Rows match building indices,
-  columns match service indices, and non-zero values are allocated demand.
-- ``demand_rows`` — per-building metrics, including original demand, remaining
-  demand, supplied demand inside/outside the normative threshold, minimum
-  distance, average weighted distance, and provision value.
-- ``capacity_rows`` — per-service metrics, including capacity, remaining
-  capacity, carried capacity inside/outside the threshold, and total service
-  load.
-- ``distance_matrix`` — aligned cost matrix used for the calculation.
-- ``threshold`` — normative distance or time threshold used to classify
-  within-threshold and outside-threshold flows.
-
-Materialize GeoDataFrames
--------------------------
-
-Use the helper functions below to join calculated provision metrics back to
-source objects and to create link geometries between buildings and services.
-
 .. autofunction:: objectnat.get_provision_buildings
+
 .. autofunction:: objectnat.get_provision_services
+
 .. autofunction:: objectnat.get_provision_links
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_initial.png
-   :alt: service_provision_initial
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_buildings.png
+   :alt: Provision value of residential buildings
    :align: center
-   :width: 80%
+   :width: 85%
 
-   Initial service provision analysis — demand–supply balance based on accessibility.
+   Provision value of residential buildings for the example services with a 10-minute threshold on the intermodal
+   travel-time matrix; circles show service capacity. Non-residential buildings are grey.
 
-----
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_initial.png
+   :alt: Provision with links
+   :align: center
+   :width: 70%
 
-Recalculate Provision
----------------------
+   Provision result with building–service links.
 
-Allows recalculation of provision results after tightening the maximum allowed
-link distance **without recomputing the full OD-matrix**. Existing flows whose
-cost exceeds ``new_max_dist`` are removed, and aggregate metrics are rebuilt.
-Removed demand is not redistributed to other services; run
-:func:`objectnat.get_service_provision` again when a full reallocation is needed.
+Recalculation and clipping
+--------------------------
+
+:func:`objectnat.recalculate_links` removes the flows whose cost exceeds ``new_max_dist`` and rebuilds the
+aggregate metrics without a new allocation. The removed demand is not redistributed to other services; run
+:func:`objectnat.get_service_provision` again for a full reallocation.
+
+:func:`objectnat.clip_provision` keeps the buildings that intersect ``selection_zone``, the links of these buildings
+and the services the links refer to. All four inputs must share one CRS.
 
 .. autofunction:: objectnat.recalculate_links
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_recalculated.png
-   :alt: service_provision_recalculated
-   :align: center
-   :width: 80%
-
-   Recalculated provision results using adjusted travel-time thresholds.
-
-----
-
-Clip to Analysis Area
----------------------
-
-Restricts provision outputs to a given **geographic boundary**
-(e.g., administrative region, neighborhood, planning area).
-
 .. autofunction:: objectnat.clip_provision
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_clipped.png
-   :alt: service_provision_clipped
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_recalculated.png
+   :alt: Recalculated provision
    :align: center
-   :width: 80%
+   :width: 70%
 
-   Provision results clipped to a selected administrative boundary.
+   Provision after :func:`objectnat.recalculate_links`.
 
-----
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_clipped.png
+   :alt: Clipped provision
+   :align: center
+   :width: 70%
 
-Example notebook
-----------------
+   Provision clipped to a selection zone.
 
-:doc:`examples/calculate_od_matrix`
-:doc:`examples/provision`
+Limitations
+-----------
+
+- The allocation is stochastic: individual flows depend on ``seed``, aggregate metrics vary little between seeds
+  for large inputs but can vary for small ones.
+- Demand and capacity are integers (allocated in units); fractional values are truncated.
+- The model has no explicit choice behaviour (quality, preference, catchment rules); every reachable service
+  within ``3 * threshold`` can receive demand.
+- The result is only as accurate as the cost matrix; the example matrix holds travel times on an intermodal graph
+  in minutes.
+
+Example notebooks
+-----------------
+
+:doc:`examples/calculate_od_matrix` (cost matrix with IduEdu) and :doc:`examples/provision`.

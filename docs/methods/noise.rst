@@ -1,120 +1,136 @@
-Noise Simulation & Noise Frame
-==============================
+Noise Simulation
+================
 
-**Noise Simulation** models how sound propagates from one or more **source points**,
-taking into account **obstacles**, **vegetation**, and **environmental conditions**.
-The outputs are **noise exposure maps** that are useful for **urban planning**,
-**environmental impact assessments**, and **acoustic zoning**.
+Overview
+--------
 
-----
+The noise functions estimate sound levels around **sources** among **obstacles** (buildings, walls) and vegetation
+and return them as polygons of equal level band (``noise_level``, dB). Three functions differ in the propagation
+model and in cost:
 
-    The module provides several simulation methods depending on the required level of detail and computational performance.
+.. list-table::
+   :header-rows: 1
+   :widths: 28 22 50
 
-    - **Receiver-grid simulation** — sound levels on a regular grid of receivers from point
-      sources, with direct paths, first-order reflections, vegetation and energy summation;
-      computed in ObjectNat's Rust extension.
-    - **Full wave-based simulation** — detailed point-source modeling with reflections,
-      obstacle absorption, and vegetation attenuation.
-    - **Simplified geometric frame** — faster approximate results for point, line,
-      and polygon sources using visibility masks and distance decay.
+   * - Function
+     - Sources
+     - Model
+   * - :func:`objectnat.simulate_noise_grid`
+     - points, lines, polygons
+     - Levels on a regular grid of **receivers**: direct path and first-order reflections, energy summation (Rust)
+   * - :func:`objectnat.simulate_noise`
+     - points
+     - Wave-front propagation by decay layers with multiple reflections and obstacle absorption
+   * - :func:`objectnat.calculate_simplified_noise_frame`
+     - points, lines, polygons
+     - Visibility masks and distance decay, without reflections or absorption
 
-----
+All three take the source level ``source_noise_db`` (dB at 1 m from the source) and the characteristic frequency
+``geometric_mean_freq_hz`` (Hz) either as arguments or as per-source columns, and the air temperature (°C), which
+sets the air absorption.
 
-Receiver-Grid Simulation
+Receiver-grid simulation
 ------------------------
 
-Computes the level at every receiver of a regular grid (``grid_step`` metres) and groups the
-levels into bands of ``db_sim_step`` dB, returned in the same format as
-:func:`objectnat.simulate_noise`. Sources may be points, lines (roads, railways) or polygons
-(industrial sites, noisy buildings, radiating from their outline). For each source and receiver it
-sums, as energies:
+Method
+~~~~~~
 
-- the **direct path**, when no obstacle blocks the line of sight;
-- **first-order reflections** from obstacle walls within ``reflection_max_dist`` (default 50 m) of the
-  source (image-source method), with a loss of ``-10 lg(1 - a)`` for the wall's absorption ratio ``a``.
+:func:`objectnat.simulate_noise_grid` computes the level at every receiver of a regular grid (``grid_step``
+metres). Receivers inside obstacles are skipped. For each source and receiver it sums, as energies,
 
-Every path loses ``20 lg r`` for geometric spreading, ``k r`` for air absorption (``k`` from
-temperature and frequency) and, through vegetation, a frequency-dependent rate times the length of
-foliage crossed. Lines are sampled every ``source_spacing`` metres with levels calibrated so that a long
-line follows the line-source law ``L - 10 lg d - k d``. Two equal sources add +3 dB, unlike the band
-maximum used by the other two functions. Ground effect, diffraction and higher-order reflections are
-not modelled. With ``return_receivers=True`` the exact receiver levels are returned too.
+- the **direct path**, when no obstacle blocks the line between source and receiver;
+- **first-order reflections** from obstacle walls within ``reflection_max_dist`` metres of the source (default 50
+  m), found with the image-source method; each reflection loses ``-10 lg(1 - a)`` dB, where ``a`` is the
+  absorption ratio of the wall (``absorb_ratio_column`` or ``standard_absorb_ratio``, default 0.05).
 
-Computation time grows with the number of receivers times the number of point and line samples in
-reach; for large road networks use a coarser ``grid_step`` / ``source_spacing`` or
-:func:`objectnat.calculate_simplified_noise_frame` for a quick estimate.
+Every path of length ``r`` (m) loses ``20 lg r`` for geometric spreading and ``k r`` for air absorption, with ``k``
+derived from the temperature and the frequency; a path through vegetation (``trees``) also loses a
+frequency-dependent rate per metre of foliage crossed. Line sources (roads, railways) and polygon outlines
+(industrial sites, noisy buildings) are sampled every ``source_spacing`` metres (default 5 m); each sample gets
+``source_noise_db - 10 lg(π / s)`` so that a long line follows the line-source law
+``L - 10 lg d - k d`` (3 dB less per doubling of distance). Because energies add, two equal sources give +3 dB.
+
+Levels below ``target_noise_db`` are dropped, and the rest are grouped into bands of ``db_sim_step`` dB.
+``noise_level`` is the upper bound of the band, as in :func:`objectnat.simulate_noise`. With
+``return_receivers=True`` the receiver points with their exact levels are returned as well.
+
+Computation time is proportional to the number of receivers times the number of point sources and line samples
+within reach. For large road networks use a coarser ``grid_step`` or ``source_spacing``, or
+:func:`objectnat.calculate_simplified_noise_frame` for a first estimate.
 
 .. autofunction:: objectnat.simulate_noise_grid
 
-----
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_grid.png
+   :alt: Receiver-grid noise levels around a road and a point source
+   :align: center
+   :width: 75%
 
-Full Wave-Based Simulation
---------------------------
+   :func:`objectnat.simulate_noise_grid` for a road (line source, 80 dB at 1 m, 1 kHz) and a point source (95 dB,
+   2 kHz) among the example buildings and vegetation, ``grid_step=2``, ``db_sim_step=5``,
+   ``target_noise_db=40``. Behind buildings only reflected sound arrives.
 
-Performs detailed noise modeling from point sources using acoustic decay layers.
-This approach accounts for reflections, obstacle absorption coefficients, and
-vegetation attenuation. Source noise level and frequency can be provided either
-as scalar arguments or through per-point ``source_noise_db`` and
-``geometric_mean_freq_hz`` columns.
+Wave-front simulation
+---------------------
 
-Useful configuration parameters include:
+Method
+~~~~~~
 
-- ``absorb_ratio_column`` and ``standart_absorb_ratio`` for obstacle absorption.
-- ``trees`` and ``tree_resolution`` for vegetation zones.
-- ``source_position_buffer_r`` for sources that start inside an obstacle or tree
-  polygon.
-- ``use_parallel`` for process-based task distribution.
-
-Vegetation attenuation is evaluated as layered sound reduction through the
-shadow sector behind tree geometries. The model estimates how deeply the sound
-path passes through vegetation and applies frequency-dependent reduction for
-each distance layer.
+:func:`objectnat.simulate_noise` models propagation from point sources in decay layers of ``db_sim_step`` dB. A
+layer is the area within the distance at which the level drops by one step, limited by the visibility polygon of
+the source. Obstacle boundaries reached by the sound become secondary sources of reflected sound, up to
+``reflection_n`` reflections (default 3), with a level reduced by the absorption ratio of the obstacle
+(``absorb_ratio_column``, ``standart_absorb_ratio``); no reflections start within ``dead_area_r`` metres of the
+previous source. Vegetation
+(``trees``, rasterized with ``tree_resolution``) reduces the level in the shadow sector behind tree polygons by a
+frequency-dependent amount that grows with the depth of foliage crossed. The simulation stops at
+``target_noise_db``. Sources inside an obstacle or tree polygon can be freed with ``source_position_buffer_r``;
+``use_parallel`` distributes the work over processes.
 
 .. autofunction:: objectnat.simulate_noise
 
 .. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_simulation_1point.png
-   :alt: noise_simulation_1point
+   :alt: Wave-front simulation for one point source
    :align: center
-   :width: 80%
+   :width: 75%
 
-   Example of full wave-based simulation for a single noise source.
+   :func:`objectnat.simulate_noise` for one point source.
 
-----
-
-Simplified Noise Frame
+Simplified noise frame
 ----------------------
 
-Generates a **simplified noise exposure map** using **geometric visibility**
-and **sound decay with distance**, without running a full reflection simulation.
-It accepts ``Point``, ``LineString``, and ``Polygon`` source geometries. Lines
-and polygons are sampled into representative points for visibility calculation,
-then recombined into source-level noise frames.
+Method
+~~~~~~
 
-The simplified frame is ideal for **rapid assessments** or large-scale analyses
-where precision is less critical. It does not model material absorption,
-reflections, or detailed vegetation attenuation; obstacles are used as
-line-of-sight masks.
+:func:`objectnat.calculate_simplified_noise_frame` builds an envelope of possible exposure without a propagation
+simulation. Lines and polygons are sampled into points (``linestring_point_radius``, ``polygon_point_radius``),
+the visibility polygon of every sample masks the area that the sound reaches directly, and the level decreases with
+distance according to the source level, frequency and temperature. The frame of every source is the maximum over its
+samples, and the result is the maximum over sources. Obstacles act only as line-of-sight masks: absorption,
+reflections and vegetation are not modelled.
 
 .. autofunction:: objectnat.calculate_simplified_noise_frame
 
 .. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_frame.png
-   :alt: noise_frame
+   :alt: Simplified noise frame
    :align: center
-   :width: 80%
+   :width: 75%
 
-   Simplified geometric noise exposure frame — fast and efficient.
+   Simplified noise frame for point, line and polygon sources.
 
-----
+Limitations
+-----------
 
-Additional Resources
---------------------
+- None of the models includes ground effect, diffraction over or around buildings, or meteorological refraction;
+  :func:`objectnat.simulate_noise_grid` includes reflections of the first order only. Behind an obstacle the
+  receiver-grid model therefore gives only reflected sound and can underestimate the level.
+- Each source is described by one level and one characteristic frequency; spectra are not modelled, and the results
+  are not equivalent to standardized calculation methods such as ISO 9613-2 or CNOSSOS-EU.
+- :func:`objectnat.simulate_noise` and :func:`objectnat.calculate_simplified_noise_frame` combine sources by the
+  band maximum; :func:`objectnat.simulate_noise_grid` sums energies.
 
-The historical project wiki contains additional background on the noise model,
-but the API reference on this page is the source of truth for ObjectNat 2.0:
-
-`Noise Simulation on GitHub <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`_
-
-----
+Background on the wave-front model is given on the
+`project wiki <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__; the API reference on this page
+describes the current behaviour.
 
 Example notebook
 ----------------
