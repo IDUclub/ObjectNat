@@ -46,8 +46,8 @@ The network tests build an intermodal graph of OSM relation 1114252 (Vasileostro
 Petersburg). With an IduEdu that has `download_osm_pbf`, the data comes from the Geofabrik extract
 `northwestern-fed-district`: it is downloaded once, the district is cut out of it into
 `tests/test_cache/geofabrik/territories/osm_1114252.osm.pbf`, and no Overpass request is made; older IduEdu
-releases fall back to the Overpass API. The graph itself is cached in `tests/test_cache/` (git-ignored) as an
-`.urbangraph` archive, so subsequent runs are fast.
+releases, or a failed download, fall back to the Overpass API (set the order with
+`OBJECTNAT_TEST_OSM_SOURCES=overpass,pbf`). The boundary and the graph are cached in `tests/test_cache/` (git-ignored), so later runs need no network.
 
 ## Commit messages (Conventional Commits)
 

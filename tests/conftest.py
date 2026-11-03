@@ -5,6 +5,7 @@ import geopandas as gpd
 import matplotlib
 import pandas as pd
 import pytest
+import shapely
 from iduedu import UrbanGraph, config, get_4326_boundary, get_intermodal_graph
 from shapely import Point
 
@@ -62,51 +63,72 @@ def trees_data():
 
 TERRITORY_OSM_ID = 1114252  # Vasileostrovsky district, Saint Petersburg
 GEOFABRIK_REGION = "northwestern-fed-district"
+# order in which OSM sources are tried; e.g. OBJECTNAT_TEST_OSM_SOURCES=overpass,pbf
+OSM_SOURCES = tuple(s.strip() for s in os.getenv("OBJECTNAT_TEST_OSM_SOURCES", "pbf,overpass").split(",") if s.strip())
 
 
-@pytest.fixture(scope="session")
-def osm_pbf_path():
-    """OSM file of the test territory cut from the Geofabrik extract and cached in ``test_cache/geofabrik``,
-    or ``None`` (data then comes from Overpass) when the installed IduEdu cannot download extracts."""
-    try:
-        from iduedu import download_osm_pbf  # pylint: disable=import-outside-toplevel
-    except ImportError:
-        logger.info("This IduEdu cannot download Geofabrik extracts; using Overpass")
-        return None
-    return download_osm_pbf(
+def _from_geofabrik():
+    """Read OSM data from the test territory cut out of the Geofabrik extract (cached in test_cache/geofabrik)."""
+    from iduedu import download_osm_pbf  # pylint: disable=import-outside-toplevel
+
+    path = download_osm_pbf(
         osm_id=TERRITORY_OSM_ID, region=GEOFABRIK_REGION, out_dir=os.path.join(cache_dir, "geofabrik")
     )
+    return config.use_pbf(path)
 
 
-def _reading(osm_pbf_path):
-    return config.use_pbf(osm_pbf_path) if osm_pbf_path is not None else nullcontext()
+_OSM_SOURCES = {"pbf": _from_geofabrik, "overpass": nullcontext}
 
 
-@pytest.fixture(scope="session")
-def boundary_osm_1114252(osm_pbf_path):
-    with _reading(osm_pbf_path):
-        return get_4326_boundary(osm_id=TERRITORY_OSM_ID)
-
-
-@pytest.fixture(scope="session")
-def intermodal_osm_1114252(boundary_osm_1114252, osm_pbf_path) -> UrbanGraph:
-    cache_file = os.path.join(cache_dir, "intermodal_graph_1114252.urbangraph")
-    if os.path.exists(cache_file):
+def _build_territory() -> tuple:
+    """Boundary and intermodal graph of the test territory from the first OSM source that works."""
+    errors = []
+    for name in OSM_SOURCES:
+        if name not in _OSM_SOURCES:
+            raise ValueError(f"Unknown OSM source {name!r} in OBJECTNAT_TEST_OSM_SOURCES; use pbf and/or overpass")
         try:
-            logger.info(f"Loading cached graph from {cache_file}")
-            return UrbanGraph.read(cache_file)
+            with _OSM_SOURCES[name]():
+                boundary = get_4326_boundary(osm_id=TERRITORY_OSM_ID)
+                graph = get_intermodal_graph(territory=boundary, clip_by_territory=True)
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            logger.warning(f"OSM source {name} failed: {exc!r}")
+            errors.append(f"{name}: {exc!r}")
+            continue
+        logger.info(f"Test territory built from {name}")
+        return boundary, graph
+    raise RuntimeError("No OSM source worked for the test territory: " + "; ".join(errors))
+
+
+@pytest.fixture(scope="session")
+def osm_1114252() -> tuple:
+    """``(boundary, intermodal graph)`` of the test territory, cached in test_cache so later runs are offline."""
+    boundary_file = os.path.join(cache_dir, "boundary_1114252.wkt")
+    graph_file = os.path.join(cache_dir, "intermodal_graph_1114252.urbangraph")
+    if os.path.exists(boundary_file) and os.path.exists(graph_file):
+        try:
+            logger.info(f"Loading cached test territory from {cache_dir}")
+            with open(boundary_file, encoding="utf-8") as file:
+                return shapely.from_wkt(file.read()), UrbanGraph.read(graph_file)
         except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.warning(f"Failed to load cached graph: {e}. Regenerating...")
-            os.remove(cache_file)
-    logger.info("Generating new intermodal graph")
-    with _reading(osm_pbf_path):
-        graph = get_intermodal_graph(territory=boundary_osm_1114252, clip_by_territory=True)
+            logger.warning(f"Failed to load the cached test territory: {e}. Regenerating...")
+    boundary, graph = _build_territory()
     try:
-        logger.info(f"Saving graph to cache: {cache_file}")
-        graph.write(cache_file)
+        graph.write(graph_file)
+        with open(boundary_file, "w", encoding="utf-8") as file:
+            file.write(boundary.wkt)
     except OSError as e:
-        logger.error(f"Failed to cache graph: {e}")
-    return graph
+        logger.error(f"Failed to cache the test territory: {e}")
+    return boundary, graph
+
+
+@pytest.fixture(scope="session")
+def boundary_osm_1114252(osm_1114252):
+    return osm_1114252[0]
+
+
+@pytest.fixture(scope="session")
+def intermodal_osm_1114252(osm_1114252) -> UrbanGraph:
+    return osm_1114252[1]
 
 
 @pytest.fixture(scope="session")
