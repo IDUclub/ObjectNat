@@ -986,7 +986,7 @@ wheels = [
 
 [[package]]
 name = "iduedu"
-version = "2.2.0"
+version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "geopandas" },
@@ -999,9 +999,9 @@ dependencies = [
     { name = "scipy", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d3/80/37eca42bbe03f0165f43e1987c35e9aeca87ccc289fa93584eff050af330/iduedu-2.2.0.tar.gz", hash = "sha256:2d480d30452ace79d812199f7fa959268c6b1f2d7570658f135813f2cb2a2ea1", size = 105539, upload-time = "2026-09-30T10:39:45.41Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ab/59/623129648c6cb469fe2a1979455de0cbfdf4d53e064af720f3f84e7fd77e/iduedu-2.3.0.tar.gz", hash = "sha256:98681fbd6a0b4f5e87a0e1ec2ddb1584e444d8b0c6821a133a176d531eca1e8b", size = 132241, upload-time = "2026-10-22T15:08:12.929Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/76/31662260b04cc4549664b214a3be7ac8f154e4873c53338fecc6d1889cd2/iduedu-2.2.0-py3-none-any.whl", hash = "sha256:02a1a7e8be2d2d5ce00dd9b8908732eeba143128744013926246af478f9e5d4b", size = 121370, upload-time = "2026-09-30T10:39:43.993Z" },
+    { url = "https://files.pythonhosted.org/packages/65/7e/d86a8b6a081901a7ae79f61c0547e163d8bc95649bbd38bc18e090bacb6e/iduedu-2.3.0-py3-none-any.whl", hash = "sha256:5b20c57f50a1d639f2a306e0a50ecde2f6b3dd547b13f530c3fdb33fbf383601", size = 152505, upload-time = "2026-10-22T15:08:11.101Z" },
 ]
 
 [[package]]
