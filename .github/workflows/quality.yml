@@ -191,16 +191,19 @@ jobs:
           path: ${{ runner.temp }}/test-images
 
       # The branch holds one commit with the current images, so binary history does
-      # not pile up and the hotlinked URLs stay the same.
+      # not pile up and the hotlinked URLs stay the same. Files that the tests do not
+      # render (documentation figures and GIFs added by hand) are carried over.
       - name: Replace the assets branch with the new images
         env:
           IMAGES_DIR: ${{ runner.temp }}/test-images
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --depth=1 origin assets
           git checkout --orphan assets-update
           git rm -rf --quiet .
+          git checkout FETCH_HEAD -- .
           cp "$IMAGES_DIR"/*.png .
-          git add ./*.png
+          git add -A
           git commit --quiet -m "Update test images from ${GITHUB_SHA::7}"
           git push --force origin HEAD:assets
