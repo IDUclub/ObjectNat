@@ -93,7 +93,8 @@ Object-oriented Network Analysis Tools
    точную область видимости в скомпилированном расширении на Rust, параллельно для набора точек наблюдения,
    и может добавить метрики изовиста (площадь, компактность, окклюзивность, статистики радиусов, смещение).
    ``get_visibility_catchment`` собирает видимость множества наблюдателей в бассейны видимости,
-   ``get_viewshed`` считает 2.5D-видимость с учётом высоты зданий и рельефа.
+   ``get_viewshed`` и ``get_viewshed_catchment`` считают 2.5D-видимость и бассейны видимости с учётом
+   высоты зданий и рельефа.
 
    📘 `Пример <https://iduclub.github.io/ObjectNat/methods/examples/visibility.html>`__
    🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/visibility.html>`__

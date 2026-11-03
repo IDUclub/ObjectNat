@@ -6,7 +6,7 @@ import pytest
 from matplotlib import pyplot as plt
 from shapely import LineString, Point, Polygon, box
 
-from objectnat import get_viewshed, get_visibility
+from objectnat import get_viewshed, get_viewshed_catchment, get_visibility
 from objectnat.methods.visibility._native import _largest_part_at
 from tests.conftest import output_dir
 
@@ -155,3 +155,24 @@ def test_viewshed_sees_over_low_buildings_and_hides_behind_hills():
     seen = result.geometry.iloc[0]
     assert seen.covers(Point(X0, Y0 + 50)) and not seen.covers(Point(X0, Y0 + 200))
     assert 0 < result["visible_share"].iloc[0] < 1
+
+
+def test_viewshed_catchment_from_a_hilltop():
+    # four observers on top of a 40 m hill; a 10 m house 100 m east of them, at the foot of the hill
+    observers = gpd.GeoDataFrame(
+        geometry=[Point(X0 + dx, Y0 + dy) for dx, dy in ((1, 1), (1, -1), (-1, 1), (-1, -1))], crs=CRS
+    )
+    house = gpd.GeoDataFrame({"height": [10.0]}, geometry=[box(X0 + 100, Y0 - 30, X0 + 110, Y0 + 30)], crs=CRS)
+    x = np.arange(-300, 301, 10.0)
+    y = np.arange(300, -301, -10.0)
+    hill = np.maximum(0.0, 40 - 0.5 * np.hypot(x[None, :], y[:, None]))
+    terrain = (hill, (10.0, 0.0, X0 - 305, 0.0, -10.0, Y0 + 305), CRS)
+    kwargs = {"view_distance": 200, "cell_size": 5, "classes": [1]}
+
+    from_hill = get_viewshed_catchment(observers, house, terrain=terrain, **kwargs)
+    from_ground = get_viewshed_catchment(observers, house, **kwargs)
+    behind = Point(X0 + 170, Y0)  # the sight line clears the far wall (10 m at 110 m) from about 147 m on
+    # eyes stand 1.6 m above the hilltop, so the ground behind the house shows over its roof
+    assert from_hill.union_all().covers(behind)
+    assert not from_ground.union_all().covers(behind)
+    assert from_hill["count_max"].max() == 4

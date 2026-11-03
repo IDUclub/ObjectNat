@@ -18,4 +18,10 @@ from .methods.provision import (
     get_service_provision,
     recalculate_links,
 )
-from .methods.visibility import get_observer_points, get_viewshed, get_visibility, get_visibility_catchment
+from .methods.visibility import (
+    get_observer_points,
+    get_viewshed,
+    get_viewshed_catchment,
+    get_visibility,
+    get_visibility_catchment,
+)

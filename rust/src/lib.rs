@@ -4,6 +4,7 @@ pub mod catchment;
 pub mod insolation;
 pub mod noise;
 pub mod provision;
+pub mod viewshed;
 pub mod visibility;
 
 use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
@@ -16,6 +17,9 @@ use visibility::{Obstacles, Scratch, Seg, Wall};
 
 /// Closed rings flattened to ``(k, 2)`` coordinates plus per-observer offsets.
 type RaggedRings<'py> = (Bound<'py, PyArray2<f64>>, Bound<'py, PyArray1<i64>>);
+
+/// Flat cell indices of all observers and ``(k + 1)`` offsets.
+type RaggedCells<'py> = (Bound<'py, PyArray1<u32>>, Bound<'py, PyArray1<i64>>);
 
 /// Sunlit counts and longest sunlit runs, ``(n, days)`` uint32 each.
 type DayStats<'py> = (Bound<'py, PyArray2<u32>>, Bound<'py, PyArray2<u32>>);
@@ -737,10 +741,183 @@ fn scene_from_arrays(
     ))
 }
 
+fn run_in_pool<T: Send>(n_threads: Option<usize>, run: impl FnOnce() -> T + Send) -> T {
+    match n_threads {
+        Some(k) if k > 0 => match rayon::ThreadPoolBuilder::new().num_threads(k).build() {
+            Ok(pool) => pool.install(run),
+            Err(_) => run(),
+        },
+        _ => run(),
+    }
+}
+
+fn cell_grid(grid: (f64, f64, f64, usize, usize)) -> PyResult<viewshed::CellGrid> {
+    let (x0, y0, cell, nx, ny) = grid;
+    if cell.is_nan() || cell <= 0.0 || nx == 0 || ny == 0 {
+        return Err(PyValueError::new_err(
+            "grid must be (x0, y0, cell > 0, nx > 0, ny > 0)",
+        ));
+    }
+    Ok(viewshed::CellGrid {
+        x0,
+        y0,
+        cell,
+        nx,
+        ny,
+    })
+}
+
+fn eyes_and_radii(
+    eyes: &PyReadonlyArray2<'_, f64>,
+    radii: &PyReadonlyArray1<'_, f64>,
+) -> PyResult<(Vec<[f64; 3]>, Vec<f64>)> {
+    let (e, r) = (eyes.as_array(), radii.as_array());
+    if (e.nrows() > 0 && e.ncols() != 3) || r.len() != e.nrows() {
+        return Err(PyValueError::new_err(
+            "eyes must be (k, 3) with one radius each",
+        ));
+    }
+    Ok((
+        e.rows().into_iter().map(|v| [v[0], v[1], v[2]]).collect(),
+        r.iter().copied().collect(),
+    ))
+}
+
+fn target_heights(
+    target_z: &PyReadonlyArray2<'_, f64>,
+    grid: &viewshed::CellGrid,
+) -> PyResult<Vec<f64>> {
+    let z = target_z.as_array();
+    if z.dim() != (grid.ny, grid.nx) {
+        return Err(PyValueError::new_err("target_z must be (ny, nx)"));
+    }
+    Ok(z.iter().copied().collect())
+}
+
+/// Index of the footprint covering every cell centre of ``grid = (x0, y0, cell, nx, ny)`` (-1 for none):
+/// ring edges ``(m, 4)`` with their polygon ``owner``; overlaps go to the highest ``priority``.
+#[pyfunction]
+fn rasterize_footprints<'py>(
+    py: Python<'py>,
+    segments: PyReadonlyArray2<'py, f64>,
+    owner: PyReadonlyArray1<'py, i64>,
+    priority: PyReadonlyArray1<'py, f64>,
+    grid: (f64, f64, f64, usize, usize),
+) -> PyResult<Bound<'py, PyArray2<i64>>> {
+    let grid = cell_grid(grid)?;
+    let (segs, owner, priority) = (segments.as_array(), owner.as_array(), priority.as_array());
+    if (segs.nrows() > 0 && segs.ncols() != 4) || owner.len() != segs.nrows() {
+        return Err(PyValueError::new_err(
+            "segments must be (m, 4) with one owner each",
+        ));
+    }
+    let walls: Vec<Seg> = segs
+        .rows()
+        .into_iter()
+        .map(|r| Seg {
+            a: [r[0], r[1]],
+            b: [r[2], r[3]],
+        })
+        .collect();
+    let owner: Vec<usize> = owner
+        .iter()
+        .map(|&o| usize::try_from(o).unwrap_or(usize::MAX))
+        .collect();
+    let priority: Vec<f64> = priority.iter().copied().collect();
+    let out = py.detach(|| viewshed::rasterize(&walls, &owner, &priority, &grid));
+    let out = numpy::ndarray::Array2::from_shape_vec((grid.ny, grid.nx), out)
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    Ok(out.into_pyarray(py))
+}
+
+/// Visible cells of every eye ``(k, 3)`` within its radius on ``grid`` with target heights ``target_z``
+/// ``(ny, nx)`` (NaN = not a target): flat cell indices of all eyes concatenated, and ``(k + 1)`` offsets.
+#[pyfunction]
+#[pyo3(signature = (eyes, radii, grid, target_z, segments, tops, terrain=None, terrain_grid=None, n_threads=None))]
+#[allow(clippy::too_many_arguments)]
+fn viewshed_cells<'py>(
+    py: Python<'py>,
+    eyes: PyReadonlyArray2<'py, f64>,
+    radii: PyReadonlyArray1<'py, f64>,
+    grid: (f64, f64, f64, usize, usize),
+    target_z: PyReadonlyArray2<'py, f64>,
+    segments: PyReadonlyArray2<'py, f64>,
+    tops: PyReadonlyArray1<'py, f64>,
+    terrain: Option<PyReadonlyArray2<'py, f64>>,
+    terrain_grid: Option<(f64, f64, f64, f64)>,
+    n_threads: Option<usize>,
+) -> PyResult<RaggedCells<'py>> {
+    let grid = cell_grid(grid)?;
+    let (eyes, radii) = eyes_and_radii(&eyes, &radii)?;
+    let target_z = target_heights(&target_z, &grid)?;
+    let scene = scene_from_arrays(segments, tops, terrain, terrain_grid)?;
+    let seen = py.detach(|| {
+        run_in_pool(n_threads, || {
+            viewshed::visible_cells_many(&scene, &eyes, &radii, &grid, &target_z)
+        })
+    });
+    let mut offsets = vec![0i64];
+    let mut flat = Vec::with_capacity(seen.iter().map(Vec::len).sum());
+    for cells in seen {
+        flat.extend(cells);
+        offsets.push(flat.len() as i64);
+    }
+    Ok((flat.into_pyarray(py), offsets.into_pyarray(py)))
+}
+
+/// Per cell of ``grid``: the number of eyes that see it (uint32 ``(ny, nx)``) and, with ``weights``, the sum
+/// of their weights (float64 ``(ny, nx)``).
+#[pyfunction]
+#[pyo3(signature = (eyes, radii, grid, target_z, segments, tops, weights=None, terrain=None, terrain_grid=None,
+    n_threads=None))]
+#[allow(clippy::too_many_arguments)]
+fn viewshed_count_grid<'py>(
+    py: Python<'py>,
+    eyes: PyReadonlyArray2<'py, f64>,
+    radii: PyReadonlyArray1<'py, f64>,
+    grid: (f64, f64, f64, usize, usize),
+    target_z: PyReadonlyArray2<'py, f64>,
+    segments: PyReadonlyArray2<'py, f64>,
+    tops: PyReadonlyArray1<'py, f64>,
+    weights: Option<PyReadonlyArray1<'py, f64>>,
+    terrain: Option<PyReadonlyArray2<'py, f64>>,
+    terrain_grid: Option<(f64, f64, f64, f64)>,
+    n_threads: Option<usize>,
+) -> PyResult<CountArrays<'py>> {
+    let grid = cell_grid(grid)?;
+    let (eyes, radii) = eyes_and_radii(&eyes, &radii)?;
+    let target_z = target_heights(&target_z, &grid)?;
+    let weights: Option<Vec<f64>> = weights.map(|w| w.as_array().iter().copied().collect());
+    if weights.as_ref().is_some_and(|w| w.len() != eyes.len()) {
+        return Err(PyValueError::new_err("weights must have one value per eye"));
+    }
+    let scene = scene_from_arrays(segments, tops, terrain, terrain_grid)?;
+    let (counts, sums) = py.detach(|| {
+        run_in_pool(n_threads, || {
+            viewshed::count_grid(&scene, &eyes, &radii, weights.as_deref(), &grid, &target_z)
+        })
+    });
+    let shape = (grid.ny, grid.nx);
+    let counts = numpy::ndarray::Array2::from_shape_vec(shape, counts)
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    let sums = match sums {
+        Some(s) => Some(
+            numpy::ndarray::Array2::from_shape_vec(shape, s)
+                .map_err(|e| PyValueError::new_err(e.to_string()))?
+                .into_pyarray(py),
+        ),
+        None => None,
+    };
+    Ok((counts.into_pyarray(py), sums))
+}
+
 #[pymodule]
 fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(insolation_day_stats, m)?)?;
     m.add_function(wrap_pyfunction!(line_of_sight, m)?)?;
+    m.add_function(wrap_pyfunction!(rasterize_footprints, m)?)?;
+    m.add_function(wrap_pyfunction!(viewshed_cells, m)?)?;
+    m.add_function(wrap_pyfunction!(viewshed_count_grid, m)?)?;
     m.add_function(wrap_pyfunction!(noise_grid_energy, m)?)?;
     m.add_function(wrap_pyfunction!(visibility_polygons, m)?)?;
     m.add_function(wrap_pyfunction!(visibility_count_grid, m)?)?;

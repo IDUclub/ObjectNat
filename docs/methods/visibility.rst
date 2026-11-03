@@ -96,6 +96,15 @@ high or the terrain is not flat.
 
 .. autofunction:: objectnat.get_viewshed
 
+:func:`objectnat.get_viewshed_catchment` is the 2.5D counterpart of the visibility catchment below: every
+cell gets the number of observers (or the sum of their weights) whose line of sight to it is clear. The
+observers' eyes stand ``observer_height`` above the terrain, so on hills they see over the houses below, and
+with ``include_roofs=True`` the zones also show which roofs and building tops are seen from the streets.
+Building footprints are rasterized once in the Rust extension, and the lines of sight of all observers are
+counted there too.
+
+.. autofunction:: objectnat.get_viewshed_catchment
+
 ----
 
 Visibility Catchment Areas

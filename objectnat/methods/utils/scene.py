@@ -28,6 +28,7 @@ class Scene(NamedTuple):
     terrain_grid: tuple | None
     segments: np.ndarray
     tops: np.ndarray
+    owner: np.ndarray  # building of every wall
 
     def ground_at(self, xy: np.ndarray) -> np.ndarray:
         if self.terrain_grid is None:
@@ -72,7 +73,8 @@ def prepare_scene(
 
     segments, _, owner = geometries_to_segments(blds.geometry.values, return_owner=True)
     tops = (base + building_height)[owner] if len(segments) else np.empty(0)
-    return Scene(local_crs, blds, building_height, base, terrain_grid, segments, tops)
+    owner = np.asarray(owner if len(segments) else np.empty(0), dtype=np.int64)
+    return Scene(local_crs, blds, building_height, base, terrain_grid, segments, tops, owner)
 
 
 def _estimate_local_crs(buildings, area, terrain):

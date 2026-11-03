@@ -94,8 +94,8 @@ Each feature includes a **Jupyter Notebook example** and **full documentation**.
    ``get_visibility`` computes the exact visible area in a compiled Rust extension,
    multi-threaded over batches of observer points, and can add isovist metrics (area, compactness,
    occlusivity, radial statistics, drift). ``get_visibility_catchment`` aggregates many observers into
-   visibility catchment zones, and ``get_viewshed`` computes 2.5D visibility over buildings of known
-   height and terrain.
+   visibility catchment zones, and ``get_viewshed`` / ``get_viewshed_catchment`` compute 2.5D
+   visibility and catchment zones over buildings of known height and terrain.
 
    📘 `Example <https://iduclub.github.io/ObjectNat/methods/examples/visibility.html>`__
    🔗 `Documentation <https://iduclub.github.io/ObjectNat/methods/visibility.html>`__
