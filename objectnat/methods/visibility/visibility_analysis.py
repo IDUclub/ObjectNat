@@ -12,6 +12,7 @@ from objectnat.methods.visibility._native import (
     native_visibility_polygons,
     native_visibility_single,
 )
+from objectnat.methods.visibility.isovist import add_isovist_metrics
 
 logger = config.logger
 
@@ -109,6 +110,7 @@ def get_visibility(
     resolution: int = 32,  # pylint: disable=unused-argument
     parallel: bool = False,  # pylint: disable=unused-argument
     max_workers: int | None = None,
+    isovist_metrics: bool = False,
 ) -> gpd.GeoDataFrame:
     """
     Compute visibility polygons for one or many observer points.
@@ -141,6 +143,14 @@ def get_visibility(
             Ignored: the calculation is always multi-threaded.
         max_workers (int | None, optional):
             Maximum number of threads (``None`` uses all cores).
+        isovist_metrics (bool, optional):
+            If ``True``, add isovist metric columns to the result, measured in metres in the local CRS:
+            ``area``, ``perimeter``, ``compactness`` (4πA/P², 1 for the full disc), ``occlusivity``
+            (length of the occluding radial edges), ``n_occlusions``, ``min_radial``, ``max_radial``,
+            ``mean_radial``, ``std_radial``, ``skew_radial`` (moments of the distance to the boundary over
+            all directions, integrated exactly), ``drift`` (distance from the observer to the centroid),
+            ``view_share`` (area / area of the view disc) and ``open_share`` (share of the perimeter on the
+            view-distance limit). Observers inside an obstacle get NaN.
 
     Returns:
         gpd.GeoDataFrame:
@@ -205,4 +215,6 @@ def get_visibility(
     result_gdf = points_local.copy()
     result_gdf["geometry"] = results
     result_gdf.set_crs(local_crs, inplace=True)
+    if isovist_metrics:
+        add_isovist_metrics(result_gdf, points_local.geometry, distances)
     return result_gdf.to_crs(original_crs)

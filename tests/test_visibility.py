@@ -1,6 +1,7 @@
 import os
 
 import geopandas as gpd
+import numpy as np
 import pytest
 from matplotlib import pyplot as plt
 from shapely import LineString, Point, Polygon, box
@@ -107,3 +108,27 @@ def test_invalid_ring_repair_keeps_the_part_around_the_observer():
     assert repaired.geom_type == "Polygon"
     assert repaired.is_valid
     assert repaired.area == pytest.approx(25.0)
+
+
+def test_isovist_metrics():
+    observers = gpd.GeoDataFrame(geometry=[Point(X0, Y0), Point(X0 + 500, Y0), Point(X0 + 25, Y0)], crs=CRS)
+    building = gpd.GeoDataFrame(geometry=[box(X0 + 20, Y0 - 10, X0 + 30, Y0 + 10)], crs=CRS)
+    result = get_visibility(observers, building, 100, isovist_metrics=True)
+    shadowed, free, inside = (result.iloc[i] for i in range(3))
+
+    assert free["n_occlusions"] == 0 and free["open_share"] == pytest.approx(1)
+    assert free["compactness"] == pytest.approx(1, abs=1e-3) and free["drift"] == pytest.approx(0, abs=1e-6)
+
+    # two shadow edges from the near corners (20, ±10) out to the view limit
+    assert shadowed["n_occlusions"] == 2
+    assert shadowed["min_radial"] == pytest.approx(20) and shadowed["max_radial"] == pytest.approx(100)
+    assert shadowed["occlusivity"] == pytest.approx(2 * (100 - np.hypot(20, 10)), abs=0.2)
+    # exact radial moments agree with sampling the distance to the boundary along rays
+    polygon = result.geometry.iloc[0]
+    angles = np.linspace(0, 2 * np.pi, 3600, endpoint=False)
+    rays = [LineString([(X0, Y0), (X0 + 200 * np.cos(a), Y0 + 200 * np.sin(a))]) for a in angles]
+    radial = np.array([ray.intersection(polygon).length for ray in rays])
+    assert shadowed["mean_radial"] == pytest.approx(radial.mean(), abs=0.05)
+    assert shadowed["std_radial"] == pytest.approx(radial.std(), abs=0.05)
+
+    assert np.isnan(inside["area"]) and np.isnan(inside["mean_radial"])

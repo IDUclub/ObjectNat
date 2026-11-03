@@ -36,6 +36,43 @@ it was, so both values of ``method`` return the exact result.
 
 ----
 
+Isovist Metrics
+---------------
+
+A visibility polygon is also called an **isovist**. ``get_visibility(..., isovist_metrics=True)`` describes
+each one with numbers, so observers can be compared, mapped or fed into models (Benedikt 1979, Batty 2001,
+Turner et al. 2001). All lengths are in metres.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 78
+
+   * - Column
+     - Meaning
+   * - ``area``, ``perimeter``
+     - Size of the visible area and length of its boundary.
+   * - ``compactness``
+     - 4πA/P²: 1 for the full view disc, small for narrow or jagged views.
+   * - ``occlusivity``, ``n_occlusions``
+     - Total length and number of occluding edges: shadow boundaries where the view continues behind an
+       obstacle edge. High values mean a fragmented view with many hidden spaces nearby.
+   * - ``min_radial``, ``max_radial``
+     - Distance from the observer to the nearest and farthest visible boundary point.
+   * - ``mean_radial``, ``std_radial``, ``skew_radial``
+     - Mean, standard deviation and skewness of the distance to the boundary over all directions. They are
+       integrated exactly over each boundary edge, not sampled along rays.
+   * - ``drift``
+     - Distance from the observer to the centroid of the visible area: how off-centre the view is.
+   * - ``view_share``
+     - Visible area divided by the area of the view disc.
+   * - ``open_share``
+     - Share of the boundary lying on the view-distance limit rather than on obstacles.
+
+Observers inside an obstacle get ``NaN``. The metrics add little time to the visibility itself (about
+0.8 s for 5,000 isovists with 450,000 vertices).
+
+----
+
 Visibility Catchment Areas
 --------------------------
 
