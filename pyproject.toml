@@ -10,6 +10,36 @@ license-files = ["LICENSE.txt"]
 authors = [
     { name = "DDonnyy", email = "63115678+DDonnyy@users.noreply.github.com" },
 ]
+keywords = [
+    "urban analytics",
+    "geospatial",
+    "GIS",
+    "accessibility",
+    "isochrones",
+    "service provision",
+    "visibility analysis",
+    "isovist",
+    "noise simulation",
+    "street network",
+    "GeoPandas",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Rust",
+    "Typing :: Typed",
+]
 dependencies = [
     "geopandas>=1.1.0,<2.0.0",
     "iduedu>=2.2.0,<3.0.0",
@@ -22,6 +52,13 @@ dependencies = [
     "scipy>=1.17.0,<2.0.0; python_version >= '3.14'",
     "tqdm>=4.66.2,<5.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/IDUclub/ObjectNat"
+Documentation = "https://iduclub.github.io/ObjectNat/"
+Repository = "https://github.com/IDUclub/ObjectNat"
+Issues = "https://github.com/IDUclub/ObjectNat/issues"
+Changelog = "https://github.com/IDUclub/ObjectNat/blob/master/CHANGELOG.md"
 
 [dependency-groups]
 dev = [

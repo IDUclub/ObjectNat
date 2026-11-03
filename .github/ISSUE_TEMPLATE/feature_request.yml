@@ -1,0 +1,21 @@
+name: Feature request
+description: A new method, option or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Task
+      description: What urban analysis task you want to solve and what is missing for it now.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: How it could work, references to methods or papers, an API sketch.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Workarounds or other tools you use for this today.

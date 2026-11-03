@@ -6,6 +6,11 @@ open a PR, squash-merge it into the official `IDUclub/ObjectNat` `master` branch
 automatically.**
 Never bump the version or create a tag by hand.
 
+By taking part you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). Questions and ideas go to
+[Discussions](https://github.com/IDUclub/ObjectNat/discussions), bugs and feature requests to
+[Issues](https://github.com/IDUclub/ObjectNat/issues/new/choose), and vulnerabilities are reported
+privately as described in [SECURITY.md](SECURITY.md).
+
 ## Requirements
 
 - Python 3.11–3.14
