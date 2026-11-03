@@ -1,6 +1,7 @@
 //! Python bindings: compiled into the `objectnat._rust` extension module.
 
 pub mod catchment;
+pub mod insolation;
 pub mod noise;
 pub mod provision;
 pub mod visibility;
@@ -541,8 +542,99 @@ fn noise_grid_energy<'py>(
     Ok(energy.into_pyarray(py))
 }
 
+/// Sunlit flags ``(n, t)`` (uint8) for receivers ``(n, 3)`` [x, y, z] and sun positions ``(t, 3)``
+/// [dir_x, dir_y, tan(elevation)] among walls ``(m, 4)`` with absolute roof heights ``tops`` and an
+/// optional terrain grid ``(ny, nx)`` placed by ``terrain_grid = (x0, y0, sx, sy)``.
+#[pyfunction]
+#[pyo3(signature = (receivers, suns, segments, tops, terrain=None, terrain_grid=None, n_threads=None))]
+#[allow(clippy::too_many_arguments)]
+fn insolation_sunlit<'py>(
+    py: Python<'py>,
+    receivers: PyReadonlyArray2<'py, f64>,
+    suns: PyReadonlyArray2<'py, f64>,
+    segments: PyReadonlyArray2<'py, f64>,
+    tops: PyReadonlyArray1<'py, f64>,
+    terrain: Option<PyReadonlyArray2<'py, f64>>,
+    terrain_grid: Option<(f64, f64, f64, f64)>,
+    n_threads: Option<usize>,
+) -> PyResult<Bound<'py, PyArray2<u8>>> {
+    let rec = receivers.as_array();
+    let sun = suns.as_array();
+    let segs = segments.as_array();
+    let tops = tops.as_array();
+    if (rec.nrows() > 0 && rec.ncols() != 3)
+        || (sun.nrows() > 0 && sun.ncols() != 3)
+        || (segs.nrows() > 0 && segs.ncols() != 4)
+        || tops.len() != segs.nrows()
+    {
+        return Err(PyValueError::new_err(
+            "receivers must be (n, 3), suns (t, 3), segments (m, 4) with one top height each",
+        ));
+    }
+    let points: Vec<[f64; 3]> = rec.rows().into_iter().map(|r| [r[0], r[1], r[2]]).collect();
+    let sun_list: Vec<insolation::Sun> = sun
+        .rows()
+        .into_iter()
+        .map(|r| insolation::Sun {
+            dir: [r[0], r[1]],
+            tan_el: r[2],
+        })
+        .collect();
+    let walls: Vec<Seg> = segs
+        .rows()
+        .into_iter()
+        .map(|r| Seg {
+            a: [r[0], r[1]],
+            b: [r[2], r[3]],
+        })
+        .collect();
+    let tops: Vec<f64> = tops.iter().copied().collect();
+    let terrain = match (terrain, terrain_grid) {
+        (Some(z), Some((x0, y0, sx, sy))) => {
+            let z = z.as_array();
+            let (ny, nx) = z.dim();
+            if nx < 2 || ny < 2 || !(sx > 0.0 && sy > 0.0) {
+                return Err(PyValueError::new_err(
+                    "terrain must be at least 2 x 2 with positive cell sizes",
+                ));
+            }
+            Some(insolation::Terrain {
+                x0,
+                y0,
+                sx,
+                sy,
+                nx,
+                ny,
+                z: z.iter().copied().collect(),
+            })
+        }
+        (None, _) => None,
+        (Some(_), None) => {
+            return Err(PyValueError::new_err("terrain needs terrain_grid"));
+        }
+    };
+    let n = points.len();
+    let t = sun_list.len();
+    let flags = py.detach(|| {
+        let scene = insolation::Scene::new(walls, tops, terrain);
+        let run = || insolation::sunlit_matrix(&scene, &points, &sun_list);
+        match n_threads {
+            Some(k) if k > 0 => rayon::ThreadPoolBuilder::new()
+                .num_threads(k)
+                .build()
+                .map(|pool| pool.install(run))
+                .unwrap_or_else(|_| run()),
+            _ => run(),
+        }
+    });
+    let flags = numpy::ndarray::Array2::from_shape_vec((n, t), flags)
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    Ok(flags.into_pyarray(py))
+}
+
 #[pymodule]
 fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(insolation_sunlit, m)?)?;
     m.add_function(wrap_pyfunction!(noise_grid_energy, m)?)?;
     m.add_function(wrap_pyfunction!(visibility_polygons, m)?)?;
     m.add_function(wrap_pyfunction!(visibility_count_grid, m)?)?;

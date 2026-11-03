@@ -107,6 +107,14 @@ Object-oriented Network Analysis Tools
    🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/noise.html>`__
    🧠 `Подробное описание <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__
 
+6. **Инсоляция**
+
+   ``get_insolation`` проходит за солнцем в течение выбранного дня и показывает, сколько часов прямого
+   солнца получает каждое место среди зданий заданной высоты и рельефа, включая участки, которые весь
+   день остаются в тени.
+
+   🔗 `Документация <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__
+
 ----
 
 Городские графы с помощью *IduEdu*

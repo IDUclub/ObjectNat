@@ -7,6 +7,7 @@
     methods/provision
     methods/visibility
     methods/noise
+    methods/insolation
     methods/examples/index
     migration_1_to_2
 

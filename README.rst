@@ -109,6 +109,14 @@ Each feature includes a **Jupyter Notebook example** and **full documentation**.
    🔗 `Documentation <https://iduclub.github.io/ObjectNat/methods/noise.html>`__
    🧠 `Detailed theory <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__
 
+6. **Insolation**
+
+   ``get_insolation`` follows the sun through a chosen day and maps how many hours of direct sunlight
+   each place gets among buildings of known height and terrain, including the ground that stays in
+   shadow all day.
+
+   🔗 `Documentation <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__
+
 ----
 
 City Graphs via *IduEdu*
