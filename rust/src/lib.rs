@@ -17,6 +17,9 @@ use visibility::{Obstacles, Scratch, Seg, Wall};
 /// Closed rings flattened to ``(k, 2)`` coordinates plus per-observer offsets.
 type RaggedRings<'py> = (Bound<'py, PyArray2<f64>>, Bound<'py, PyArray1<i64>>);
 
+/// Sunlit counts and longest sunlit runs, ``(n, days)`` uint32 each.
+type DayStats<'py> = (Bound<'py, PyArray2<u32>>, Bound<'py, PyArray2<u32>>);
+
 /// ``(ny, nx)`` uint32 counts and optional float64 weight sums.
 type CountArrays<'py> = (Bound<'py, PyArray2<u32>>, Option<Bound<'py, PyArray2<f64>>>);
 
@@ -542,22 +545,25 @@ fn noise_grid_energy<'py>(
     Ok(energy.into_pyarray(py))
 }
 
-/// Sunlit flags ``(n, t)`` (uint8) for receivers ``(n, 3)`` [x, y, z] and sun positions ``(t, 3)``
-/// [dir_x, dir_y, tan(elevation)] among walls ``(m, 4)`` with absolute roof heights ``tops`` and an
-/// optional terrain grid ``(ny, nx)`` placed by ``terrain_grid = (x0, y0, sx, sy)``.
+/// Per receiver and day: sunlit sun positions and the longest run of consecutive sunlit positions, both
+/// ``(n, days)`` uint32, for receivers ``(n, 3)`` [x, y, z] and sun positions ``(t, 3)``
+/// [dir_x, dir_y, tan(elevation)] in time order, day ``d`` being ``suns[day_offsets[d]:day_offsets[d+1]]``,
+/// among walls ``(m, 4)`` with absolute roof heights ``tops`` and an optional terrain grid ``(ny, nx)``
+/// placed by ``terrain_grid = (x0, y0, sx, sy)``.
 #[pyfunction]
-#[pyo3(signature = (receivers, suns, segments, tops, terrain=None, terrain_grid=None, n_threads=None))]
+#[pyo3(signature = (receivers, suns, day_offsets, segments, tops, terrain=None, terrain_grid=None, n_threads=None))]
 #[allow(clippy::too_many_arguments)]
-fn insolation_sunlit<'py>(
+fn insolation_day_stats<'py>(
     py: Python<'py>,
     receivers: PyReadonlyArray2<'py, f64>,
     suns: PyReadonlyArray2<'py, f64>,
+    day_offsets: PyReadonlyArray1<'py, i64>,
     segments: PyReadonlyArray2<'py, f64>,
     tops: PyReadonlyArray1<'py, f64>,
     terrain: Option<PyReadonlyArray2<'py, f64>>,
     terrain_grid: Option<(f64, f64, f64, f64)>,
     n_threads: Option<usize>,
-) -> PyResult<Bound<'py, PyArray2<u8>>> {
+) -> PyResult<DayStats<'py>> {
     let rec = receivers.as_array();
     let sun = suns.as_array();
     let segs = segments.as_array();
@@ -613,11 +619,24 @@ fn insolation_sunlit<'py>(
             return Err(PyValueError::new_err("terrain needs terrain_grid"));
         }
     };
+    let offsets: Vec<usize> = day_offsets
+        .as_array()
+        .iter()
+        .map(|&v| usize::try_from(v).unwrap_or(usize::MAX))
+        .collect();
+    if offsets.is_empty()
+        || offsets.windows(2).any(|w| w[0] > w[1])
+        || *offsets.last().unwrap_or(&0) > sun_list.len()
+    {
+        return Err(PyValueError::new_err(
+            "day_offsets must be non-decreasing positions within suns",
+        ));
+    }
     let n = points.len();
-    let t = sun_list.len();
-    let flags = py.detach(|| {
+    let days = offsets.len() - 1;
+    let (counts, longest) = py.detach(|| {
         let scene = insolation::Scene::new(walls, tops, terrain);
-        let run = || insolation::sunlit_matrix(&scene, &points, &sun_list);
+        let run = || insolation::day_stats(&scene, &points, &sun_list, &offsets);
         match n_threads {
             Some(k) if k > 0 => rayon::ThreadPoolBuilder::new()
                 .num_threads(k)
@@ -627,14 +646,19 @@ fn insolation_sunlit<'py>(
             _ => run(),
         }
     });
-    let flags = numpy::ndarray::Array2::from_shape_vec((n, t), flags)
-        .map_err(|e| PyValueError::new_err(e.to_string()))?;
-    Ok(flags.into_pyarray(py))
+    let shape = |v| {
+        numpy::ndarray::Array2::from_shape_vec((n, days), v)
+            .map_err(|e| PyValueError::new_err(e.to_string()))
+    };
+    Ok((
+        shape(counts)?.into_pyarray(py),
+        shape(longest)?.into_pyarray(py),
+    ))
 }
 
 #[pymodule]
 fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(insolation_sunlit, m)?)?;
+    m.add_function(wrap_pyfunction!(insolation_day_stats, m)?)?;
     m.add_function(wrap_pyfunction!(noise_grid_energy, m)?)?;
     m.add_function(wrap_pyfunction!(visibility_polygons, m)?)?;
     m.add_function(wrap_pyfunction!(visibility_count_grid, m)?)?;

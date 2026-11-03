@@ -38,16 +38,38 @@ def test_courtyard_stays_in_shadow_in_winter():
     assert not points.within(ring).any()
 
 
-def test_terrain_ridge_shades_its_north_slope():
+@pytest.mark.parametrize("as_polygons", [False, True])
+def test_terrain_ridge_shades_its_north_slope(as_polygons):
     # flat ground with a 40 m ridge running east-west, no buildings
-    x = np.arange(-200, 201, 10.0)
-    y = np.arange(200, -201, -10.0)  # north-up raster rows
-    heights = np.where(np.abs(y)[:, None] <= 20, 40.0, 0.0) * np.ones_like(x)[None, :]
-    transform = (10.0, 0.0, X0 - 205, 0.0, -10.0, Y0 + 205)
+    if as_polygons:
+        terrain = gpd.GeoDataFrame(
+            {"height": [0.0, 40.0]},
+            geometry=[box(X0 - 200, Y0 - 200, X0 + 200, Y0 + 200), box(X0 - 200, Y0 - 20, X0 + 200, Y0 + 20)],
+            crs=CRS,
+        )
+    else:
+        x = np.arange(-200, 201, 10.0)
+        y = np.arange(200, -201, -10.0)  # north-up raster rows
+        heights = np.where(np.abs(y)[:, None] <= 20, 40.0, 0.0) * np.ones_like(x)[None, :]
+        terrain = (heights, (10.0, 0.0, X0 - 205, 0.0, -10.0, Y0 + 205), CRS)
     no_buildings = gpd.GeoDataFrame({"height": []}, geometry=[], crs=CRS)
     area = box(X0 - 50, Y0 - 150, X0 + 50, Y0 + 150)
     _, points = get_insolation(
-        no_buildings, "2026-12-21", area=area, terrain=(heights, transform, CRS), grid_step=5, return_receivers=True
+        no_buildings, "2026-12-21", area=area, terrain=terrain, grid_step=5, return_receivers=True
     )
     assert _sun_hours_at(points, 0, 40) == 0  # low winter sun from the south: north foot of the ridge in shadow
     assert _sun_hours_at(points, 0, -100) == pytest.approx(points.attrs["day_length_hours"])
+
+
+def test_period_reports_mean_and_worst_day():
+    building = gpd.GeoDataFrame({"height": [30.0]}, geometry=[box(X0 - 20, Y0 - 10, X0 + 20, Y0 + 10)], crs=CRS)
+    area = box(X0 - 40, Y0 - 80, X0 + 40, Y0 + 60)
+    _, points = get_insolation(
+        building, ("2026-03-21", "2026-06-21"), day_step=30, area=area, grid_step=2, return_receivers=True
+    )
+    assert points.attrs["days"] == ["2026-03-21", "2026-04-20", "2026-05-20", "2026-06-19", "2026-06-21"]
+    assert (points["min_sun_hours"] <= points["sun_hours"] + 1e-9).all()
+    assert (points["max_continuous_hours"] <= points["min_sun_hours"] + 1e-9).all()
+    north = points.distance(Point(X0, Y0 + 20)).idxmin()
+    # north of the building the high summer sun gets over it, the equinox sun does not: worst day < mean
+    assert points.at[north, "min_sun_hours"] < points.at[north, "sun_hours"]

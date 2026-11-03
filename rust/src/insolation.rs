@@ -22,7 +22,7 @@ pub struct Terrain {
 }
 
 impl Terrain {
-    /// Bilinear ground height at `(x, y)`, `None` outside the grid or on missing data.
+    /// Bilinear ground height at `(x, y)`: `None` outside the grid, NaN next to missing data.
     pub fn at(&self, x: f64, y: f64) -> Option<f64> {
         let fx = (x - self.x0) / self.sx;
         let fy = (y - self.y0) / self.sy;
@@ -39,7 +39,7 @@ impl Terrain {
             + tx * (1.0 - ty) * z(i1, j)
             + (1.0 - tx) * ty * z(i, j1)
             + tx * ty * z(i1, j1);
-        v.is_finite().then_some(v)
+        Some(v)
     }
 
     fn max(&self) -> f64 {
@@ -155,21 +155,42 @@ impl Scene {
     }
 }
 
-/// `receivers.len() x suns.len()` matrix (row-major) of 1 where the receiver is sunlit.
-pub fn sunlit_matrix(scene: &Scene, receivers: &[[f64; 3]], suns: &[Sun]) -> Vec<u8> {
-    let t = suns.len();
-    let mut out = vec![0u8; receivers.len() * t];
-    if t == 0 {
-        return out;
+/// Per receiver and day: the number of sunlit sun positions and the longest run of consecutive sunlit
+/// positions. `suns[day_offsets[d]..day_offsets[d + 1]]` are the positions of day `d` in time order.
+/// Both results are `receivers.len() x days` matrices (row-major).
+pub fn day_stats(
+    scene: &Scene,
+    receivers: &[[f64; 3]],
+    suns: &[Sun],
+    day_offsets: &[usize],
+) -> (Vec<u32>, Vec<u32>) {
+    let days = day_offsets.len().saturating_sub(1);
+    let mut counts = vec![0u32; receivers.len() * days];
+    let mut longest = vec![0u32; receivers.len() * days];
+    if days == 0 {
+        return (counts, longest);
     }
-    out.par_chunks_mut(t)
+    counts
+        .par_chunks_mut(days)
+        .zip(longest.par_chunks_mut(days))
         .zip(receivers.par_iter())
-        .for_each(|(row, p)| {
-            for (cell, sun) in row.iter_mut().zip(suns) {
-                *cell = u8::from(scene.sunlit(*p, sun));
+        .for_each(|((count_row, run_row), p)| {
+            for d in 0..days {
+                let (mut count, mut run, mut best) = (0u32, 0u32, 0u32);
+                for sun in &suns[day_offsets[d]..day_offsets[d + 1]] {
+                    if scene.sunlit(*p, sun) {
+                        count += 1;
+                        run += 1;
+                        best = best.max(run);
+                    } else {
+                        run = 0;
+                    }
+                }
+                count_row[d] = count;
+                run_row[d] = best;
             }
         });
-    out
+    (counts, longest)
 }
 
 #[cfg(test)]
@@ -234,5 +255,27 @@ mod tests {
         assert!(!scene.sunlit([50.0, 30.0, 0.0], &s));
         assert!(scene.sunlit([50.0, 80.0, 0.0], &s));
         assert_eq!(scene.terrain.as_ref().unwrap().at(50.0, 35.0), Some(10.0));
+    }
+
+    #[test]
+    fn day_stats_count_and_longest_run() {
+        // a wall east of the receiver blocks the morning sun only
+        let wall = vec![Seg {
+            a: [10.0, -50.0],
+            b: [10.0, 50.0],
+        }];
+        let scene = Scene::new(wall, vec![30.0], None);
+        let suns = [
+            sun(90.0, 20.0),  // east, low: blocked
+            sun(135.0, 30.0), // south-east: blocked
+            sun(180.0, 40.0), // south: free
+            sun(225.0, 30.0), // south-west: free
+            sun(270.0, 20.0), // west: free
+        ];
+        let (counts, longest) = day_stats(&scene, &[[0.0, 0.0, 0.0]], &suns, &[0, 5, 5]);
+        assert_eq!(counts, vec![3, 0]);
+        assert_eq!(longest, vec![3, 0]);
+        let (counts, _) = day_stats(&scene, &[[0.0, 0.0, 0.0]], &suns[..], &[0, 2, 5]);
+        assert_eq!(counts, vec![0, 3]);
     }
 }
