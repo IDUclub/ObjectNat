@@ -10,6 +10,7 @@ needs sun.
 
     :func:`objectnat.get_insolation` follows the sun through a chosen day or period and computes, on a
     regular grid of ground points, the hours of direct sunlight among buildings of known height and terrain.
+    :func:`objectnat.get_facade_insolation` does the same for points on building facades, floor by floor.
 
 ----
 
@@ -44,9 +45,27 @@ insolation norms usually limit (for example, SanPiN 1.2.3685-21 in Russia asks f
 
 .. autofunction:: objectnat.get_insolation
 
+Facades and Windows
+-------------------
+
+Insolation norms for housing check the **windows** of living rooms: how long the sun shines on them without
+a break on the calculation day. :func:`objectnat.get_facade_insolation` places calculation points along
+every wall of the chosen buildings (outer and courtyard walls) every ``spacing`` metres, on every floor at
+``window_height`` above the floor, just in front of the wall. The sun counts for a point only while it is
+in front of that facade (and at least ``min_facade_angle`` away from the facade plane) and the ray towards
+it is not blocked by other buildings or the terrain. Walls shared with a neighbouring building get no
+points.
+
+Every point carries the building, the floor, the direction the facade faces and the sun hours as on the
+ground; with ``norm_hours`` it also says whether the continuous insolation meets the norm. Group the points
+by building and floor to see which floors and facades fail it, or compare a scenario with and without a
+planned building to see whose windows it darkens.
+
+.. autofunction:: objectnat.get_facade_insolation
+
 Limitations
 -----------
 
-- Roofs are flat; pitched roofs, balconies and trees are not modelled.
+- Roofs are flat; pitched roofs, balconies, loggias and trees are not modelled.
+- Facade points stand on the outer wall surface; window reveals (the depth of the wall) are not modelled.
 - Only direct sunlight is counted, not diffuse light or reflections.
-- Insolation of windows and facades (points on walls at floor heights) is not available yet.

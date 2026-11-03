@@ -102,7 +102,8 @@ objectnat/
                        dense or pandas-sparse OD matrices without densifying them)
     noise/           — simulate_noise_grid (Rust receiver grid), simulate_noise, calculate_simplified_noise_frame,
                        noise_reduce helpers
-    insolation/      — get_insolation (sun hours on a ground grid among buildings and terrain; NOAA sun position)
+    insolation/      — get_insolation (sun hours on a ground grid), get_facade_insolation (per floor on facades);
+                       buildings with heights + terrain, NOAA sun position, single days or periods
     visibility/      — get_visibility (exact visibility; method="simple" is a deprecated alias)
     utils/
       geom_utils.py  — geometry helpers shared across methods

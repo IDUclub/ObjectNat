@@ -113,7 +113,8 @@ Each feature includes a **Jupyter Notebook example** and **full documentation**.
 
    ``get_insolation`` follows the sun through a chosen day and maps how many hours of direct sunlight
    each place gets among buildings of known height and terrain, including the ground that stays in
-   shadow all day.
+   shadow all day. ``get_facade_insolation`` does it floor by floor on the facades, to check the
+   insolation of windows.
 
    🔗 `Documentation <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__
 

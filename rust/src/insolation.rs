@@ -158,11 +158,15 @@ impl Scene {
 /// Per receiver and day: the number of sunlit sun positions and the longest run of consecutive sunlit
 /// positions. `suns[day_offsets[d]..day_offsets[d + 1]]` are the positions of day `d` in time order.
 /// Both results are `receivers.len() x days` matrices (row-major).
+///
+/// Receivers on a facade pass `facing`: the facade's outward unit normal per receiver and the least dot
+/// product between it and the horizontal direction to the sun; the sun counts only in front of the facade.
 pub fn day_stats(
     scene: &Scene,
     receivers: &[[f64; 3]],
     suns: &[Sun],
     day_offsets: &[usize],
+    facing: Option<(&[[f64; 2]], f64)>,
 ) -> (Vec<u32>, Vec<u32>) {
     let days = day_offsets.len().saturating_sub(1);
     let mut counts = vec![0u32; receivers.len() * days];
@@ -173,12 +177,18 @@ pub fn day_stats(
     counts
         .par_chunks_mut(days)
         .zip(longest.par_chunks_mut(days))
-        .zip(receivers.par_iter())
-        .for_each(|((count_row, run_row), p)| {
+        .zip(receivers.par_iter().enumerate())
+        .for_each(|((count_row, run_row), (k, p))| {
+            let in_front = |sun: &Sun| {
+                facing.is_none_or(|(normals, min_dot)| {
+                    let n = normals[k];
+                    n[0] * sun.dir[0] + n[1] * sun.dir[1] > min_dot
+                })
+            };
             for d in 0..days {
                 let (mut count, mut run, mut best) = (0u32, 0u32, 0u32);
                 for sun in &suns[day_offsets[d]..day_offsets[d + 1]] {
-                    if scene.sunlit(*p, sun) {
+                    if in_front(sun) && scene.sunlit(*p, sun) {
                         count += 1;
                         run += 1;
                         best = best.max(run);
@@ -272,10 +282,20 @@ mod tests {
             sun(225.0, 30.0), // south-west: free
             sun(270.0, 20.0), // west: free
         ];
-        let (counts, longest) = day_stats(&scene, &[[0.0, 0.0, 0.0]], &suns, &[0, 5, 5]);
+        let (counts, longest) = day_stats(&scene, &[[0.0, 0.0, 0.0]], &suns, &[0, 5, 5], None);
         assert_eq!(counts, vec![3, 0]);
         assert_eq!(longest, vec![3, 0]);
-        let (counts, _) = day_stats(&scene, &[[0.0, 0.0, 0.0]], &suns[..], &[0, 2, 5]);
+        let (counts, _) = day_stats(&scene, &[[0.0, 0.0, 0.0]], &suns[..], &[0, 2, 5], None);
         assert_eq!(counts, vec![0, 3]);
+        // a facade facing west sees only the south-west and west sun
+        let west: &[[f64; 2]] = &[[-1.0, 0.0]];
+        let (counts, _) = day_stats(
+            &scene,
+            &[[0.0, 0.0, 0.0]],
+            &suns,
+            &[0, 5],
+            Some((west, 0.0)),
+        );
+        assert_eq!(counts, vec![2]);
     }
 }

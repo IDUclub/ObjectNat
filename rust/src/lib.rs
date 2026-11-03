@@ -549,9 +549,11 @@ fn noise_grid_energy<'py>(
 /// ``(n, days)`` uint32, for receivers ``(n, 3)`` [x, y, z] and sun positions ``(t, 3)``
 /// [dir_x, dir_y, tan(elevation)] in time order, day ``d`` being ``suns[day_offsets[d]:day_offsets[d+1]]``,
 /// among walls ``(m, 4)`` with absolute roof heights ``tops`` and an optional terrain grid ``(ny, nx)``
-/// placed by ``terrain_grid = (x0, y0, sx, sy)``.
+/// placed by ``terrain_grid = (x0, y0, sx, sy)``. Facade receivers pass their outward unit ``normals``
+/// ``(n, 2)``: the sun then counts only while ``normal . sun_dir > min_facing``.
 #[pyfunction]
-#[pyo3(signature = (receivers, suns, day_offsets, segments, tops, terrain=None, terrain_grid=None, n_threads=None))]
+#[pyo3(signature = (receivers, suns, day_offsets, segments, tops, terrain=None, terrain_grid=None, normals=None,
+    min_facing=0.0, n_threads=None))]
 #[allow(clippy::too_many_arguments)]
 fn insolation_day_stats<'py>(
     py: Python<'py>,
@@ -562,6 +564,8 @@ fn insolation_day_stats<'py>(
     tops: PyReadonlyArray1<'py, f64>,
     terrain: Option<PyReadonlyArray2<'py, f64>>,
     terrain_grid: Option<(f64, f64, f64, f64)>,
+    normals: Option<PyReadonlyArray2<'py, f64>>,
+    min_facing: f64,
     n_threads: Option<usize>,
 ) -> PyResult<DayStats<'py>> {
     let rec = receivers.as_array();
@@ -632,11 +636,24 @@ fn insolation_day_stats<'py>(
             "day_offsets must be non-decreasing positions within suns",
         ));
     }
+    let normals: Option<Vec<[f64; 2]>> = match normals {
+        Some(a) => {
+            let a = a.as_array();
+            if a.nrows() != points.len() || (a.nrows() > 0 && a.ncols() != 2) {
+                return Err(PyValueError::new_err(
+                    "normals must be (n, 2), one per receiver",
+                ));
+            }
+            Some(a.rows().into_iter().map(|r| [r[0], r[1]]).collect())
+        }
+        None => None,
+    };
     let n = points.len();
     let days = offsets.len() - 1;
     let (counts, longest) = py.detach(|| {
         let scene = insolation::Scene::new(walls, tops, terrain);
-        let run = || insolation::day_stats(&scene, &points, &sun_list, &offsets);
+        let facing = normals.as_deref().map(|v| (v, min_facing));
+        let run = || insolation::day_stats(&scene, &points, &sun_list, &offsets, facing);
         match n_threads {
             Some(k) if k > 0 => rayon::ThreadPoolBuilder::new()
                 .num_threads(k)
