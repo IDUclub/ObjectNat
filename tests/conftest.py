@@ -1,4 +1,5 @@
 import os
+from contextlib import nullcontext
 
 import geopandas as gpd
 import matplotlib
@@ -59,13 +60,36 @@ def trees_data():
     return gpd.read_parquet(data_path)
 
 
-@pytest.fixture(scope="session")
-def boundary_osm_1114252():
-    return get_4326_boundary(osm_id=1114252)
+TERRITORY_OSM_ID = 1114252  # Vasileostrovsky district, Saint Petersburg
+GEOFABRIK_REGION = "northwestern-fed-district"
 
 
 @pytest.fixture(scope="session")
-def intermodal_osm_1114252(boundary_osm_1114252) -> UrbanGraph:
+def osm_pbf_path():
+    """OSM file of the test territory cut from the Geofabrik extract and cached in ``test_cache/geofabrik``,
+    or ``None`` (data then comes from Overpass) when the installed IduEdu cannot download extracts."""
+    try:
+        from iduedu import download_osm_pbf  # pylint: disable=import-outside-toplevel
+    except ImportError:
+        logger.info("This IduEdu cannot download Geofabrik extracts; using Overpass")
+        return None
+    return download_osm_pbf(
+        osm_id=TERRITORY_OSM_ID, region=GEOFABRIK_REGION, out_dir=os.path.join(cache_dir, "geofabrik")
+    )
+
+
+def _reading(osm_pbf_path):
+    return config.use_pbf(osm_pbf_path) if osm_pbf_path is not None else nullcontext()
+
+
+@pytest.fixture(scope="session")
+def boundary_osm_1114252(osm_pbf_path):
+    with _reading(osm_pbf_path):
+        return get_4326_boundary(osm_id=TERRITORY_OSM_ID)
+
+
+@pytest.fixture(scope="session")
+def intermodal_osm_1114252(boundary_osm_1114252, osm_pbf_path) -> UrbanGraph:
     cache_file = os.path.join(cache_dir, "intermodal_graph_1114252.urbangraph")
     if os.path.exists(cache_file):
         try:
@@ -75,7 +99,8 @@ def intermodal_osm_1114252(boundary_osm_1114252) -> UrbanGraph:
             logger.warning(f"Failed to load cached graph: {e}. Regenerating...")
             os.remove(cache_file)
     logger.info("Generating new intermodal graph")
-    graph = get_intermodal_graph(territory=boundary_osm_1114252, clip_by_territory=True)
+    with _reading(osm_pbf_path):
+        graph = get_intermodal_graph(territory=boundary_osm_1114252, clip_by_territory=True)
     try:
         logger.info(f"Saving graph to cache: {cache_file}")
         graph.write(cache_file)

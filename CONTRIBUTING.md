@@ -30,8 +30,8 @@ After changing Rust code, run `uv sync` again to rebuild the extension.
 
 | Task          | Command                           | Notes                                              |
 |---------------|-----------------------------------|----------------------------------------------------|
-| Run tests     | `make test`                       | builds the OSM graph via Overpass (needs internet) |
-| Offline tests | `uv run pytest -q -m "not network"` | runs without Overpass                              |
+| Run tests     | `make test`                       | builds the OSM graph from Geofabrik (needs internet once) |
+| Offline tests | `uv run pytest -q -m "not network"` | runs without network                               |
 | Coverage      | `make coverage`                   | terminal report                                    |
 | Coverage CI   | `make coverage-xml`               | writes `coverage.xml`                              |
 | Format        | `make format`                     | isort + black                                      |
@@ -42,8 +42,12 @@ After changing Rust code, run `uv sync` again to rebuild the extension.
 
 Line length is 120. Imports are isort-sorted (`__init__.py` files are skipped).
 
-The test suite downloads an intermodal graph from the Overpass API once and caches it under
-`tests/test_cache/` (git-ignored) as an `.urbangraph` archive, so subsequent runs are fast.
+The network tests build an intermodal graph of OSM relation 1114252 (Vasileostrovsky district, Saint
+Petersburg). With an IduEdu that has `download_osm_pbf`, the data comes from the Geofabrik extract
+`northwestern-fed-district`: it is downloaded once, the district is cut out of it into
+`tests/test_cache/geofabrik/territories/osm_1114252.osm.pbf`, and no Overpass request is made; older IduEdu
+releases fall back to the Overpass API. The graph itself is cached in `tests/test_cache/` (git-ignored) as an
+`.urbangraph` archive, so subsequent runs are fast.
 
 ## Commit messages (Conventional Commits)
 

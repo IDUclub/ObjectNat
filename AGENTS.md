@@ -47,10 +47,10 @@ backend: maturin (Python package + Rust extension `objectnat._rust` from `rust/`
 # Install all dependency groups
 uv sync --all-groups            # or: make install-dev
 
-# Run the test suite (downloads an OSM graph via Overpass on first run)
+# Run the test suite (downloads OSM data from Geofabrik on first run)
 uv run pytest                   # or: make test
 
-# Run all tests that do not need Overpass
+# Run all tests that do not need the network
 uv run pytest -q -m "not network"
 
 # Run a single test file / a single test by name
@@ -142,7 +142,8 @@ distance includes the boarding wait, and several of them can share one stop loca
 ### Tests
 
 `tests/` (flat, not a package). `conftest.py` builds a session-scoped intermodal `UrbanGraph` for OSM relation
-1114252 via Overpass and caches it as `tests/test_cache/*.urbangraph`. Matplotlib runs on the `Agg` backend
+1114252 from the Geofabrik extract (`iduedu.download_osm_pbf`, cut file cached in `tests/test_cache/geofabrik/`;
+Overpass with older IduEdu) and caches the graph as `tests/test_cache/*.urbangraph`. Matplotlib runs on the `Agg` backend
 (set in conftest). Example data (buildings/services/etc.) lives under `docs/methods/examples/examples_data/`.
 
 ### Releases
