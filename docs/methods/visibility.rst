@@ -9,7 +9,8 @@ It is commonly used in studies of **visual accessibility**, **urban perception**
 ----
 
     The module computes exact visibility from a single point or from a large batch of
-    points in parallel with :func:`objectnat.get_visibility`, and aggregates the visibility
+    points in parallel with :func:`objectnat.get_visibility`, 2.5D visibility over buildings of
+    known height and terrain with :func:`objectnat.get_viewshed`, and aggregates the visibility
     of many observers into catchment zones with :func:`objectnat.get_visibility_catchment`.
 
 ----
@@ -70,6 +71,30 @@ Turner et al. 2001). All lengths are in metres.
 
 Observers inside an obstacle get ``NaN``. The metrics add little time to the visibility itself (about
 0.8 s for 5,000 isovists with 450,000 vertices).
+
+----
+
+2.5D Visibility (Viewsheds)
+---------------------------
+
+:func:`objectnat.get_visibility` treats every obstacle as infinitely high. :func:`objectnat.get_viewshed`
+uses building heights and terrain instead: an observer at eye height (``observer_height``, 1.6 m by default,
+or on the roof when standing inside a footprint) sees over a garage onto the street behind it, from a hill
+over the roofs, from a tower far across the district, while a hill hides the valley behind it.
+
+The area within the viewing radius is split into ``cell_size`` cells, and a cell is visible when the
+straight line from the eye to the cell centre at ``target_height`` (0 for the ground, 1.6 m to see people)
+passes above every wall it crosses and above the terrain. The lines of sight are checked in the Rust
+extension, shared with :func:`objectnat.get_insolation`; visible cells are merged into one polygon per
+observer. ``include_roofs=True`` also returns the parts of flat roofs that can be seen. Building heights and
+terrain are given as for insolation: a height or storeys column, and a terrain GeoDataFrame of polygons with
+heights, a GeoTIFF or an array.
+
+For observers on the ground among buildings taller than the eye the result matches
+:func:`objectnat.get_visibility` up to the cell size; it differs where buildings are low, observers are
+high or the terrain is not flat.
+
+.. autofunction:: objectnat.get_viewshed
 
 ----
 

@@ -6,7 +6,7 @@ import pytest
 from matplotlib import pyplot as plt
 from shapely import LineString, Point, Polygon, box
 
-from objectnat import get_visibility
+from objectnat import get_viewshed, get_visibility
 from objectnat.methods.visibility._native import _largest_part_at
 from tests.conftest import output_dir
 
@@ -132,3 +132,26 @@ def test_isovist_metrics():
     assert shadowed["std_radial"] == pytest.approx(radial.std(), abs=0.05)
 
     assert np.isnan(inside["area"]) and np.isnan(inside["mean_radial"])
+
+
+def test_viewshed_sees_over_low_buildings_and_hides_behind_hills():
+    # a 3 m garage from x = 10 to 20 m east of an observer looking from 10 m up (a balcony)
+    observer = gpd.GeoDataFrame({"observer_height": [10.0]}, geometry=[Point(X0, Y0)], crs=CRS)
+    garage = gpd.GeoDataFrame({"height": [3.0]}, geometry=[box(X0 + 10, Y0 - 5, X0 + 20, Y0 + 5)], crs=CRS)
+    seen = get_viewshed(observer, garage, 60, cell_size=0.5, include_roofs=True).geometry.iloc[0]
+    # the line over the garage's far wall (3 m at 20 m) reaches the ground at 20 * 10 / 7 = 28.6 m
+    assert not seen.covers(Point(X0 + 25, Y0))
+    assert seen.covers(Point(X0 + 32, Y0))
+    assert seen.covers(Point(X0 + 15, Y0))  # its roof, seen from above
+    flat = get_visibility(observer, garage, 60).geometry.iloc[0]
+    assert not flat.covers(Point(X0 + 32, Y0))  # 2D visibility treats the garage as infinitely high
+
+    # a 30 m ridge 100 m north hides the valley behind it, without any buildings
+    x = np.arange(-300, 301, 10.0)
+    y = np.arange(300, -301, -10.0)
+    heights = np.where(np.abs(y - 100)[:, None] <= 10, 30.0, 0.0) * np.ones_like(x)[None, :]
+    terrain = (heights, (10.0, 0.0, X0 - 305, 0.0, -10.0, Y0 + 305), CRS)
+    result = get_viewshed(observer.assign(observer_height=1.6), None, 250, terrain=terrain, cell_size=5)
+    seen = result.geometry.iloc[0]
+    assert seen.covers(Point(X0, Y0 + 50)) and not seen.covers(Point(X0, Y0 + 200))
+    assert 0 < result["visible_share"].iloc[0] < 1

@@ -1,4 +1,4 @@
-//! Direct sunlight on receivers among buildings and terrain.
+//! Direct sunlight and lines of sight among buildings and terrain (2.5D scene).
 //!
 //! Buildings are extruded footprints with flat roofs: every footprint wall carries the absolute height
 //! of its roof top. Terrain is an optional height grid. A receiver at height `z` sees the sun when the
@@ -155,6 +155,68 @@ impl Scene {
     }
 }
 
+impl Scene {
+    /// True when nothing blocks the straight line between the 3D points `e` (eye) and `t` (target): every
+    /// wall it crosses has its roof below the line there, and so does the terrain. Walls touching either
+    /// end are ignored, so targets on a roof or right at a wall can be seen.
+    pub fn line_clear(&self, e: [f64; 3], t: [f64; 3]) -> bool {
+        let (o, q) = ([e[0], e[1]], [t[0], t[1]]);
+        let len = (q[0] - o[0]).hypot(q[1] - o[1]);
+        if len == 0.0 {
+            return true;
+        }
+        let eps = 1e-6 / len;
+        let rise = t[2] - e[2];
+        let mut blocked = false;
+        self.grid.walk_segment(o, q, |items| {
+            for &id in items {
+                if let Some((s, u)) = segment_params(o, q, &self.segs[id as usize]) {
+                    if s > eps
+                        && s < 1.0 - eps
+                        && (0.0..=1.0).contains(&u)
+                        && self.tops[id as usize] > e[2] + s * rise + 1e-9
+                    {
+                        blocked = true;
+                        return true;
+                    }
+                }
+            }
+            false
+        });
+        if blocked {
+            return false;
+        }
+        if let Some(terrain) = &self.terrain {
+            let step = terrain.sx.min(terrain.sy).abs();
+            let (dx, dy) = ((q[0] - o[0]) / len, (q[1] - o[1]) / len);
+            let mut d = step;
+            while d < len - step * 0.5 {
+                if let Some(h) = terrain.at(o[0] + dx * d, o[1] + dy * d) {
+                    if h > e[2] + d / len * rise + 1e-6 {
+                        return false;
+                    }
+                }
+                d += step;
+            }
+        }
+        true
+    }
+}
+
+/// For every target `targets[k]`, 1 when it is visible from `eyes[owner[k]]`.
+pub fn line_of_sight(
+    scene: &Scene,
+    eyes: &[[f64; 3]],
+    targets: &[[f64; 3]],
+    owner: &[usize],
+) -> Vec<u8> {
+    targets
+        .par_iter()
+        .zip(owner.par_iter())
+        .map(|(t, &k)| u8::from(scene.line_clear(eyes[k], *t)))
+        .collect()
+}
+
 /// Per receiver and day: the number of sunlit sun positions and the longest run of consecutive sunlit
 /// positions. `suns[day_offsets[d]..day_offsets[d + 1]]` are the positions of day `d` in time order.
 /// Both results are `receivers.len() x days` matrices (row-major).
@@ -265,6 +327,26 @@ mod tests {
         assert!(!scene.sunlit([50.0, 30.0, 0.0], &s));
         assert!(scene.sunlit([50.0, 80.0, 0.0], &s));
         assert_eq!(scene.terrain.as_ref().unwrap().at(50.0, 35.0), Some(10.0));
+    }
+
+    #[test]
+    fn line_of_sight_over_and_behind_a_building() {
+        // 10 m high building x 0..10; eye at 1.6 m west of it
+        let scene = Scene::new(square(0.0, -5.0, 10.0, 5.0), vec![10.0; 4], None);
+        let eye = [-10.0, 0.0, 1.6];
+        assert!(!scene.line_clear(eye, [20.0, 0.0, 0.0])); // ground behind the building
+        assert!(scene.line_clear(eye, [20.0, 0.0, 40.0])); // high enough to show over it
+        assert!(scene.line_clear(eye, [-20.0, 0.0, 0.0])); // nothing in between
+        assert!(scene.line_clear([-10.0, 0.0, 20.0], [5.0, 0.0, 10.0])); // its roof seen from above
+        assert!(!scene.line_clear(eye, [5.0, 0.0, 10.0])); // but not from below
+        let eyes = [eye];
+        let seen = line_of_sight(
+            &scene,
+            &eyes,
+            &[[20.0, 0.0, 0.0], [-20.0, 0.0, 0.0]],
+            &[0, 0],
+        );
+        assert_eq!(seen, vec![0, 1]);
     }
 
     #[test]

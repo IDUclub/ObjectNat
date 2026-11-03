@@ -570,15 +570,9 @@ fn insolation_day_stats<'py>(
 ) -> PyResult<DayStats<'py>> {
     let rec = receivers.as_array();
     let sun = suns.as_array();
-    let segs = segments.as_array();
-    let tops = tops.as_array();
-    if (rec.nrows() > 0 && rec.ncols() != 3)
-        || (sun.nrows() > 0 && sun.ncols() != 3)
-        || (segs.nrows() > 0 && segs.ncols() != 4)
-        || tops.len() != segs.nrows()
-    {
+    if (rec.nrows() > 0 && rec.ncols() != 3) || (sun.nrows() > 0 && sun.ncols() != 3) {
         return Err(PyValueError::new_err(
-            "receivers must be (n, 3), suns (t, 3), segments (m, 4) with one top height each",
+            "receivers must be (n, 3) and suns (t, 3)",
         ));
     }
     let points: Vec<[f64; 3]> = rec.rows().into_iter().map(|r| [r[0], r[1], r[2]]).collect();
@@ -590,39 +584,7 @@ fn insolation_day_stats<'py>(
             tan_el: r[2],
         })
         .collect();
-    let walls: Vec<Seg> = segs
-        .rows()
-        .into_iter()
-        .map(|r| Seg {
-            a: [r[0], r[1]],
-            b: [r[2], r[3]],
-        })
-        .collect();
-    let tops: Vec<f64> = tops.iter().copied().collect();
-    let terrain = match (terrain, terrain_grid) {
-        (Some(z), Some((x0, y0, sx, sy))) => {
-            let z = z.as_array();
-            let (ny, nx) = z.dim();
-            if nx < 2 || ny < 2 || !(sx > 0.0 && sy > 0.0) {
-                return Err(PyValueError::new_err(
-                    "terrain must be at least 2 x 2 with positive cell sizes",
-                ));
-            }
-            Some(insolation::Terrain {
-                x0,
-                y0,
-                sx,
-                sy,
-                nx,
-                ny,
-                z: z.iter().copied().collect(),
-            })
-        }
-        (None, _) => None,
-        (Some(_), None) => {
-            return Err(PyValueError::new_err("terrain needs terrain_grid"));
-        }
-    };
+    let scene = scene_from_arrays(segments, tops, terrain, terrain_grid)?;
     let offsets: Vec<usize> = day_offsets
         .as_array()
         .iter()
@@ -651,7 +613,6 @@ fn insolation_day_stats<'py>(
     let n = points.len();
     let days = offsets.len() - 1;
     let (counts, longest) = py.detach(|| {
-        let scene = insolation::Scene::new(walls, tops, terrain);
         let facing = normals.as_deref().map(|v| (v, min_facing));
         let run = || insolation::day_stats(&scene, &points, &sun_list, &offsets, facing);
         match n_threads {
@@ -673,9 +634,113 @@ fn insolation_day_stats<'py>(
     ))
 }
 
+/// Lines of sight: 1 for every target ``(m, 3)`` visible from its eye ``eyes[owner]`` (``(k, 3)``, x y z)
+/// among walls ``(w, 4)`` with absolute roof heights ``tops`` and an optional terrain grid.
+#[pyfunction]
+#[pyo3(signature = (eyes, targets, owner, segments, tops, terrain=None, terrain_grid=None, n_threads=None))]
+#[allow(clippy::too_many_arguments)]
+fn line_of_sight<'py>(
+    py: Python<'py>,
+    eyes: PyReadonlyArray2<'py, f64>,
+    targets: PyReadonlyArray2<'py, f64>,
+    owner: PyReadonlyArray1<'py, i64>,
+    segments: PyReadonlyArray2<'py, f64>,
+    tops: PyReadonlyArray1<'py, f64>,
+    terrain: Option<PyReadonlyArray2<'py, f64>>,
+    terrain_grid: Option<(f64, f64, f64, f64)>,
+    n_threads: Option<usize>,
+) -> PyResult<Bound<'py, PyArray1<u8>>> {
+    let (eyes, targets, owner) = (eyes.as_array(), targets.as_array(), owner.as_array());
+    if (eyes.nrows() > 0 && eyes.ncols() != 3)
+        || (targets.nrows() > 0 && targets.ncols() != 3)
+        || owner.len() != targets.nrows()
+        || owner.iter().any(|&k| k < 0 || k as usize >= eyes.nrows())
+    {
+        return Err(PyValueError::new_err(
+            "eyes must be (k, 3), targets (m, 3) with one valid eye index each",
+        ));
+    }
+    let eye_pts: Vec<[f64; 3]> = eyes
+        .rows()
+        .into_iter()
+        .map(|r| [r[0], r[1], r[2]])
+        .collect();
+    let target_pts: Vec<[f64; 3]> = targets
+        .rows()
+        .into_iter()
+        .map(|r| [r[0], r[1], r[2]])
+        .collect();
+    let owner: Vec<usize> = owner.iter().map(|&k| k as usize).collect();
+    let scene = scene_from_arrays(segments, tops, terrain, terrain_grid)?;
+    let seen = py.detach(|| {
+        let run = || insolation::line_of_sight(&scene, &eye_pts, &target_pts, &owner);
+        match n_threads {
+            Some(k) if k > 0 => rayon::ThreadPoolBuilder::new()
+                .num_threads(k)
+                .build()
+                .map(|pool| pool.install(run))
+                .unwrap_or_else(|_| run()),
+            _ => run(),
+        }
+    });
+    Ok(seen.into_pyarray(py))
+}
+
+/// Walls ``(m, 4)`` with roof heights and an optional terrain grid as an indexed 2.5D scene.
+fn scene_from_arrays(
+    segments: PyReadonlyArray2<'_, f64>,
+    tops: PyReadonlyArray1<'_, f64>,
+    terrain: Option<PyReadonlyArray2<'_, f64>>,
+    terrain_grid: Option<(f64, f64, f64, f64)>,
+) -> PyResult<insolation::Scene> {
+    let segs = segments.as_array();
+    let tops = tops.as_array();
+    if (segs.nrows() > 0 && segs.ncols() != 4) || tops.len() != segs.nrows() {
+        return Err(PyValueError::new_err(
+            "segments must be (m, 4) with one top height each",
+        ));
+    }
+    let walls: Vec<Seg> = segs
+        .rows()
+        .into_iter()
+        .map(|r| Seg {
+            a: [r[0], r[1]],
+            b: [r[2], r[3]],
+        })
+        .collect();
+    let terrain = match (terrain, terrain_grid) {
+        (Some(z), Some((x0, y0, sx, sy))) => {
+            let z = z.as_array();
+            let (ny, nx) = z.dim();
+            if nx < 2 || ny < 2 || !(sx > 0.0 && sy > 0.0) {
+                return Err(PyValueError::new_err(
+                    "terrain must be at least 2 x 2 with positive cell sizes",
+                ));
+            }
+            Some(insolation::Terrain {
+                x0,
+                y0,
+                sx,
+                sy,
+                nx,
+                ny,
+                z: z.iter().copied().collect(),
+            })
+        }
+        (None, _) => None,
+        (Some(_), None) => return Err(PyValueError::new_err("terrain needs terrain_grid")),
+    };
+    Ok(insolation::Scene::new(
+        walls,
+        tops.iter().copied().collect(),
+        terrain,
+    ))
+}
+
 #[pymodule]
 fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(insolation_day_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(line_of_sight, m)?)?;
     m.add_function(wrap_pyfunction!(noise_grid_energy, m)?)?;
     m.add_function(wrap_pyfunction!(visibility_polygons, m)?)?;
     m.add_function(wrap_pyfunction!(visibility_count_grid, m)?)?;
