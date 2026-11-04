@@ -54,47 +54,21 @@ and the column ``dist`` (minutes or metres).
 Figures
 -------
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/isochrone_ways_15_min.png
-   :alt: Isochrone with geometry_type ways, 15 minutes
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones.png
+   :alt: Isochrones with geometry_type ways and radius, and isochrones of three origins
    :align: center
-   :width: 70%
+   :width: 100%
 
-   15-minute isochrone on the intermodal graph of Vasilyevsky Island, ``geometry_type="ways"``.
+   15-minute isochrone on the intermodal graph of Vasilyevsky Island with ``geometry_type="ways"`` and
+   ``"radius"``, and 8-minute ``"radius"`` isochrones of three origins (one polygon per origin).
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/isochrone_radius_15_min.png
-   :alt: Isochrone with geometry_type radius, 15 minutes
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped.png
+   :alt: Stepped isochrones with geometry_type ways, radius and separate
    :align: center
-   :width: 70%
+   :width: 100%
 
-   The same isochrone with ``geometry_type="radius"``.
-
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/isochrone_3points_radius_8_min.png
-   :alt: Isochrones of three origins, 8 minutes
-   :align: center
-   :width: 70%
-
-   8-minute isochrones of three origins, ``geometry_type="radius"``.
-
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/stepped_isochrone_ways_15_min.png
-   :alt: Stepped isochrones, ways
-   :align: center
-   :width: 70%
-
-   Stepped isochrones up to 15 minutes, ``geometry_type="ways"``.
-
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/stepped_isochrone_radius_15_min.png
-   :alt: Stepped isochrones, radius
-   :align: center
-   :width: 70%
-
-   Stepped isochrones up to 15 minutes, ``geometry_type="radius"``.
-
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/stepped_isochrone_separate_15_min.png
-   :alt: Stepped isochrones, separate
-   :align: center
-   :width: 70%
-
-   Stepped isochrones up to 15 minutes, ``geometry_type="separate"``.
+   Stepped isochrones up to 15 minutes in bands of 3 minutes, ``geometry_type="ways"``, ``"radius"`` and
+   ``"separate"``; ``dist`` is the upper bound of the band.
 
 Limitations
 -----------

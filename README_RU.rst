@@ -70,6 +70,11 @@ Object-oriented Network Analysis Tools
 стоимость в пределах заданного бюджета минимальна (поиск по обращённому графу, ячейки Вороного узлов графа),
 поэтому зоны не перекрываются. ``get_radius_coverage`` строит зоны без графа, по фиксированному радиусу.
 
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped.png
+   :align: center
+   :width: 100%
+   :alt: Пояса изохрон с geometry_type ways, radius и separate, шаг 3 минуты
+
 **Обеспеченность сервисами** (`документация <https://iduclub.github.io/ObjectNat/methods/provision.html>`__,
 `пример <https://iduclub.github.io/ObjectNat/methods/examples/provision.html>`__). ``get_service_provision`` распределяет спрос зданий между
 сервисами с ограниченной вместимостью по гравитационной вероятностной модели на плотной или разреженной

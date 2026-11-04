@@ -58,40 +58,21 @@ in minutes or metres). All results are in the CRS of the input services.
 Figures
 -------
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/coverage_zones_time_10min.png
-   :alt: Coverage zones, 10 minutes
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage.png
+   :alt: Coverage zones by time, by distance and by radius
    :align: center
-   :width: 70%
+   :width: 100%
 
-   Coverage zones of the example services within 10 minutes on the intermodal graph.
+   Coverage zones of the example services: within 10 minutes on the intermodal graph clipped to the district,
+   within 600 m of network distance, and the graph-free :func:`objectnat.get_radius_coverage` with ``radius=800``.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/coverage_zones_distance_600m.png
-   :alt: Coverage zones, 600 metres
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_stepped.png
+   :alt: Stepped coverage zones, Voronoi cells and separate buffers
    :align: center
-   :width: 70%
+   :width: 100%
 
-   Coverage zones within 600 m of network distance.
-
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/coverage_zones_radius_distance_800m.png
-   :alt: Radius coverage zones, 800 metres
-   :align: center
-   :width: 70%
-
-   Graph-free coverage zones of :func:`objectnat.get_radius_coverage`, ``radius=800``.
-
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/stepped_coverage_zones_voronoi.png
-   :alt: Stepped coverage zones, Voronoi cells
-   :align: center
-   :width: 70%
-
-   Stepped coverage zones, ``geometry_type=None``.
-
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/stepped_coverage_zones_separate.png
-   :alt: Stepped coverage zones, separate buffers
-   :align: center
-   :width: 70%
-
-   Stepped coverage zones, ``geometry_type="separate"``.
+   Stepped coverage zones up to 15 minutes in bands of 2 minutes, ``geometry_type=None`` (Voronoi cells of the
+   graph nodes) and ``"separate"``.
 
 Limitations
 -----------

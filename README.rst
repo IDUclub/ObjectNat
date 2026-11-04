@@ -68,6 +68,11 @@ bands of width ``step``. The polygon is built from residual-distance buffers aro
 network cost within a budget (search on the reversed graph, Voronoi cells of graph nodes), so zones do not overlap.
 ``get_radius_coverage`` is a graph-free variant with a fixed radius.
 
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped.png
+   :align: center
+   :width: 100%
+   :alt: Stepped isochrones with geometry_type ways, radius and separate, bands of 3 minutes
+
 **Service provision** (`docs <https://iduclub.github.io/ObjectNat/methods/provision.html>`__, `example <https://iduclub.github.io/ObjectNat/methods/examples/provision.html>`__).
 ``get_service_provision`` allocates building demand to services with limited capacity using a gravity-based
 probabilistic model over a dense or pandas-sparse cost matrix and a normative threshold. It returns a

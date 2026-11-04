@@ -72,7 +72,7 @@ representative point of the building to the service, with ``building_index``, ``
 
 .. autofunction:: objectnat.get_provision_links
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_buildings.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_value_10min.png
    :alt: Provision value of residential buildings
    :align: center
    :width: 85%
