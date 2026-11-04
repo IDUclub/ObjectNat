@@ -50,7 +50,9 @@ def test_visibility_on_example_buildings(gdf_1point_special, buildings_data):
     point.plot(ax=ax, color="purple", markersize=20, edgecolor="black")
     ax.set_title(f"Visibility, radius {radius} m")
     ax.set_axis_off()
-    plt.savefig(os.path.join(output_dir, "visibility_example.png"), bbox_inches="tight", dpi=150, facecolor="white")
+    plt.savefig(
+        os.path.join(output_dir, "visibility_buildings_800m.png"), bbox_inches="tight", dpi=150, facecolor="white"
+    )
     plt.close()
 
 
