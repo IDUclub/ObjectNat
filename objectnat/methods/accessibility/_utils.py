@@ -232,8 +232,9 @@ def build_separated_dist_polygons(
     if weight_type == "time_min":
         buffer_size = buffer_size * float(speed_m_per_min)
 
+    # the first band is [0, step]: sources at cost 0 belong to it, not to a band of their own
     points["dist"] = np.minimum(
-        np.ceil(points["dist"].astype(float).to_numpy() / float(step)) * float(step),
+        np.maximum(np.ceil(points["dist"].astype(float).to_numpy() / float(step)), 1.0) * float(step),
         float(weight_value),
     )
     points.geometry = points.geometry.buffer(buffer_size)
@@ -253,8 +254,8 @@ def build_separated_dist_polygons(
     if stepped.empty:
         return empty_result()
 
-    stepped_dist = stepped.groupby(level=0)["dist"].mean()
-    stepped_dist = np.minimum(np.floor(stepped_dist / float(step)) * float(step), float(weight_value))
+    # a face covered by several bands is reached first in the earliest of them
+    stepped_dist = stepped.groupby(level=0)["dist"].min()
     stepped_polygons = gpd.GeoDataFrame(
         {"dist": stepped_dist.to_numpy()},
         geometry=polygons.geometry.loc[stepped_dist.index].to_numpy(),
@@ -323,8 +324,9 @@ def build_stepped_accessibility_geometry(
         clip_geom = clip_geom.intersection(zone.to_crs(local_crs).union_all())
 
     nodes_for_voronoi = reachable_graph_nodes_gdf.copy()
+    # the first band is [0, step]: sources at cost 0 belong to it, not to a band of their own
     nodes_for_voronoi["dist"] = np.minimum(
-        np.ceil(nodes_for_voronoi["dist"].astype(float).to_numpy() / float(step)) * float(step),
+        np.maximum(np.ceil(nodes_for_voronoi["dist"].astype(float).to_numpy() / float(step)), 1.0) * float(step),
         float(weight_value),
     )
 
