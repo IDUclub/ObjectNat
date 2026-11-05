@@ -24,7 +24,7 @@ def _level_at(receivers, x, y):
 
 
 def test_free_field_follows_the_distance_law():
-    bands, receivers = simulate_noise_grid(_source((0, 0)), None, grid_step=1.0, return_receivers=True)
+    bands, receivers = simulate_noise_grid(_source((0, 0)), None, grid_step=1.0, output="both")
 
     assert receivers.crs == bands.crs
     assert _level_at(receivers, 10, 0) == pytest.approx(70 - 20 - 10 * 0.0052, abs=0.05)
@@ -34,15 +34,15 @@ def test_free_field_follows_the_distance_law():
 
 
 def test_two_equal_sources_add_three_db():
-    _, one = simulate_noise_grid(_source((0, 0)), None, grid_step=1.0, return_receivers=True)
-    _, two = simulate_noise_grid(_source((0, 0), (0, 0)), None, grid_step=1.0, return_receivers=True)
+    _, one = simulate_noise_grid(_source((0, 0)), None, grid_step=1.0, output="both")
+    _, two = simulate_noise_grid(_source((0, 0), (0, 0)), None, grid_step=1.0, output="both")
     assert _level_at(two, 20, 0) - _level_at(one, 20, 0) == pytest.approx(10 * np.log10(2), abs=1e-6)
 
 
 def test_building_shadow_and_reflection():
     building = gpd.GeoDataFrame(geometry=[box(X0 + 20, Y0 - 10, X0 + 30, Y0 + 10)], crs=CRS)
-    _, direct = simulate_noise_grid(_source((0, 0)), building, grid_step=1.0, reflections=False, return_receivers=True)
-    _, reflected = simulate_noise_grid(_source((0, 0)), building, grid_step=1.0, return_receivers=True)
+    _, direct = simulate_noise_grid(_source((0, 0)), building, grid_step=1.0, reflections=False, output="both")
+    _, reflected = simulate_noise_grid(_source((0, 0)), building, grid_step=1.0, output="both")
 
     # nothing reaches right behind the building without diffraction
     assert direct.distance(Point(X0 + 40, Y0)).min() > 1
@@ -59,7 +59,7 @@ def test_line_source_follows_the_line_law():
         geometry=[LineString([(X0 - 300, Y0), (X0 + 300, Y0)])],
         crs=CRS,
     )
-    _, receivers = simulate_noise_grid(road, None, grid_step=1.0, source_spacing=2.0, return_receivers=True)
+    _, receivers = simulate_noise_grid(road, None, grid_step=1.0, source_spacing=2.0, output="both")
     near_middle = receivers[receivers.geometry.x.between(X0 - 20, X0 + 20)]
     at_10m = near_middle[(near_middle.geometry.y - Y0 - 10).abs() < 0.5]["noise_level"].mean()
     assert at_10m == pytest.approx(60 - 10 - 10 * 0.0052, abs=0.5)

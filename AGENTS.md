@@ -104,12 +104,15 @@ objectnat/
                        noise_reduce helpers
     insolation/      — get_insolation (sun hours on a ground grid), get_facade_insolation (per floor on facades);
                        buildings with heights + terrain, NOAA sun position, single days or periods
-    visibility/      — get_visibility (exact visibility; method="simple" is a deprecated alias), get_viewshed
-                       / get_viewshed_catchment
-                       (2.5D: lines of sight over building heights and terrain), visibility catchment
+    visibility/      — get_visibility (exact visibility; method="simple" is a deprecated alias), get_isovist_grid
+                       (isovist metrics on a grid), get_viewshed / get_viewshed_catchment (2.5D: lines of sight
+                       over building heights and terrain), visibility catchment
     utils/
       geom_utils.py  — geometry helpers shared across methods
       scene.py       — 2.5D scene for insolation and viewsheds: building heights, terrain, local CRS
+      raster.py      — Raster (values, transform, crs) and rasterize: grid points of insolation, noise, catchment
+                       and isovist grids to rasters (matplotlib, GeoTIFF, folium); grid methods record their grid
+                       in attrs and take output="zones" | "receivers"/"cells" | "both"
 rust/                — Rust crate compiled by maturin into the extension `objectnat._rust` (PyO3, abi3)
   src/visibility.rs  — exact batch visibility polygons (grid index, critical directions, rayon)
   src/provision.rs   — gravity-probabilistic provision allocation on sparse OD entries (rayon)

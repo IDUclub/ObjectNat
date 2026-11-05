@@ -7,12 +7,13 @@ import shapely
 from shapely import Point, Polygon
 
 from objectnat import config
+from objectnat.methods.utils.raster import grid_attrs
 from objectnat.methods.visibility._native import (
     geometries_to_segments,
     native_visibility_polygons,
     native_visibility_single,
 )
-from objectnat.methods.visibility.isovist import add_isovist_metrics
+from objectnat.methods.visibility.isovist import ISOVIST_METRICS, add_isovist_metrics
 
 logger = config.logger
 
@@ -134,13 +135,11 @@ def get_visibility(
             ``"visibility_distance"`` column is not present in ``point_from``.
             If ``None`` and the column is also missing, a ``ValueError`` is raised.
         method (Literal["accurate", "simple"], optional):
-            Kept for compatibility. ``"simple"`` (a ray-based approximation) is
-            deprecated: the exact algorithm is now faster than it was, so both
-            values return the exact result.
+            Deprecated and ignored: the result is always exact.
         resolution (int, optional):
-            Deprecated, ignored. Used to set the ray count of ``method="simple"``.
+            Deprecated and ignored.
         parallel (bool, optional):
-            Ignored: the calculation is always multi-threaded.
+            Deprecated and ignored: the calculation is always multi-threaded.
         max_workers (int | None, optional):
             Maximum number of threads (``None`` uses all cores).
         isovist_metrics (bool, optional):
@@ -218,3 +217,88 @@ def get_visibility(
     if isovist_metrics:
         add_isovist_metrics(result_gdf, points_local.geometry, distances)
     return result_gdf.to_crs(original_crs)
+
+
+def get_isovist_grid(
+    obstacles: gpd.GeoDataFrame | None,
+    area: gpd.GeoDataFrame | gpd.GeoSeries | shapely.Geometry,
+    *,
+    view_distance: float = 200.0,
+    cell_size: float = 5.0,
+    max_workers: int | None = None,
+) -> gpd.GeoDataFrame:
+    """
+    Isovist metrics on a regular grid of observers covering the open ground of an area (an isovist field).
+
+    An observer is placed at the centre of every ``cell_size`` cell of ``area`` outside the obstacles, and its
+    exact visibility polygon within ``view_distance`` is measured as with ``get_visibility(...,
+    isovist_metrics=True)``. Obstacles outside the area but within ``view_distance`` of it still block the view.
+    :func:`rasterize` turns any metric into a :class:`Raster`, which shows how openness, compactness or
+    occlusion change across the area.
+
+    Args:
+        obstacles (gpd.GeoDataFrame | None):
+            Obstacle geometries (Polygon, MultiPolygon, LineString, MultiLineString) in any CRS; ``None`` or
+            empty for open ground.
+        area (gpd.GeoDataFrame | gpd.GeoSeries | shapely.Geometry):
+            Area to cover. A shapely geometry is taken in the CRS of ``obstacles``.
+        view_distance (float, optional):
+            Viewing radius of every observer in metres. Defaults to 200.
+        cell_size (float, optional):
+            Observer spacing in metres. Time grows with ``(area / cell_size²) * view_distance``. Defaults to 5.
+        max_workers (int | None, optional):
+            Number of threads (``None`` uses all cores).
+
+    Returns:
+        gpd.GeoDataFrame:
+            One observer point per open cell, in the CRS of ``area`` (of ``obstacles`` for a shapely geometry),
+            with the isovist metric columns of :func:`get_visibility`: ``area``, ``perimeter``,
+            ``compactness``, ``occlusivity``, ``n_occlusions``, ``min_radial``, ``max_radial``,
+            ``mean_radial``, ``std_radial``, ``skew_radial``, ``drift``, ``view_share`` and ``open_share``.
+            ``attrs`` record the grid for :func:`rasterize`.
+
+    Raises:
+        ValueError: If ``area`` has no CRS or is empty, or ``view_distance`` or ``cell_size`` is not positive.
+    """
+    if not np.isfinite(cell_size) or cell_size <= 0:
+        raise ValueError(f"cell_size must be a positive number; got {cell_size!r}")
+    if not np.isfinite(view_distance) or view_distance <= 0:
+        raise ValueError(f"view_distance must be a positive number; got {view_distance!r}")
+    has_obstacles = obstacles is not None and len(obstacles) > 0
+    if isinstance(area, (gpd.GeoDataFrame, gpd.GeoSeries)):
+        area_series = gpd.GeoSeries(area.geometry.values, crs=area.crs)
+    else:
+        if not has_obstacles or obstacles.crs is None:
+            raise ValueError("A shapely area needs obstacles with a CRS; pass area as a GeoDataFrame instead")
+        area_series = gpd.GeoSeries([area], crs=obstacles.crs)
+    if area_series.crs is None:
+        raise ValueError("area must have a CRS")
+    local_crs = area_series.estimate_utm_crs()
+    area_geom = area_series.to_crs(local_crs).union_all()
+    if area_geom.is_empty:
+        raise ValueError("area is empty")
+
+    x0, y0, x1, y1 = area_geom.bounds
+    gx = np.arange(np.floor(x0 / cell_size) * cell_size + cell_size / 2, x1, cell_size)
+    gy = np.arange(np.floor(y0 / cell_size) * cell_size + cell_size / 2, y1, cell_size)
+    xx, yy = np.meshgrid(gx, gy)
+    points = shapely.points(xx.ravel(), yy.ravel())
+    keep = shapely.covers(area_geom, points)
+    scene = None
+    if has_obstacles:
+        local_obstacles = obstacles.to_crs(local_crs)
+        scene = local_obstacles.iloc[
+            local_obstacles.sindex.query(area_geom.buffer(view_distance), predicate="intersects")
+        ]
+        inside, _ = shapely.STRtree(scene.geometry.values).query(points, predicate="intersects")
+        keep[inside] = False
+    observers = gpd.GeoDataFrame(geometry=points[keep], crs=local_crs)
+    if observers.empty:
+        result = gpd.GeoDataFrame({name: [] for name in ISOVIST_METRICS}, geometry=[], crs=area_series.crs)
+    else:
+        isovists = get_visibility(observers, scene, view_distance, max_workers=max_workers, isovist_metrics=True)
+        result = gpd.GeoDataFrame(
+            isovists[list(ISOVIST_METRICS)].to_numpy(), columns=list(ISOVIST_METRICS), geometry=observers.geometry
+        ).to_crs(area_series.crs)
+    result.attrs.update(grid_attrs(local_crs, cell_size, (gx[0], gy[0])))
+    return result

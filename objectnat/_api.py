@@ -18,7 +18,9 @@ from .methods.provision import (
     get_service_provision,
     recalculate_links,
 )
+from .methods.utils.raster import Raster, rasterize
 from .methods.visibility import (
+    get_isovist_grid,
     get_observer_points,
     get_viewshed,
     get_viewshed_catchment,

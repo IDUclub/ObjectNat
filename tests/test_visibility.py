@@ -6,7 +6,7 @@ import pytest
 from matplotlib import pyplot as plt
 from shapely import LineString, Point, Polygon, box
 
-from objectnat import get_viewshed, get_viewshed_catchment, get_visibility
+from objectnat import get_isovist_grid, get_viewshed, get_viewshed_catchment, get_visibility, rasterize
 from objectnat.methods.visibility._native import _largest_part_at
 from tests.conftest import output_dir
 
@@ -134,6 +134,14 @@ def test_isovist_metrics():
     assert shadowed["std_radial"] == pytest.approx(radial.std(), abs=0.05)
 
     assert np.isnan(inside["area"]) and np.isnan(inside["mean_radial"])
+
+    # an isovist field: one observer per open 10 m cell, the same metrics as single observers
+    field = get_isovist_grid(building, box(X0 - 50, Y0 - 50, X0 + 50, Y0 + 50), view_distance=100, cell_size=10)
+    assert len(field) == 100 - 2  # two cell centres (25, ±5) fall on the building
+    probe = field.distance(Point(X0 - 5, Y0 - 5)).idxmin()
+    single = get_visibility(field.loc[[probe]], building, 100, isovist_metrics=True)
+    assert field.at[probe, "view_share"] == pytest.approx(single["view_share"].iloc[0])
+    assert np.isfinite(rasterize(field, "drift").values).sum() == len(field)
 
 
 def test_viewshed_sees_over_low_buildings_and_hides_behind_hills():

@@ -1,0 +1,303 @@
+"""Regular-grid results as rasters: arrays with a transform and a CRS, for plots, GeoTIFF files and web maps."""
+
+import warnings
+from typing import Any, NamedTuple
+
+import geopandas as gpd
+import numpy as np
+import shapely
+from pyproj import CRS, Transformer
+
+GRID_ATTR = "grid"
+
+
+def resolve_output(output: str, points: str, legacy_flag: bool = False) -> str:
+    """Check ``output`` of a grid method (``"zones"``, ``points`` or ``"both"``); ``return_receivers=True`` means "both"."""
+    if legacy_flag:
+        warnings.warn(
+            'return_receivers=True is deprecated and will be removed in ObjectNat 3.0; use output="both" '
+            f'(or output="{points}" when the zones are not needed)',
+            DeprecationWarning,
+            stacklevel=3,
+        )
+        if output == "zones":
+            output = "both"
+    if output not in ("zones", points, "both"):
+        raise ValueError(f'output must be "zones", "{points}" or "both"; got {output!r}')
+    return output
+
+
+def grid_attrs(local_crs, cell_size: float, origin: tuple[float, float]) -> dict:
+    """``attrs`` entry that lets :func:`rasterize` place grid points exactly: CRS, cell size, one cell centre."""
+    return {
+        GRID_ATTR: {
+            "crs": CRS.from_user_input(local_crs).to_wkt(),
+            "cell_size": float(cell_size),
+            "origin": (float(origin[0]), float(origin[1])),
+        }
+    }
+
+
+class Raster(NamedTuple):
+    """
+    Values on a north-up grid of square cells, as returned by :func:`rasterize`.
+
+    It is the tuple ``(values, transform, crs)`` that ``terrain`` arguments accept, so it can be passed back as
+    terrain, written with rasterio, or drawn with matplotlib.
+
+    Attributes:
+        values: ``(rows, cols)`` float array; row 0 is the northern edge, ``NaN`` marks cells without a value.
+        transform: Affine coefficients ``(a, b, c, d, e, f)`` as in rasterio and GDAL: the upper-left corner of
+            cell ``(row, col)`` is ``x = c + a * col``, ``y = f + e * row`` (``b = d = 0``, ``e = -a``).
+        crs: Projected CRS of the grid (metres).
+    """
+
+    values: np.ndarray
+    transform: tuple
+    crs: Any
+
+    @property
+    def cell_size(self) -> float:
+        """Cell side in metres."""
+        return float(self.transform[0])
+
+    @property
+    def bounds(self) -> tuple[float, float, float, float]:
+        """``(minx, miny, maxx, maxy)`` of the grid."""
+        a, _, c, _, e, f = self.transform
+        rows, cols = self.values.shape
+        return c, f + e * rows, c + a * cols, f
+
+    @property
+    def extent(self) -> tuple[float, float, float, float]:
+        """``(left, right, bottom, top)``, the ``extent`` argument of ``matplotlib.pyplot.imshow``."""
+        minx, miny, maxx, maxy = self.bounds
+        return minx, maxx, miny, maxy
+
+    def plot(self, ax=None, **kwargs):
+        """
+        Draw the raster with ``ax.imshow`` in the CRS of the grid (cells without a value stay transparent).
+
+        Keyword arguments go to ``imshow`` (``cmap``, ``vmin``, ``vmax``, ``alpha``, ...). Layers drawn on the same
+        axes must be in :attr:`crs`, e.g. ``buildings.to_crs(raster.crs).plot(ax=ax)``. Needs matplotlib.
+
+        Returns:
+            The ``AxesImage``, e.g. for ``fig.colorbar``.
+        """
+        import matplotlib.pyplot as plt  # pylint: disable=import-outside-toplevel
+
+        if ax is None:
+            ax = plt.gca()
+        kwargs.setdefault("interpolation", "nearest")
+        image = ax.imshow(self.values, extent=self.extent, origin="upper", **kwargs)
+        ax.set_aspect("equal")
+        return image
+
+    def to_geotiff(self, path, *, nodata: float = np.nan) -> None:
+        """Write a single-band float32 GeoTIFF; cells without a value get ``nodata``. Needs rasterio."""
+        try:
+            import rasterio  # pylint: disable=import-outside-toplevel
+            from rasterio.transform import Affine  # pylint: disable=import-outside-toplevel
+        except ImportError as exc:
+            raise ImportError("Writing GeoTIFF needs rasterio: pip install rasterio") from exc
+        values = np.where(np.isnan(self.values), nodata, self.values).astype("float32")
+        with rasterio.open(
+            path,
+            "w",
+            driver="GTiff",
+            height=values.shape[0],
+            width=values.shape[1],
+            count=1,
+            dtype="float32",
+            crs=CRS.from_user_input(self.crs).to_wkt(),
+            transform=Affine(*self.transform[:6]),
+            nodata=nodata,
+            compress="deflate",
+        ) as dst:
+            dst.write(values, 1)
+
+    def to_folium(
+        self,
+        *,
+        cmap="viridis",
+        vmin: float | None = None,
+        vmax: float | None = None,
+        opacity: float = 0.75,
+        name: str | None = None,
+        **kwargs,
+    ):
+        """
+        Colour the raster and return it as a ``folium.raster_layers.ImageOverlay`` for a web map.
+
+        Web maps show images in Web Mercator, so the grid is resampled (nearest cell) to a Mercator grid with
+        about the same number of cells before colouring; the overlay then lines up with the base map. Add it
+        with ``.add_to(m)``, e.g. to a map from ``GeoDataFrame.explore()``. Needs folium and matplotlib.
+
+        Args:
+            cmap: Matplotlib colormap or its name.
+            vmin, vmax: Colour scale limits (default: minimum and maximum of the values).
+            opacity: Opacity of the overlay, 0-1. Cells without a value are transparent.
+            name: Layer name in ``folium.LayerControl``.
+            **kwargs: Passed to ``ImageOverlay``.
+        """
+        try:
+            import folium  # pylint: disable=import-outside-toplevel
+            import matplotlib as mpl  # pylint: disable=import-outside-toplevel
+        except ImportError as exc:
+            raise ImportError("to_folium needs folium and matplotlib: pip install folium matplotlib") from exc
+
+        mercator, (south, west, north, east) = self._to_mercator()
+        finite = np.isfinite(mercator)
+        lo = np.nanmin(self.values) if vmin is None else vmin
+        hi = np.nanmax(self.values) if vmax is None else vmax
+        norm = mpl.colors.Normalize(lo, hi if hi > lo else lo + 1)
+        colormap = mpl.colormaps[cmap] if isinstance(cmap, str) else cmap
+        rgba = colormap(norm(np.where(finite, mercator, lo)))
+        rgba[..., 3] = np.where(finite, rgba[..., 3], 0.0)
+        return folium.raster_layers.ImageOverlay(
+            image=np.round(rgba * 255).astype("uint8"),
+            bounds=[[south, west], [north, east]],
+            opacity=opacity,
+            name=name,
+            mercator_project=False,
+            **kwargs,
+        )
+
+    def explore(
+        self,
+        m=None,
+        *,
+        cmap="viridis",
+        vmin: float | None = None,
+        vmax: float | None = None,
+        opacity: float = 0.75,
+        name: str | None = None,
+        legend: bool = True,
+        caption: str | None = None,
+        tiles: str = "CartoDB positron",
+        **kwargs,
+    ):
+        """
+        Show the raster on an interactive folium map, like ``GeoDataFrame.explore()``.
+
+        Args:
+            m: Existing ``folium.Map`` to add the layer to, e.g. ``buildings.explore()``; a new map centred on the
+                raster when ``None``.
+            cmap, vmin, vmax, opacity, name: As in :meth:`to_folium`.
+            legend: Add a colour bar.
+            caption: Colour bar caption (default ``name``).
+            tiles: Base map of a new map.
+            **kwargs: Passed to ``folium.Map`` when a new map is created.
+
+        Returns:
+            The ``folium.Map``. Needs folium and matplotlib.
+        """
+        import branca.colormap  # pylint: disable=import-outside-toplevel
+        import folium  # pylint: disable=import-outside-toplevel
+        import matplotlib as mpl  # pylint: disable=import-outside-toplevel
+
+        lo = float(np.nanmin(self.values)) if vmin is None else float(vmin)
+        hi = float(np.nanmax(self.values)) if vmax is None else float(vmax)
+        overlay = self.to_folium(cmap=cmap, vmin=lo, vmax=hi, opacity=opacity, name=name)
+        if m is None:
+            (south, west), (north, east) = overlay.bounds
+            m = folium.Map(tiles=tiles, **kwargs)
+            m.fit_bounds([[south, west], [north, east]])
+        overlay.add_to(m)
+        if legend:
+            colormap = mpl.colormaps[cmap] if isinstance(cmap, str) else cmap
+            colors = [mpl.colors.to_hex(colormap(v)) for v in np.linspace(0, 1, 11)]
+            colour_bar = branca.colormap.LinearColormap(colors, vmin=lo, vmax=hi if hi > lo else lo + 1)
+            colour_bar.caption = caption if caption is not None else (name or "")
+            colour_bar.add_to(m)
+        return m
+
+    def _to_mercator(self) -> tuple[np.ndarray, tuple[float, float, float, float]]:
+        """Nearest-cell resampling to a north-up EPSG:3857 grid; also its bounds in degrees."""
+        minx, miny, maxx, maxy = self.bounds
+        # the outline, densified: straight grid edges are curves in Mercator
+        ring = shapely.get_coordinates(
+            shapely.segmentize(shapely.box(*self.bounds), max(maxx - minx, maxy - miny) / 32)
+        )
+        mx, my = Transformer.from_crs(self.crs, 3857, always_xy=True).transform(ring[:, 0], ring[:, 1])
+        mx0, mx1, my0, my1 = min(mx), max(mx), min(my), max(my)
+        rows, cols = self.values.shape
+        step = np.sqrt((mx1 - mx0) * (my1 - my0) / max(rows * cols, 1))
+        out_cols, out_rows = max(int(np.ceil((mx1 - mx0) / step)), 1), max(int(np.ceil((my1 - my0) / step)), 1)
+        cx = mx0 + (np.arange(out_cols) + 0.5) * (mx1 - mx0) / out_cols
+        cy = my1 - (np.arange(out_rows) + 0.5) * (my1 - my0) / out_rows
+        gx, gy = np.meshgrid(cx, cy)
+        x, y = Transformer.from_crs(3857, self.crs, always_xy=True).transform(gx.ravel(), gy.ravel())
+        a, _, c, _, e, f = self.transform
+        col = np.floor((np.asarray(x) - c) / a).astype(np.int64)
+        row = np.floor((np.asarray(y) - f) / e).astype(np.int64)
+        inside = (col >= 0) & (col < cols) & (row >= 0) & (row < rows)
+        out = np.full(out_rows * out_cols, np.nan)
+        out[inside] = self.values[row[inside], col[inside]]
+        to_deg = Transformer.from_crs(3857, 4326, always_xy=True)
+        west, south = to_deg.transform(mx0, my0)
+        east, north = to_deg.transform(mx1, my1)
+        return out.reshape(out_rows, out_cols), (south, west, north, east)
+
+
+def rasterize(points: gpd.GeoDataFrame, column: str, *, cell_size: float | None = None) -> Raster:
+    """
+    Turn grid points with values into a :class:`Raster`, one cell per point.
+
+    Grid points are what the grid methods return: receivers of :func:`get_insolation` and
+    :func:`simulate_noise_grid` (``output="receivers"`` or ``"both"``), cells of :func:`get_visibility_catchment`
+    and :func:`get_viewshed_catchment` (``output="cells"`` or ``"both"``) and the points of
+    :func:`get_isovist_grid`. Their
+    ``attrs`` record the grid (CRS, cell size, position), so the raster reproduces it exactly in the local metric
+    CRS of the calculation, whatever CRS the points were returned in, and also after filtering rows.
+
+    Points without that record (for example, read from a file) need ``cell_size``; they are then placed in their
+    own CRS if it is projected, or in an estimated UTM zone, with the first point as a cell centre.
+
+    Args:
+        points: Point GeoDataFrame on a regular grid.
+        column: Numeric (or boolean) column to put into the cells.
+        cell_size: Cell side in metres, for points without grid ``attrs``.
+
+    Returns:
+        :class:`Raster` covering the points; cells without a point are ``NaN``.
+
+    Examples:
+        >>> receivers = get_insolation(buildings, "2026-03-21", output="receivers")
+        >>> raster = rasterize(receivers, "sun_hours")
+        >>> raster.plot(cmap="inferno", vmin=0, vmax=14)
+        >>> raster.explore(cmap="inferno", vmin=0, vmax=14, name="sun hours")
+        >>> raster.to_geotiff("sun_hours.tif")
+    """
+    if column not in points.columns:
+        raise ValueError(f"{column!r} is not a column of points")
+    if points.crs is None:
+        raise ValueError("points must have a CRS")
+    grid = points.attrs.get(GRID_ATTR)
+    if grid is not None and cell_size is None:
+        crs = CRS.from_wkt(grid["crs"])
+        step = float(grid["cell_size"])
+        origin = grid["origin"]
+    elif cell_size is not None:
+        if cell_size <= 0:
+            raise ValueError("cell_size must be > 0")
+        crs = points.crs if points.crs.is_projected else points.estimate_utm_crs()
+        step = float(cell_size)
+        origin = None
+    else:
+        raise ValueError("points carry no grid record in attrs; pass cell_size")
+    if len(points) == 0:
+        raise ValueError("points is empty")
+    xy = shapely.get_coordinates(points.geometry.to_crs(crs).values)
+    if len(xy) != len(points):
+        raise ValueError("points must hold one point per row")
+    if origin is None:
+        origin = xy[0]
+    i = np.round((xy[:, 0] - origin[0]) / step).astype(np.int64)
+    j = np.round((xy[:, 1] - origin[1]) / step).astype(np.int64)
+    i0, j1 = i.min(), j.max()
+    values = np.full((j1 - j.min() + 1, i.max() - i0 + 1), np.nan)
+    values[j1 - j, i - i0] = points[column].to_numpy(dtype=float)
+    left = origin[0] + (i0 - 0.5) * step
+    top = origin[1] + (j1 + 0.5) * step
+    return Raster(values, (step, 0.0, float(left), 0.0, -step, float(top)), crs)

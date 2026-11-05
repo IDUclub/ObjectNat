@@ -1,7 +1,7 @@
 """Direct-sun hours on the ground among buildings and terrain, computed in ObjectNat's Rust extension."""
 
 import datetime as dt
-from typing import Sequence
+from typing import Literal, Sequence
 
 import geopandas as gpd
 import numpy as np
@@ -12,6 +12,7 @@ from pyproj import Transformer
 from objectnat import config
 from objectnat._rust import insolation_day_stats  # pylint: disable=no-name-in-module
 from objectnat.methods.insolation._sun import day_samples, solar_position
+from objectnat.methods.utils.raster import grid_attrs, resolve_output
 from objectnat.methods.utils.scene import (
     Scene,
     TerrainInput,
@@ -44,6 +45,7 @@ def get_insolation(
     min_sun_elevation: float = 0.0,
     receiver_height: float = 0.0,
     hour_breaks: Sequence[float] = (1, 2, 3, 4, 6, 8),
+    output: Literal["zones", "receivers", "both"] = "zones",
     return_receivers: bool = False,
     max_workers: int | None = None,
 ) -> gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
@@ -107,8 +109,12 @@ def get_insolation(
             Height of the receivers above the ground in metres. Defaults to 0.
         hour_breaks (Sequence[float], optional):
             Bounds of the sun-hour classes of the result, in hours per day. Defaults to ``(1, 2, 3, 4, 6, 8)``.
+        output (str, optional):
+            ``"zones"`` (default) for the sun-hour zones, ``"receivers"`` for the receiver points only (faster: no
+            zone polygons are built, which takes most of the time of a single day), ``"both"`` for the tuple
+            ``(zones, receivers)``.
         return_receivers (bool, optional):
-            Also return the receiver points with their values.
+            Deprecated: ``True`` is ``output="both"``.
         max_workers (int | None, optional):
             Number of threads (``None`` uses all cores).
 
@@ -117,7 +123,7 @@ def get_insolation(
             Zones of equal class of daily sun hours (the mean over the simulated days) in the CRS of
             ``buildings``, with ``sun_hours_min``, ``sun_hours_max`` (``inf`` for the last class) and
             ``label``. The zone ``0`` is ground that gets no direct sun on any simulated day. Buildings are
-            cut out. With ``return_receivers=True`` also the receiver points with:
+            cut out. With ``output="receivers"`` (or ``"both"``) the receiver points with:
 
             - ``sun_hours``: mean hours of direct sun per day;
             - ``min_sun_hours``: hours on the worst day;
@@ -125,7 +131,8 @@ def get_insolation(
               of the daily longest periods), which insolation norms usually limit.
 
             ``attrs`` hold ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is
-            above ``min_sun_elevation``).
+            above ``min_sun_elevation``); the receivers' ``attrs`` also record the grid, so
+            :func:`rasterize` turns any of their columns into a :class:`Raster`.
 
     Raises:
         ValueError: On missing CRS, empty input, unknown height columns, a bad time step or period.
@@ -137,6 +144,7 @@ def get_insolation(
         height_column, storeys_column, storey_height, default_height,
     )  # fmt: skip
     blds = scene.blds
+    output = resolve_output(output, "receivers", return_receivers)
     area_geom = area_geometry(area, blds, buildings.crs, scene.local_crs)
     x0, y0, x1, y1 = area_geom.bounds
     if not np.all(np.isfinite([x0, y0, x1, y1])):
@@ -161,12 +169,13 @@ def get_insolation(
     step_h = time_step_min / 60.0
     sun_hours = counts.mean(axis=1) * step_h
     attrs = {"days": [d.isoformat() for d in days], "day_length_hours": float(np.mean(np.diff(offsets))) * step_h}
-    footprint = shapely.union_all(blds.geometry.values) if len(blds) else shapely.Polygon()
-    bands = _hour_bands(receivers, sun_hours, hour_breaks, grid_step, footprint)
-    bands = gpd.GeoDataFrame(bands, geometry="geometry", crs=scene.local_crs).to_crs(buildings.crs)
-    bands.attrs.update(attrs)
-    if not return_receivers:
-        return bands
+    if output != "receivers":
+        footprint = shapely.union_all(blds.geometry.values) if len(blds) else shapely.Polygon()
+        bands = _hour_bands(receivers, sun_hours, hour_breaks, grid_step, footprint)
+        bands = gpd.GeoDataFrame(bands, geometry="geometry", crs=scene.local_crs).to_crs(buildings.crs)
+        bands.attrs.update(attrs)
+        if output == "zones":
+            return bands
     points = gpd.GeoDataFrame(
         {
             "sun_hours": sun_hours,
@@ -177,7 +186,8 @@ def get_insolation(
         crs=scene.local_crs,
     ).to_crs(buildings.crs)
     points.attrs.update(attrs)
-    return bands, points
+    points.attrs.update(grid_attrs(scene.local_crs, grid_step, (gx[0], gy[0])))
+    return points if output == "receivers" else (bands, points)
 
 
 def get_facade_insolation(

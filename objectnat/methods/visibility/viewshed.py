@@ -1,6 +1,6 @@
 """2.5D visibility: viewsheds and viewshed catchment zones among buildings of known height and terrain."""
 
-from typing import Sequence
+from typing import Literal, Sequence
 
 import geopandas as gpd
 import numpy as np
@@ -12,8 +12,16 @@ from objectnat._rust import (  # pylint: disable=no-name-in-module
     viewshed_cells,
     viewshed_count_grid,
 )
+from objectnat.methods.utils.raster import resolve_output
 from objectnat.methods.utils.scene import Scene, TerrainInput, kernel_scene, prepare_scene
-from objectnat.methods.visibility.catchment import _classify, _empty_result, _explicit_bounds, _zones_from_labels
+from objectnat.methods.visibility.catchment import (
+    _classify,
+    _empty_result,
+    _explicit_bounds,
+    _finish,
+    _zones_from_labels,
+    cell_points,
+)
 
 logger = config.logger
 
@@ -148,8 +156,9 @@ def get_viewshed_catchment(
     include_roofs: bool = False,
     weight_column: str | None = None,
     classes: int | Sequence[float] = 5,
+    output: Literal["zones", "cells", "both"] = "zones",
     max_workers: int | None = None,
-) -> gpd.GeoDataFrame:
+) -> gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
     """
     Build 2.5D visibility catchment zones: places classified by how many observers can see them, over
     buildings of known height and terrain.
@@ -181,22 +190,24 @@ def get_viewshed_catchment(
             Cell side in metres. Defaults to 5.
         include_roofs (bool, optional):
             Classify roof cells too. Defaults to ``False``.
-        weight_column, classes:
-            Observer weights and class definition, as in :func:`get_visibility_catchment`.
+        weight_column, classes, output:
+            Observer weights, class definition and cell output, as in :func:`get_visibility_catchment`.
         max_workers (int | None, optional):
             Number of threads (``None`` uses all cores).
 
     Returns:
-        gpd.GeoDataFrame:
+        gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
             One (Multi)Polygon per class in the CRS of ``observers``, as in :func:`get_visibility_catchment`:
             ``visibility_class`` (``1`` is the least visible) and ``count_min``/``count_max`` (or
-            ``weight_min``/``weight_max``).
+            ``weight_min``/``weight_max``). ``output="cells"`` or ``"both"`` returns the seen cells, as in
+            :func:`get_visibility_catchment`.
 
     Raises:
         ValueError: On empty observers, a missing view distance, bad weights or classes, or a grid larger than
             30 million cells.
     """
     lower_bounds = _explicit_bounds(classes)
+    output = resolve_output(output, "cells")
     scene, points, radius, eye_offset = _setup(
         observers, buildings, view_distance, observer_height,
         height_column, storeys_column, storey_height, default_height,
@@ -222,7 +233,7 @@ def get_viewshed_catchment(
     if weights is not None:
         usable &= weights > 0
     if not usable.any():
-        return _empty_result(value_name, observers.crs)
+        return _finish(_empty_result(value_name, observers.crs), None, output)
     oxy, radius, eye_offset = oxy[usable], radius[usable], eye_offset[usable]
     weights = weights[usable] if weights is not None else None
 
@@ -244,8 +255,14 @@ def get_viewshed_catchment(
     )
     values = counts.astype(float) if sums is None else sums
     labels = _classify(values, counts > 0, classes if lower_bounds is None else lower_bounds)
+    cells = None
+    if output != "zones":
+        grid = (float(x0), float(y0), float(cell))
+        cells = cell_points(counts, sums, labels, grid, scene.local_crs, observers.crs)
+        if output == "cells":
+            return cells
     if not labels.any():
-        return _empty_result(value_name, observers.crs)
+        return _finish(_empty_result(value_name, observers.crs), cells, output)
     rows = []
     for label, geometry in _zones_from_labels(labels, (float(x0), float(y0)), float(cell)).items():
         in_class = values[labels == label]
@@ -260,7 +277,7 @@ def get_viewshed_catchment(
     result = gpd.GeoDataFrame(rows, geometry="geometry", crs=scene.local_crs)
     if value_name == "count":
         result = result.astype({"count_min": "int64", "count_max": "int64"})
-    return result.to_crs(observers.crs)
+    return _finish(result.to_crs(observers.crs), cells, output)
 
 
 def _setup(

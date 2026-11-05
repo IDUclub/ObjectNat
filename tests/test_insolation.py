@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from shapely import Point, box
 
-from objectnat import get_facade_insolation, get_insolation
+from objectnat import get_facade_insolation, get_insolation, rasterize
 from objectnat.methods.insolation._sun import day_samples, solar_position
 
 CRS = 32636
@@ -27,7 +27,7 @@ def test_courtyard_stays_in_shadow_in_winter():
     ring = box(X0 - 20, Y0 - 20, X0 + 20, Y0 + 20).difference(box(X0 - 5, Y0 - 5, X0 + 5, Y0 + 5))
     buildings = gpd.GeoDataFrame({"height": [30.0]}, geometry=[ring], crs=CRS)
     area = box(X0 - 60, Y0 - 120, X0 + 60, Y0 + 60)
-    bands, points = get_insolation(buildings, "2026-12-21", area=area, grid_step=1, return_receivers=True)
+    bands, points = get_insolation(buildings, "2026-12-21", area=area, grid_step=1, output="both")
 
     day = points.attrs["day_length_hours"]
     assert 5 < day < 6.5  # midwinter day at 60 N
@@ -36,6 +36,13 @@ def test_courtyard_stays_in_shadow_in_winter():
     assert _sun_hours_at(points, 0, 30) < 0.5 * day  # right north of the building
     assert bands.iloc[0]["label"] == "0" and not bands.geometry.iloc[0].is_empty
     assert not points.within(ring).any()
+
+    # the receivers rasterize onto their own grid, also from degrees; footprint cells stay empty
+    raster = rasterize(points.to_crs(4326), "sun_hours")
+    assert raster.cell_size == 1 and np.isfinite(raster.values).sum() == len(points)
+    a, _, c, _, e, f = raster.transform
+    assert raster.values[int((Y0 - f) / e), int((X0 - c) / a)] == 0  # the courtyard
+    assert np.isnan(raster.values[int((Y0 + 12 - f) / e), int((X0 - c) / a)])  # inside the ring
 
 
 @pytest.mark.parametrize("as_polygons", [False, True])
@@ -54,9 +61,7 @@ def test_terrain_ridge_shades_its_north_slope(as_polygons):
         terrain = (heights, (10.0, 0.0, X0 - 205, 0.0, -10.0, Y0 + 205), CRS)
     no_buildings = gpd.GeoDataFrame({"height": []}, geometry=[], crs=CRS)
     area = box(X0 - 50, Y0 - 150, X0 + 50, Y0 + 150)
-    _, points = get_insolation(
-        no_buildings, "2026-12-21", area=area, terrain=terrain, grid_step=5, return_receivers=True
-    )
+    points = get_insolation(no_buildings, "2026-12-21", area=area, terrain=terrain, grid_step=5, output="receivers")
     assert _sun_hours_at(points, 0, 40) == 0  # low winter sun from the south: north foot of the ridge in shadow
     assert _sun_hours_at(points, 0, -100) == pytest.approx(points.attrs["day_length_hours"])
 
@@ -64,9 +69,10 @@ def test_terrain_ridge_shades_its_north_slope(as_polygons):
 def test_period_reports_mean_and_worst_day():
     building = gpd.GeoDataFrame({"height": [30.0]}, geometry=[box(X0 - 20, Y0 - 10, X0 + 20, Y0 + 10)], crs=CRS)
     area = box(X0 - 40, Y0 - 80, X0 + 40, Y0 + 60)
-    _, points = get_insolation(
-        building, ("2026-03-21", "2026-06-21"), day_step=30, area=area, grid_step=2, return_receivers=True
-    )
+    with pytest.warns(DeprecationWarning, match="return_receivers"):  # the old spelling of output="both"
+        _, points = get_insolation(
+            building, ("2026-03-21", "2026-06-21"), day_step=30, area=area, grid_step=2, return_receivers=True
+        )
     assert points.attrs["days"] == ["2026-03-21", "2026-04-20", "2026-05-20", "2026-06-19", "2026-06-21"]
     assert (points["min_sun_hours"] <= points["sun_hours"] + 1e-9).all()
     assert (points["max_continuous_hours"] <= points["min_sun_hours"] + 1e-9).all()

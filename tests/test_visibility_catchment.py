@@ -4,7 +4,7 @@ import pytest
 from iduedu import UrbanGraph
 from shapely import LineString, Point, box
 
-from objectnat import get_observer_points, get_visibility_catchment
+from objectnat import get_observer_points, get_visibility_catchment, rasterize
 
 CRS = 32636
 X0, Y0 = 400_000.0, 6_600_000.0
@@ -19,7 +19,7 @@ WALL = gpd.GeoDataFrame(geometry=[box(X0 - 0.5, Y0 - 50, X0 + 0.5, Y0 + 50)], cr
 
 def test_single_observer_without_obstacles_sees_its_disc():
     observers = _observers((0, 0)).to_crs(4326)
-    result = get_visibility_catchment(observers, None, view_distance=100, cell_size=2)
+    result, cells = get_visibility_catchment(observers, None, view_distance=100, cell_size=2, output="both")
 
     assert result.crs == observers.crs
     assert result["visibility_class"].tolist() == [1]
@@ -28,6 +28,10 @@ def test_single_observer_without_obstacles_sees_its_disc():
     assert zone.is_valid
     # the zone follows the cell grid: its area differs from the disc by at most one cell along the perimeter
     assert zone.area == pytest.approx(np.pi * 100**2, abs=2 * np.pi * 100 * 2)
+    # the seen cells are the zone, cell by cell
+    assert (cells["count"] == 1).all() and (cells["visibility_class"] == 1).all()
+    raster = rasterize(cells, "count")
+    assert np.nansum(raster.values) * raster.cell_size**2 == pytest.approx(zone.area)
 
 
 @pytest.mark.parametrize("obstacles, expected_classes", [(None, [1, 2]), (WALL, [1])])

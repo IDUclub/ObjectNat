@@ -1,5 +1,7 @@
 """Receiver-grid noise model computed in ObjectNat's Rust extension."""
 
+from typing import Literal
+
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -8,6 +10,7 @@ import shapely
 from objectnat import config
 from objectnat._rust import noise_grid_energy  # pylint: disable=no-name-in-module
 from objectnat.methods.noise.noise_reduce import dist_to_target_db, get_air_resist_ratio
+from objectnat.methods.utils.raster import grid_attrs, resolve_output
 from objectnat.methods.visibility._native import geometries_to_segments
 
 logger = config.logger
@@ -51,6 +54,7 @@ def simulate_noise_grid(
     grid_step: float = 2.0,
     source_spacing: float | None = None,
     source_position_buffer_r: float = 0,
+    output: Literal["zones", "receivers", "both"] = "zones",
     return_receivers: bool = False,
     max_workers: int | None = None,
 ) -> gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
@@ -112,21 +116,27 @@ def simulate_noise_grid(
         source_position_buffer_r:
             Radius in metres cut out of an obstacle or tree that contains a source, as in
             :func:`simulate_noise`.
+        output:
+            ``"zones"`` (default) for the level bands, ``"receivers"`` for the receiver points with their exact
+            levels only (no band polygons are built), ``"both"`` for the tuple ``(bands, receivers)``.
         return_receivers:
-            Also return the receiver points with their levels.
+            Deprecated: ``True`` is ``output="both"``.
         max_workers:
             Maximum number of threads (``None`` uses all cores).
 
     Returns:
         GeoDataFrame with columns ``noise_level`` (upper bound of each ``db_sim_step`` band, dB, like
         :func:`simulate_noise`) and ``geometry`` (one polygon per band), in the CRS of ``source_points``.
-        With ``return_receivers=True``, a tuple ``(bands, receivers)`` where ``receivers`` has the
-        exact ``noise_level`` of every receiver that hears at least ``target_noise_db``.
+        With ``output="receivers"`` the receivers, with ``output="both"`` a tuple ``(bands, receivers)``; the
+        receivers have the
+        exact ``noise_level`` of every receiver that hears at least ``target_noise_db``; their ``attrs``
+        record the grid, so :func:`rasterize` turns ``noise_level`` into a :class:`Raster`.
 
     Notes:
         Not modelled: ground effect, diffraction over or around buildings, reflections of higher
         order. Behind an obstacle only reflected sound arrives.
     """
+    output = resolve_output(output, "receivers", return_receivers)
     if source_points is None or len(source_points) == 0:
         raise ValueError("source_points is empty.")
     if grid_step <= 0:
@@ -249,12 +259,15 @@ def simulate_noise_grid(
     with np.errstate(divide="ignore"):
         level = 10 * np.log10(energy)
     heard = level >= target_noise_db
-    bands = _level_bands(receivers[heard], level[heard], target_noise_db, db_sim_step, grid_step, obstacle_union)
-    bands = gpd.GeoDataFrame(bands, geometry="geometry", crs=local_crs).to_crs(original_crs)
-    if not return_receivers:
-        return bands
+    if output != "receivers":
+        bands = _level_bands(receivers[heard], level[heard], target_noise_db, db_sim_step, grid_step, obstacle_union)
+        bands = gpd.GeoDataFrame(bands, geometry="geometry", crs=local_crs).to_crs(original_crs)
+        if output == "zones":
+            return bands
     points = gpd.GeoDataFrame({"noise_level": level[heard]}, geometry=receivers[heard], crs=local_crs)
-    return bands, points.to_crs(original_crs)
+    points = points.to_crs(original_crs)
+    points.attrs.update(grid_attrs(local_crs, grid_step, (x0, y0)))
+    return points if output == "receivers" else (bands, points)
 
 
 def _line_level_offset(spacing: float) -> float:
