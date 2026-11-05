@@ -149,8 +149,9 @@ distance includes the boarding wait, and several of them can share one stop loca
 ### Tests
 
 `tests/` (flat, not a package). `conftest.py` builds a session-scoped intermodal `UrbanGraph` for OSM relation
-1114252 from the Geofabrik extract (`iduedu.download_osm_pbf`, cut file cached in `tests/test_cache/geofabrik/`;
-Overpass with older IduEdu) and caches the graph as `tests/test_cache/*.urbangraph`. Matplotlib runs on the `Agg` backend
+1114252 via Overpass, falling back to the Geofabrik extract (`iduedu.download_osm_pbf`, cut file cached in
+`tests/test_cache/geofabrik/`) when Overpass does not answer, and caches the graph as `tests/test_cache/*.urbangraph`.
+Matplotlib runs on the `Agg` backend
 (set in conftest). Example data (buildings/services/etc.) lives under `docs/methods/examples/examples_data/`.
 
 ### Releases

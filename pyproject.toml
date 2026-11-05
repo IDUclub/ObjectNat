@@ -180,7 +180,7 @@ exclude_lines = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["network: requires a live Overpass request to build an OSM graph"]
+markers = ["network: needs the OSM graph of the test territory (Overpass or Geofabrik on first run)"]
 
 # ---------------------------------------------------------------------------
 # Automated releases (python-semantic-release)

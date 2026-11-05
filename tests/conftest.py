@@ -1,5 +1,5 @@
 import os
-from contextlib import nullcontext
+from contextlib import contextmanager
 
 import geopandas as gpd
 import matplotlib
@@ -63,8 +63,20 @@ def trees_data():
 
 TERRITORY_OSM_ID = 1114252  # Vasileostrovsky district, Saint Petersburg
 GEOFABRIK_REGION = "northwestern-fed-district"
-# order in which OSM sources are tried; e.g. OBJECTNAT_TEST_OSM_SOURCES=overpass,pbf
-OSM_SOURCES = tuple(s.strip() for s in os.getenv("OBJECTNAT_TEST_OSM_SOURCES", "pbf,overpass").split(",") if s.strip())
+# order in which OSM sources are tried; e.g. OBJECTNAT_TEST_OSM_SOURCES=pbf for Geofabrik only
+OSM_SOURCES = tuple(s.strip() for s in os.getenv("OBJECTNAT_TEST_OSM_SOURCES", "overpass,pbf").split(",") if s.strip())
+
+
+@contextmanager
+def _from_overpass():
+    """Query the Overpass API with fewer retries and a shorter timeout, so a dead server falls through quickly."""
+    saved = config.timeout, config.overpass_max_retries
+    config.set_timeout(60)
+    config.set_rate_limit(max_retries=2)
+    try:
+        yield
+    finally:
+        config.timeout, config.overpass_max_retries = saved
 
 
 def _from_geofabrik():
@@ -77,7 +89,7 @@ def _from_geofabrik():
     return config.use_pbf(path)
 
 
-_OSM_SOURCES = {"pbf": _from_geofabrik, "overpass": nullcontext}
+_OSM_SOURCES = {"overpass": _from_overpass, "pbf": _from_geofabrik}
 
 
 def _build_territory() -> tuple:
