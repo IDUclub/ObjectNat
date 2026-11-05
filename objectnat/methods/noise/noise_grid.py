@@ -19,6 +19,9 @@ from objectnat.methods.visibility._native import geometries_to_segments
 
 FLOOR_MARGIN_DB = 10.0  # paths this far below the target can still add up above it
 LINE_FLOOR_MARGIN_DB = 30.0  # many weak samples of a long line add up: keep more of them
+DIFFRACTION_SIMPLIFY = 0.5  # m: outline details smaller than this are no edges of their own
+CORNER_OFFSET = 0.05  # m: what a corner sees is computed from this far outside it
+MIN_CORNER_SINE = 0.05  # an outline turning by less than about 3 degrees has no corner there
 
 
 def _cut_holes_around_sources(geometries: np.ndarray, points: np.ndarray, radius: float) -> np.ndarray:
@@ -47,6 +50,7 @@ def simulate_noise_grid(
     db_sim_step: float = 1,
     reflections: bool = True,
     reflection_max_dist: float = 50.0,
+    diffraction: bool = True,
     grid_step: float = 2.0,
     source_spacing: float | None = None,
     source_position_buffer_r: float = 0,
@@ -60,12 +64,17 @@ def simulate_noise_grid(
     noise models. Every receiver collects sound energy from every source along:
 
     * the direct path, when no obstacle blocks it;
-    * first-order reflections from obstacle walls (image-source method), when ``reflections`` is True.
+    * first-order reflections from obstacle walls (image-source method), when ``reflections`` is True;
+    * diffraction around one corner of an obstacle (a vertical building edge) into its shadow, when
+      ``diffraction`` is True.
 
     Each path loses ``20 lg r`` (geometric spreading, ``r`` in metres), air absorption ``k r`` (``k`` from
     temperature and frequency, as in :func:`simulate_noise`), a reflection loss ``-10 lg(1 - a)`` per
     reflection (``a`` = absorption ratio of the wall) and, through vegetation, the foliage rate of
-    :func:`simulate_noise` times the length crossed. Paths and sources add up as energies, so two equal
+    :func:`simulate_noise` times the length crossed. A diffracted path has the level at the direct distance
+    minus Maekawa's barrier attenuation ``10 lg(3 + 20 N)``, with the Fresnel number ``N = 2 δ / λ`` (``δ``:
+    how much longer the way through the corner is, ``λ``: wavelength), at most 20 dB as ISO 9613-2 allows
+    for one edge. Paths and sources add up as energies, so two equal
     sources give +3 dB. Receivers inside obstacles are skipped. The levels are then grouped into bands of
     ``db_sim_step`` and returned as polygons, like :func:`simulate_noise`.
 
@@ -101,6 +110,10 @@ def simulate_noise_grid(
         reflection_max_dist:
             Only walls closer than this to a source reflect it, metres (default 50, as the maximum
             reflection distance of engineering models). Larger values are slower.
+        diffraction:
+            Bend sound around the corners of obstacles: a receiver hidden from a source but seen from a
+            corner that the source sees at the edge of an obstacle gets the diffracted sound. Corners are the
+            convex vertices of the outlines simplified by 0.5 m, and the ends of lines.
         grid_step:
             Receiver spacing in metres; smaller is finer and slower.
         source_spacing:
@@ -126,8 +139,9 @@ def simulate_noise_grid(
         record the grid, so :func:`rasterize` turns ``noise_level`` into a :class:`Raster`.
 
     Notes:
-        Not modelled: ground effect, diffraction over or around buildings, reflections of higher
-        order. Behind an obstacle only reflected sound arrives.
+        Not modelled: ground effect, diffraction over roofs (obstacle heights are not used) and around
+        more than one corner, reflections of higher order. Right behind a building, where the sound would
+        have to bend around two corners, only reflected sound arrives.
     """
     output = resolve_output(output, "receivers")
     if source_points is None or len(source_points) == 0:
@@ -197,10 +211,14 @@ def simulate_noise_grid(
         segments, one_sided, owner = geometries_to_segments(obstacle_geoms, return_owner=True)
         wall_loss = -10 * np.log10(np.clip(1 - absorb[owner], 1e-6, 1))
         obstacle_union = shapely.union_all(obstacle_geoms)
+        # corners of the merged outlines: where buildings touch, their facades run on without an edge
+        merged = shapely.get_parts(obstacle_union)
+        corners, links = _diffraction_corners(merged) if diffraction else (np.empty((0, 8)), None)
     else:
         obstacle_geoms = np.empty(0, dtype=object)
         segments, one_sided, wall_loss = np.empty((0, 4)), np.empty(0, dtype=bool), np.empty(0)
         obstacle_union = shapely.Polygon()
+        corners, links = np.empty((0, 8)), None
 
     # vegetation -> boundaries of non-overlapping polygons
     tree_segments = np.empty((0, 4))
@@ -228,6 +246,7 @@ def simulate_noise_grid(
     if len(shifted_trees):
         shifted_trees[:, :2] -= shift
         shifted_trees[:, 2:] -= shift
+    speed_of_sound = 331.3 + 0.606 * air_temperature  # m/s
     energy = noise_grid_energy(
         np.ascontiguousarray(xy - shift),
         np.ascontiguousarray(levels, dtype=float),
@@ -245,6 +264,9 @@ def simulate_noise_grid(
         floor_db=float(target_noise_db) - (FLOOR_MARGIN_DB if samples["is_point"].all() else LINE_FLOOR_MARGIN_DB),
         n_threads=max_workers,
         reflection_reach=np.ascontiguousarray(reflection_reach, dtype=float),
+        corners=np.ascontiguousarray(corners - np.tile(shift, 4), dtype=float) if len(corners) else None,
+        corner_links=np.ascontiguousarray(links, dtype=np.int64) if len(corners) else None,
+        wavelength=np.ascontiguousarray(speed_of_sound / freqs, dtype=float),
     ).ravel()
 
     with np.errstate(divide="ignore"):
@@ -259,6 +281,84 @@ def simulate_noise_grid(
     points = points.to_crs(original_crs)
     points.attrs.update(grid_attrs(local_crs, grid_step, (x0, y0)))
     return points if output == "receivers" else (bands, points)
+
+
+def _diffraction_corners(geometries: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Vertical edges that sound bends around, as rows ``x, y`` of the corner, of its previous and of its next
+    vertex and of a point ``CORNER_OFFSET`` metres outside it: the convex corners of polygon outlines (outer
+    and courtyard rings, simplified by ``DIFFRACTION_SIMPLIFY``) and the ends and bends of lines. A corner whose
+    outside point lies in an obstacle is no free edge and is left out. Also returns, for the corners on the
+    convex hull of an outline, the rows of the neighbouring hull corners on the previous and the next side
+    (``-1`` otherwise): the way sound goes around an obstacle from corner to corner.
+    """
+    parts = shapely.get_parts(geometries)
+    types = shapely.get_type_id(parts)
+    rows, links = [np.empty((0, 8))], [np.empty((0, 2), dtype=np.int64)]
+    count = 0
+    polygons = parts[types == 3]
+    if len(polygons):
+        outlines = shapely.orient_polygons(shapely.simplify(polygons, DIFFRACTION_SIMPLIFY))
+        outlines = outlines[~shapely.is_empty(outlines)]
+        # oriented rings have the obstacle on their left
+        rings, ring_outline = shapely.get_rings(outlines, return_index=True)
+        exterior = np.r_[True, ring_outline[1:] != ring_outline[:-1]]
+        for ring, is_exterior in zip(rings, exterior):
+            xy = shapely.get_coordinates(ring)[:-1]
+            corners, kept = _vertex_corners(xy, closed=True, two_sided=False)
+            hull_links = np.full((len(corners), 2), -1, dtype=np.int64)
+            if is_exterior and len(corners) > 2:
+                # hull vertices are corners of the outline: link each to the hull corners beside it
+                hull = shapely.get_coordinates(shapely.convex_hull(shapely.polygons(xy)))[:-1]
+                rows_at = {tuple(p): count + k for k, p in enumerate(corners[:, :2])}
+                on_hull = [rows_at[tuple(p)] for p in hull if tuple(p) in rows_at]
+                if len(on_hull) > 2:
+                    on_hull = np.asarray(on_hull)
+                    # rows follow the ring, so hull order around the ring decides which side is "previous"
+                    order = np.argsort(on_hull)
+                    sequence = on_hull[order]
+                    hull_links[sequence - count] = np.column_stack([np.roll(sequence, 1), np.roll(sequence, -1)])
+            links.append(hull_links)
+            rows.append(corners)
+            count += len(corners)
+    for line in parts[np.isin(types, (1, 2))]:
+        xy = shapely.get_coordinates(line)
+        closed = len(xy) > 3 and np.allclose(xy[0], xy[-1])
+        corners, _ = _vertex_corners(xy[:-1] if closed else xy, closed=closed, two_sided=True)
+        links.append(np.full((len(corners), 2), -1, dtype=np.int64))
+        rows.append(corners)
+        count += len(corners)
+    corners, links = np.vstack(rows), np.vstack(links)
+    if len(corners):
+        inside, _ = shapely.STRtree(geometries).query(shapely.points(corners[:, 6:8]), predicate="intersects")
+        free = np.ones(len(corners), dtype=bool)
+        free[inside] = False
+        renumber = np.where(free, np.cumsum(free) - 1, -1)
+        links = np.where(links >= 0, renumber[np.maximum(links, 0)], -1)
+        corners, links = corners[free], links[free]
+    return corners, links
+
+
+def _vertex_corners(xy: np.ndarray, *, closed: bool, two_sided: bool) -> tuple[np.ndarray, np.ndarray]:
+    """Corner rows (see :func:`_diffraction_corners`) of the vertices of one ring or line, and which vertices
+    they are."""
+    if len(xy) < 2:
+        return np.empty((0, 8)), np.zeros(len(xy), dtype=bool)
+    if closed:
+        prev, nxt = np.roll(xy, 1, axis=0), np.roll(xy, -1, axis=0)
+    else:  # the ends of a line have one neighbour, given as both
+        prev, nxt = np.vstack([xy[1:2], xy[:-1]]), np.vstack([xy[1:], xy[-2:-1]])
+    to_prev, to_next = prev - xy, nxt - xy
+    length_prev, length_next = np.hypot(*to_prev.T), np.hypot(*to_next.T)
+    ok = (length_prev > 1e-9) & (length_next > 1e-9)
+    u_prev = to_prev / np.where(ok, length_prev, 1.0)[:, None]
+    u_next = to_next / np.where(ok, length_next, 1.0)[:, None]
+    sine = u_prev[:, 1] * u_next[:, 0] - u_prev[:, 0] * u_next[:, 1]  # > 0: a left turn
+    convex = np.abs(sine) > MIN_CORNER_SINE if two_sided else sine > MIN_CORNER_SINE
+    keep = ok & (convex | np.all(prev == nxt, axis=1))
+    away = -(u_prev + u_next)[keep]  # from the corner away from the obstacle
+    outside = xy[keep] + CORNER_OFFSET * away / np.hypot(*away.T)[:, None]
+    return np.hstack([xy[keep], prev[keep], nxt[keep], outside]), keep
 
 
 def _line_level_offset(spacing: float) -> float:

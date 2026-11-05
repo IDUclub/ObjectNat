@@ -404,14 +404,19 @@ fn provision_allocate<'py>(
 ///     grid: ``(x0, y0, step, nx, ny)``; ``active``: ``(ny * nx,)`` bool, receivers to compute.
 ///     reflections: include first-order reflections from walls within ``reflection_max_dist`` of a source;
 ///     floor_db: paths below it are skipped; reflection_reach: ``(n,)`` reach of each source's image
-///     sources (defaults to ``max_dist``).
+///     sources and diffracted paths (defaults to ``max_dist``).
+///     corners: ``(c, 8)`` edges for diffraction, ``x, y`` of the corner, of its previous and next
+///         vertex and of a point just outside it (``None``: no diffraction); corner_links: ``(c, 2)``
+///         int64, the corner rows of the previous and next vertex when they are corners of the same
+///         outline, ``-1`` otherwise; wavelength: ``(n,)`` wavelength per source, metres, required with
+///         ``corners``.
 ///
 /// Returns:
 ///     ``(ny, nx)`` float64 energy, ``sum(10 ** (L / 10))``; 0 where nothing arrives.
 #[pyfunction]
 #[pyo3(signature = (sources, source_db, air_db_per_m, veg_db_per_m, max_dist, segments, one_sided, wall_loss_db,
     tree_segments, grid, active, reflections=true, reflection_max_dist=50.0, floor_db=0.0, n_threads=None,
-    reflection_reach=None))]
+    reflection_reach=None, corners=None, corner_links=None, wavelength=None))]
 #[allow(clippy::too_many_arguments)]
 fn noise_grid_energy<'py>(
     py: Python<'py>,
@@ -431,6 +436,9 @@ fn noise_grid_energy<'py>(
     floor_db: f64,
     n_threads: Option<usize>,
     reflection_reach: Option<PyReadonlyArray1<'py, f64>>,
+    corners: Option<PyReadonlyArray2<'py, f64>>,
+    corner_links: Option<PyReadonlyArray2<'py, i64>>,
+    wavelength: Option<PyReadonlyArray1<'py, f64>>,
 ) -> PyResult<Bound<'py, PyArray2<f64>>> {
     let src = sources.as_array();
     let n = src.nrows();
@@ -478,6 +486,56 @@ fn noise_grid_energy<'py>(
             "reflection_reach must have one value per source",
         ));
     }
+    let edges: Vec<noise::Corner> = match &corners {
+        Some(c) => {
+            let c = c.as_array();
+            let nc = c.nrows();
+            if nc > 0 && c.ncols() != 8 || c.iter().any(|v| !v.is_finite()) {
+                return Err(PyValueError::new_err(
+                    "corners must be (c, 8) with finite values",
+                ));
+            }
+            let links = corner_links.as_ref().map(|l| l.as_array());
+            if links
+                .as_ref()
+                .is_some_and(|l| l.nrows() != nc || (nc > 0 && l.ncols() != 2))
+            {
+                return Err(PyValueError::new_err(
+                    "corner_links must be (c, 2), one row per corner",
+                ));
+            }
+            let link = |k: usize, side: usize| {
+                links.as_ref().and_then(|l| {
+                    let v = l[[k, side]];
+                    (v >= 0 && (v as usize) < nc).then_some(v as u32)
+                })
+            };
+            (0..nc)
+                .map(|k| noise::Corner {
+                    at: [c[[k, 0]], c[[k, 1]]],
+                    prev: [c[[k, 2]], c[[k, 3]]],
+                    next: [c[[k, 4]], c[[k, 5]]],
+                    outside: [c[[k, 6]], c[[k, 7]]],
+                    links: [link(k, 0), link(k, 1)],
+                })
+                .collect()
+        }
+        None => Vec::new(),
+    };
+    let lambda: Vec<f64> = match &wavelength {
+        Some(w) => w.as_array().iter().copied().collect(),
+        None if edges.is_empty() => vec![f64::NAN; n],
+        None => {
+            return Err(PyValueError::new_err(
+                "corners need a wavelength per source",
+            ))
+        }
+    };
+    if lambda.len() != n {
+        return Err(PyValueError::new_err(
+            "wavelength must have one value per source",
+        ));
+    }
     let sources: Vec<noise::Source> = (0..n)
         .map(|k| noise::Source {
             at: [src[[k, 0]], src[[k, 1]]],
@@ -486,6 +544,7 @@ fn noise_grid_energy<'py>(
             veg_db_per_m: veg[k],
             max_dist: reach[k],
             reflection_reach: image_reach[k],
+            wavelength: lambda[k],
         })
         .collect();
     let typical = reach.iter().copied().fold(0.0, f64::max);
@@ -532,6 +591,7 @@ fn noise_grid_energy<'py>(
             active: &active,
             reflections,
             reflection_max_dist,
+            corners: &edges,
             floor_energy: 10f64.powf(floor_db / 10.0),
         };
         let run = || noise::receiver_energy(&input);

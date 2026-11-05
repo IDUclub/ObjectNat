@@ -39,13 +39,24 @@ def test_two_equal_sources_add_three_db():
     assert _level_at(two, 20, 0) - _level_at(one, 20, 0) == pytest.approx(10 * np.log10(2), abs=1e-6)
 
 
-def test_building_shadow_and_reflection():
+def test_building_shadow_reflection_and_diffraction():
     building = gpd.GeoDataFrame(geometry=[box(X0 + 20, Y0 - 10, X0 + 30, Y0 + 10)], crs=CRS)
-    _, direct = simulate_noise_grid(_source((0, 0)), building, grid_step=1.0, reflections=False, output="both")
-    _, reflected = simulate_noise_grid(_source((0, 0)), building, grid_step=1.0, output="both")
+    _, direct = simulate_noise_grid(
+        _source((0, 0)), building, grid_step=1.0, reflections=False, diffraction=False, output="both"
+    )
+    _, reflected = simulate_noise_grid(_source((0, 0)), building, grid_step=1.0, diffraction=False, output="both")
 
     # nothing reaches right behind the building without diffraction
     assert direct.distance(Point(X0 + 40, Y0)).min() > 1
+    # around the upper corner the shadow gets the free-field level less 5 to 20 dB (Maekawa, ISO cap)
+    loud = _source((0, 0), level=90)
+    silent = simulate_noise_grid(
+        loud, building, grid_step=1.0, reflections=False, diffraction=False, output="receivers"
+    )
+    bent = simulate_noise_grid(loud, building, grid_step=1.0, reflections=False, output="receivers")
+    assert silent.distance(Point(X0 + 45, Y0 + 15)).min() > 1
+    free = 90 - 20 * np.log10(np.hypot(45, 15)) - np.hypot(45, 15) * 0.0052
+    assert free - 20 <= _level_at(bent, 45, 15) <= free - 10 * np.log10(3) + 0.5
     # in front of the wall the reflection makes it louder than the direct sound alone
     # (direct path 10 m, reflected path 30 m: +0.4 dB)
     assert _level_at(reflected, 10, 0) > _level_at(direct, 10, 0) + 0.3

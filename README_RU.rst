@@ -95,9 +95,10 @@ Object-oriented Network Analysis Tools
 **Шум** (`документация <https://iduclub.github.io/ObjectNat/methods/noise.html>`__, `пример <https://iduclub.github.io/ObjectNat/methods/examples/noise.html>`__).
 ``simulate_noise_grid`` рассчитывает уровни звука в узлах сетки приёмников от точечных, линейных и площадных
 источников: прямой путь и отражения первого порядка с учётом геометрического расхождения, поглощения в воздухе,
-поглощения стенами и ослабления растительностью, с энергетическим суммированием. ``simulate_noise`` —
-волновая модель для точечных источников с многократными отражениями, ``calculate_simplified_noise_frame`` —
-быстрая оценка по маскам видимости и затуханию с расстоянием. Влияние земли и дифракция не моделируются.
+поглощения стенами и ослабления растительностью, а также дифракцию в тень за углами зданий, с энергетическим
+суммированием. ``simulate_noise`` — волновая модель для точечных источников с многократными отражениями,
+``calculate_simplified_noise_frame`` — быстрая оценка по маскам видимости и затуханию с расстоянием. Влияние
+земли не моделируется.
 Подробнее: `вики <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__.
 
 **Инсоляция** (`документация <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__, `пример <https://iduclub.github.io/ObjectNat/methods/examples/insolation.html>`__).

@@ -118,7 +118,8 @@ rust/                — Rust crate compiled by maturin into the extension `obje
   src/provision.rs   — gravity-probabilistic provision allocation on sparse OD entries (rayon)
   src/insolation.rs  — 2.5D scene (walls with roof heights + terrain grid): sunlight rays, lines of sight (rayon)
   src/viewshed.rs    — footprint rasterization, per-observer visible cells and catchment counts (rayon)
-  src/noise.rs       — receiver-grid noise: direct paths + first-order reflections, energy sum (rayon)
+  src/noise.rs       — receiver-grid noise: direct paths, first-order reflections and diffraction around one or
+                       two building corners (Maekawa / ISO 9613-2), energy sum (rayon)
   src/lib.rs         — Python bindings (`visibility_polygons`, `provision_allocate`, `noise_grid_energy`)
 ```
 

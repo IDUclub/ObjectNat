@@ -17,7 +17,8 @@ model and in cost:
      - Model
    * - :func:`objectnat.simulate_noise_grid`
      - points, lines, polygons
-     - Levels on a regular grid of **receivers**: direct path and first-order reflections, energy summation (Rust)
+     - Levels on a regular grid of **receivers**: direct path, first-order reflections and diffraction around
+       building corners, energy summation (Rust)
    * - :func:`objectnat.simulate_noise`
      - points
      - Wave-front propagation by decay layers with multiple reflections and obstacle absorption
@@ -41,7 +42,20 @@ metres). Receivers inside obstacles are skipped. For each source and receiver it
 - the **direct path**, when no obstacle blocks the line between source and receiver;
 - **first-order reflections** from obstacle walls within ``reflection_max_dist`` metres of the source (default 50
   m), found with the image-source method; each reflection loses ``-10 lg(1 - a)`` dB, where ``a`` is the
-  absorption ratio of the wall (``absorb_ratio_column`` or ``standard_absorb_ratio``, default 0.05).
+  absorption ratio of the wall (``absorb_ratio_column`` or ``standard_absorb_ratio``, default 0.05);
+- **diffraction around vertical edges** (``diffraction=True``): a corner of an obstacle that the source sees at
+  the edge of the obstacle sends sound into its shadow, to the receivers hidden from the source but seen from the
+  corner. Along the shadowed side of the obstacle's convex hull the sound also goes on to the next corner and bends
+  around it, which reaches the receivers right behind a building.
+
+A diffracted path keeps the spreading and air absorption of the direct distance ``d`` and loses the barrier
+attenuation of ISO 9613-2 without ground, ``10 lg(3 + 40 C3 δ / λ)``: ``δ`` is how much longer the way through the
+corners is than ``d`` and ``λ = c / f`` the wavelength at the characteristic frequency (``c = 331.3 + 0.606 T``
+m/s). Around one corner ``C3 = 1``, which is Maekawa's formula ``10 lg(3 + 20 N)`` with the Fresnel number
+``N = 2 δ / λ``; around two corners ``e`` metres apart ``C3 = (1 + (5 λ / e)²) / (1/3 + (5 λ / e)²)``. The
+attenuation is 4.8 dB at the shadow boundary and at most 20 dB around one corner and 25 dB around two. Corners
+are the convex vertices of the merged obstacle outlines simplified by 0.5 m (buildings that touch form one
+outline) and the ends of wall lines.
 
 Every path of length ``r`` (m) loses ``20 lg r`` for geometric spreading and ``k r`` for air absorption, with ``k``
 derived from the temperature and the frequency; a path through vegetation (``trees``) also loses a
@@ -66,27 +80,27 @@ exact level, and :func:`objectnat.rasterize` turns them into a continuous map (s
 
 **Reading the result.** The model is energetic: it returns the time-averaged sound level, the quantity noise maps
 and norms use, not the instantaneous pressure, so phase, wave fronts and interference are not computed and the
-level falls smoothly with distance. Sound travels along straight rays (geometric acoustics) and is not bent around
-building corners (no diffraction), so the edges of shadows are sharp and the field looks like a set of beams
-through the gaps between buildings. A first-order reflection is the field of a mirror image of the source behind
-the wall; it lights a beam of its own, bounded by the wall, which looks like one more beam. Where the direct
-sound already arrives, a reflection with a 5 % absorption ratio adds at most 3 dB, which is often within one
-``db_sim_step`` band. Places that neither the source nor a reflecting wall within ``reflection_max_dist`` sees
-directly stay below ``target_noise_db``, even next to the source; in reality sound reaches them around building
-corners, attenuated by about 5–20 dB.
+level falls smoothly with distance. The direct sound and the reflections travel along straight rays and light the
+gaps between buildings like beams; a first-order reflection is the field of a mirror image of the source behind
+the wall, bounded by the wall. Where the direct sound already arrives, a reflection with a 5 % absorption ratio
+adds at most 3 dB. Diffraction fills the shadows: right at the shadow boundary the level drops by 4.8 dB, and it
+falls further as the detour grows, reaching the 20 dB limit after a detour of 2.4 wavelengths: 0.4 m at 2 kHz and
+1.7 m at 500 Hz. High frequencies therefore leave darker shadows than low ones. Right behind a building the
+sound has to bend around two corners and is 25 dB below the free field; places that need three bends or more
+(inner courtyards, the second row behind a building) get only what reflections bring.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_grid_reflections.png
-   :alt: Continuous receiver levels and the level added by reflections
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_grid_paths.png
+   :alt: Continuous receiver levels and the levels added by reflections and by diffraction
    :align: center
    :width: 100%
 
    :func:`objectnat.simulate_noise_grid` for a road (line source, 80 dB at 1 m, 1 kHz) and two point sources (95 dB
-   at 2 kHz, 85 dB at 500 Hz) among the example buildings and vegetation, ``grid_step=2``,
-   ``target_noise_db=40``; receivers rasterized with :func:`objectnat.rasterize`. Left: continuous levels. Right:
-   level with first-order reflections minus the direct sound only (cells reached only by reflections are compared
-   with ``target_noise_db``). Reflections add 1–3 dB in the street canyon along the road and form new beams behind
-   the point sources, where the direct sound is blocked; only walls within ``reflection_max_dist=50`` m of a source
-   reflect.
+   at 2 kHz, 85 dB at 500 Hz) among the example buildings and vegetation, ``grid_step=2``, receivers rasterized
+   with :func:`objectnat.rasterize`. ``target_noise_db=30`` shows the sound that reaches the shadows. Left:
+   continuous levels with all paths. Centre and right: the level added by reflections (``reflections=False`` for
+   comparison) and by diffraction (``diffraction=False``); cells reached only by these paths are compared with
+   ``target_noise_db``. Diffraction fills the shadows beside the beams and behind the buildings next to the point
+   sources.
 
 Wave-front simulation
 ---------------------
@@ -139,9 +153,11 @@ reflections and vegetation are not modelled.
 Limitations
 -----------
 
-- None of the models includes ground effect, diffraction over or around buildings, or meteorological refraction;
-  :func:`objectnat.simulate_noise_grid` includes reflections of the first order only. Behind an obstacle the
-  receiver-grid model therefore gives only reflected sound and can underestimate the level.
+- None of the models includes ground effect or meteorological refraction. :func:`objectnat.simulate_noise_grid`
+  includes reflections of the first order and diffraction around one or two vertical edges in plan; it knows no
+  building heights, so diffraction over roofs is not modelled, and places that the sound reaches only around
+  three corners or more get reflections only, which can underestimate their level.
+  :func:`objectnat.simulate_noise` and :func:`objectnat.calculate_simplified_noise_frame` include no diffraction.
 - Each source is described by one level and one characteristic frequency; spectra are not modelled, and the results
   are not equivalent to standardized calculation methods such as ISO 9613-2 or CNOSSOS-EU.
 - :func:`objectnat.simulate_noise` and :func:`objectnat.calculate_simplified_noise_frame` combine sources by the

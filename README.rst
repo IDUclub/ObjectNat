@@ -90,10 +90,10 @@ equal visibility class.
 
 **Noise** (`docs <https://iduclub.github.io/ObjectNat/methods/noise.html>`__, `example <https://iduclub.github.io/ObjectNat/methods/examples/noise.html>`__). ``simulate_noise_grid``
 computes sound levels on a receiver grid from point, line and polygon sources: direct paths and first-order
-reflections with geometric spreading, air absorption, wall absorption and vegetation attenuation, summed as energies.
-``simulate_noise`` is a wave-front model for point sources with multiple reflections, and
-``calculate_simplified_noise_frame`` a fast estimate from visibility masks and distance decay. Ground effect and
-diffraction are not modelled. Background: `wiki <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__.
+reflections with geometric spreading, air absorption, wall absorption and vegetation attenuation, and diffraction
+around building corners into their shadows, summed as energies. ``simulate_noise`` is a wave-front model for point
+sources with multiple reflections, and ``calculate_simplified_noise_frame`` a fast estimate from visibility masks and
+distance decay. Ground effect is not modelled. Background: `wiki <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__.
 
 **Insolation** (`docs <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__, `example <https://iduclub.github.io/ObjectNat/methods/examples/insolation.html>`__).
 ``get_insolation`` follows the sun (NOAA solar position) through a day or a period and returns, on a ground grid

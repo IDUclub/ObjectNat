@@ -6,16 +6,28 @@
 //! * the direct path, when no wall blocks the line between source and receiver;
 //! * first-order reflections (image-source method): the source is mirrored in every wall it sees
 //!   (visible parts of walls come from the visibility kernel), and a receiver gets the reflection when
-//!   the line from the image to it crosses that visible part and nothing blocks the way back.
+//!   the line from the image to it crosses that visible part and nothing blocks the way back;
+//! * diffraction around vertical edges: a convex corner of an obstacle outline that the source sees at
+//!   the edge of the obstacle (a silhouette corner) sends sound into the obstacle's shadow, to the
+//!   receivers that are hidden from the source but seen from the corner; along the shadowed side of
+//!   the obstacle's convex hull the sound also goes on to the next corner and bends around it, which
+//!   reaches the receivers right behind the obstacle.
 //!
 //! Level along a path of length `r` (metres): `L = L0 - 20 lg r - k r - A_veg - A_refl`, the same
 //! distance law as `simulate_noise` (`L0` is the level at 1 m, `k` the air absorption in dB/m);
 //! `A_veg` is a dB/m rate times the length of the path inside vegetation, `A_refl` the reflection
-//! loss of the wall. Levels of all paths and sources add up as energies.
+//! loss of the wall. A diffracted path has the level of the direct distance `d` minus the barrier
+//! attenuation of ISO 9613-2 without ground, `A_dif = 10 lg(3 + 40 C3 δ / λ)` (Maekawa's
+//! `10 lg(3 + 20 N)` for one edge, `C3 = 1`), where `δ` is how much longer the way through the corners
+//! is than `d` and `λ` the wavelength; around two corners `e` metres apart
+//! `C3 = (1 + (5 λ / e)²) / (1/3 + (5 λ / e)²)`. The attenuation is at most 20 dB around one corner and
+//! 25 dB around two. Levels of all paths and sources add up as energies.
+
+use std::sync::Arc;
 
 use rayon::prelude::*;
 
-use crate::visibility::{Obstacles, Pt, Scratch};
+use crate::visibility::{disc_polygon, Grid, Obstacles, Pt, Scratch, Seg};
 
 /// Regular receiver grid: receiver `(i, j)` sits at `(x0 + i * step, y0 + j * step)`.
 #[derive(Clone, Copy, Debug)]
@@ -33,12 +45,33 @@ pub struct Source {
     pub air_db_per_m: f64,
     pub veg_db_per_m: f64,
     pub max_dist: f64,
-    /// Reach of the image sources (reflections) of this source, metres.
+    /// Reach of the image sources (reflections) and of the diffracted paths of this source, metres.
     pub reflection_reach: f64,
+    /// Wavelength at the characteristic frequency, metres.
+    pub wavelength: f64,
+}
+
+/// A vertical edge sound bends around: in plan, a convex corner of an obstacle outline or the end of
+/// a wall line, with its neighbouring vertices.
+#[derive(Clone, Copy, Debug)]
+pub struct Corner {
+    pub at: Pt,
+    pub prev: Pt,
+    pub next: Pt,
+    /// A point just outside the corner, where what the corner sees is computed from.
+    pub outside: Pt,
+    /// The neighbouring corners on the convex hull of the obstacle (on the `prev` and the `next` side),
+    /// for the way around two corners.
+    pub links: [Option<u32>; 2],
 }
 
 /// `10^(-x/10)` for an attenuation of `x` dB per metre over `m` metres, as `exp(-K x m)`.
 const DB_TO_NEPER: f64 = std::f64::consts::LN_10 / 10.0;
+/// Diffraction takes at least `10 lg 3` dB (Maekawa, at the shadow boundary) ...
+const SHADOW_BOUNDARY_FACTOR: f64 = 1.0 / 3.0;
+/// ... and at most 20 dB around one edge and 25 dB around two (ISO 9613-2).
+const MIN_DIFFRACTION_FACTOR: f64 = 0.01;
+const MIN_DOUBLE_DIFFRACTION_FACTOR: f64 = 0.003_162_277_660_168_379_5;
 
 pub struct NoiseInput<'a> {
     pub walls: &'a Obstacles,
@@ -53,6 +86,8 @@ pub struct NoiseInput<'a> {
     pub reflections: bool,
     /// Only walls closer than this to a source reflect it (metres).
     pub reflection_max_dist: f64,
+    /// Edges sound bends around; empty for no diffraction.
+    pub corners: &'a [Corner],
     /// Paths quieter than this energy (`10^(floor_db/10)`) are skipped.
     pub floor_energy: f64,
 }
@@ -140,6 +175,11 @@ fn cross(p: Pt, q: Pt) -> f64 {
 }
 
 #[inline]
+fn dot(p: Pt, q: Pt) -> f64 {
+    p[0] * q[0] + p[1] * q[1]
+}
+
+#[inline]
 fn dist(p: Pt, q: Pt) -> f64 {
     (p[0] - q[0]).hypot(p[1] - q[1])
 }
@@ -156,18 +196,73 @@ fn point_segment_dist(p: Pt, a: Pt, b: Pt) -> f64 {
     dist(p, [a[0] + t * ab[0], a[1] + t * ab[1]])
 }
 
-/// Something that sends sound into a region: a source (direct path) or an image source (reflection).
+/// Reach of the reflections and diffraction paths of a source.
+#[inline]
+fn secondary_reach(src: &Source) -> f64 {
+    src.reflection_reach.min(src.max_dist)
+}
+
+/// How the sound of an emitter gets to a receiver.
+enum Path {
+    /// Straight from the source, where it is visible (`None`: everywhere within reach).
+    Direct(Option<Arc<Star>>),
+    /// Mirrored in a wall: the visible part `(a, b)` of the wall and its id.
+    Reflection(Pt, Pt, u32),
+    /// Bent around a corner into the shadow of its obstacle.
+    Diffraction(Box<Edge>),
+}
+
+/// The corner a diffracted path reaches its receivers from, as one source sees it.
+struct Edge {
+    corner: Pt,
+    /// Where the last leg to the corner comes from: the source, or the first corner of two.
+    from: Pt,
+    /// The way from the source to the corner: length and vegetation loss (dB).
+    to_corner: f64,
+    veg_db: f64,
+    /// Side of the line `from` -> corner the obstacle lies on (sign of the cross product): the
+    /// diffracted path bends towards it.
+    side: f64,
+    /// `C3` of the attenuation and its least factor (the largest attenuation).
+    c3: f64,
+    min_factor: f64,
+    /// Where the corner is seen from; where the source is seen from (those receivers hear it
+    /// directly) and, around two corners, where the first corner is seen from (those receivers get
+    /// the sound around the first corner alone).
+    corner_star: Arc<Star>,
+    source_star: Arc<Star>,
+    first_star: Option<Arc<Star>>,
+}
+
+/// Something that sends sound into a region: a source, an image source or a diffracting corner.
 struct Emitter {
     source: usize,
     /// Source power `10^(L0/10)`, minus the reflection loss for image sources.
     power: f64,
-    /// Direct path: where the source is visible from (`None` = everywhere within reach).
-    star: Option<Star>,
-    /// Point the path length is measured from (source or image).
+    /// Point the path length is measured from: the source (direct and diffracted paths) or its image.
     origin: Pt,
-    /// Reflection: visible wall part `(a, b)`, wall id, loss; `None` for the direct path.
-    reflection: Option<(Pt, Pt, u32, f64)>,
+    path: Path,
     bbox: [f64; 4],
+}
+
+/// The direct path and the reflections of one source, its visibility polygon and the corners it sees at
+/// the edges of obstacles.
+struct SourcePaths {
+    emitters: Vec<Emitter>,
+    star: Option<Arc<Star>>,
+    sights: Vec<Sight>,
+}
+
+/// A corner that a source sees at the edge of an obstacle, or the next corner of that obstacle along
+/// the shadowed side of its convex hull.
+struct Sight {
+    corner: usize,
+    /// For the next corner: the corner the source sees.
+    first: Option<usize>,
+    /// Where the last leg to the corner comes from: the source, or the first corner.
+    from: Pt,
+    to_corner: f64,
+    side: f64,
 }
 
 const TILE: usize = 32;
@@ -234,83 +329,57 @@ pub fn receiver_energy(input: &NoiseInput) -> Vec<f64> {
 }
 
 fn build_emitters(input: &NoiseInput) -> Vec<Emitter> {
-    let per_source: Vec<Vec<Emitter>> = input
+    let corner_index = corner_grid(input.corners);
+    // 1. per source: the direct path, the reflections and the corners at the edges of what it sees
+    let per_source: Vec<SourcePaths> = input
         .sources
         .par_iter()
         .enumerate()
         .map_init(Scratch::default, |sc, (s, src)| {
-            let r = src.max_dist;
-            let runs = if r > 0.0 {
-                input.walls.visible_runs(src.at, r, 64, sc)
-            } else {
-                None
-            };
-            let star = runs
-                .as_ref()
-                .and_then(|runs| Star::new(src.at, runs.ring(r)));
-            let power = 10f64.powf(src.level_db / 10.0);
-            let mut out = vec![Emitter {
-                source: s,
-                power,
-                star,
-                origin: src.at,
-                reflection: None,
-                bbox: [src.at[0] - r, src.at[1] - r, src.at[0] + r, src.at[1] + r],
-            }];
-            let Some(runs) = runs else {
-                return out;
-            };
-            if !input.reflections {
-                return out;
+            source_paths(input, corner_index.as_ref(), s, src, sc)
+        })
+        .collect();
+
+    // 2. what every corner in use sees, once for all the sources that see it
+    let mut radius = vec![0.0f64; input.corners.len()];
+    for (src, paths) in input.sources.iter().zip(&per_source) {
+        for sight in &paths.sights {
+            radius[sight.corner] = radius[sight.corner].max(secondary_reach(src) - sight.to_corner);
+        }
+    }
+    let corner_stars: Vec<Option<Arc<Star>>> = radius
+        .par_iter()
+        .enumerate()
+        .map_init(Scratch::default, |sc, (c, &r)| {
+            if r <= 0.0 {
+                return None;
             }
-            for (wall, a, b) in runs.runs {
-                let Some(w) = wall else { continue };
-                if point_segment_dist(src.at, a, b) > input.reflection_max_dist {
-                    continue;
+            let o = input.corners[c].outside;
+            let ring = input
+                .walls
+                .visible_runs(o, r, 64, sc)
+                .map_or_else(|| disc_polygon(o, r, 64), |runs| runs.ring(r));
+            Star::new(o, ring).map(Arc::new)
+        })
+        .collect();
+
+    // 3. one diffraction emitter per source and corner
+    let per_source: Vec<Vec<Emitter>> = per_source
+        .into_par_iter()
+        .enumerate()
+        .map_init(Vec::new, |crossings, (s, paths)| {
+            let mut out = paths.emitters;
+            if let Some(source_star) = paths.star {
+                for sight in &paths.sights {
+                    out.extend(diffraction_emitter(
+                        input,
+                        s,
+                        sight,
+                        &source_star,
+                        &corner_stars,
+                        crossings,
+                    ));
                 }
-                let seg = &input.walls.segs[w as usize];
-                let e = sub(seg.b, seg.a);
-                let len2 = e[0] * e[0] + e[1] * e[1];
-                if len2 == 0.0 || dist(a, b) < 1e-6 {
-                    continue;
-                }
-                // mirror the source in the wall's supporting line
-                let ap = sub(src.at, seg.a);
-                let t = (ap[0] * e[0] + ap[1] * e[1]) / len2;
-                let foot = [seg.a[0] + t * e[0], seg.a[1] + t * e[1]];
-                let image = [2.0 * foot[0] - src.at[0], 2.0 * foot[1] - src.at[1]];
-                if dist(image, src.at) < 1e-9 {
-                    continue; // source on the wall line
-                }
-                let loss = input.wall_loss_db.get(w as usize).copied().unwrap_or(0.0);
-                // wedge from the image through the visible part, cut at the reach of the image
-                let reach = src.reflection_reach.min(r);
-                let mut xs = vec![a[0], b[0]];
-                let mut ys = vec![a[1], b[1]];
-                for k in 0..=8 {
-                    let f = k as f64 / 8.0;
-                    let p = [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
-                    let d = sub(p, image);
-                    let n = d[0].hypot(d[1]);
-                    if n > 0.0 {
-                        xs.push(image[0] + d[0] / n * reach);
-                        ys.push(image[1] + d[1] / n * reach);
-                    }
-                }
-                let bbox = [
-                    xs.iter().copied().fold(f64::INFINITY, f64::min),
-                    ys.iter().copied().fold(f64::INFINITY, f64::min),
-                    xs.iter().copied().fold(f64::NEG_INFINITY, f64::max),
-                    ys.iter().copied().fold(f64::NEG_INFINITY, f64::max),
-                ];
-                out.push(Emitter {
-                    source: s,
-                    power: power * 10f64.powf(-loss / 10.0),
-                    star: None,
-                    origin: image,
-                    reflection: Some((a, b, w, loss)),
-                    bbox,
-                });
             }
             out
         })
@@ -318,14 +387,268 @@ fn build_emitters(input: &NoiseInput) -> Vec<Emitter> {
     per_source.into_iter().flatten().collect()
 }
 
+fn source_paths(
+    input: &NoiseInput,
+    corner_index: Option<&Grid>,
+    s: usize,
+    src: &Source,
+    sc: &mut Scratch,
+) -> SourcePaths {
+    let r = src.max_dist;
+    let runs = if r > 0.0 {
+        input.walls.visible_runs(src.at, r, 64, sc)
+    } else {
+        None
+    };
+    let star = runs
+        .as_ref()
+        .and_then(|runs| Star::new(src.at, runs.ring(r)))
+        .map(Arc::new);
+    let power = 10f64.powf(src.level_db / 10.0);
+    let mut out = vec![Emitter {
+        source: s,
+        power,
+        origin: src.at,
+        path: Path::Direct(star.clone()),
+        bbox: [src.at[0] - r, src.at[1] - r, src.at[0] + r, src.at[1] + r],
+    }];
+    if let (Some(runs), true) = (&runs, input.reflections) {
+        for &(wall, a, b) in &runs.runs {
+            let Some(w) = wall else { continue };
+            if point_segment_dist(src.at, a, b) > input.reflection_max_dist {
+                continue;
+            }
+            let seg = &input.walls.segs[w as usize];
+            let e = sub(seg.b, seg.a);
+            let len2 = e[0] * e[0] + e[1] * e[1];
+            if len2 == 0.0 || dist(a, b) < 1e-6 {
+                continue;
+            }
+            // mirror the source in the wall's supporting line
+            let ap = sub(src.at, seg.a);
+            let t = (ap[0] * e[0] + ap[1] * e[1]) / len2;
+            let foot = [seg.a[0] + t * e[0], seg.a[1] + t * e[1]];
+            let image = [2.0 * foot[0] - src.at[0], 2.0 * foot[1] - src.at[1]];
+            if dist(image, src.at) < 1e-9 {
+                continue; // source on the wall line
+            }
+            let loss = input.wall_loss_db.get(w as usize).copied().unwrap_or(0.0);
+            // wedge from the image through the visible part, cut at the reach of the image
+            let reach = secondary_reach(src);
+            let mut xs = vec![a[0], b[0]];
+            let mut ys = vec![a[1], b[1]];
+            for k in 0..=8 {
+                let f = k as f64 / 8.0;
+                let p = [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+                let d = sub(p, image);
+                let n = d[0].hypot(d[1]);
+                if n > 0.0 {
+                    xs.push(image[0] + d[0] / n * reach);
+                    ys.push(image[1] + d[1] / n * reach);
+                }
+            }
+            let bbox = [
+                xs.iter().copied().fold(f64::INFINITY, f64::min),
+                ys.iter().copied().fold(f64::INFINITY, f64::min),
+                xs.iter().copied().fold(f64::NEG_INFINITY, f64::max),
+                ys.iter().copied().fold(f64::NEG_INFINITY, f64::max),
+            ];
+            out.push(Emitter {
+                source: s,
+                power: power * 10f64.powf(-loss / 10.0),
+                origin: image,
+                path: Path::Reflection(a, b, w),
+                bbox,
+            });
+        }
+    }
+    let sights = match (&star, corner_index) {
+        (Some(star), Some(index)) => edge_sights(input, index, src, star),
+        _ => Vec::new(),
+    };
+    SourcePaths {
+        emitters: out,
+        star,
+        sights,
+    }
+}
+
+/// Uniform grid over the corners (as zero-length segments), to find the corners near a source.
+fn corner_grid(corners: &[Corner]) -> Option<Grid> {
+    if corners.is_empty() {
+        return None;
+    }
+    let segs: Vec<Seg> = corners.iter().map(|c| Seg { a: c.at, b: c.at }).collect();
+    let mut bbox = [
+        f64::INFINITY,
+        f64::INFINITY,
+        f64::NEG_INFINITY,
+        f64::NEG_INFINITY,
+    ];
+    for c in corners {
+        bbox = [
+            bbox[0].min(c.at[0]),
+            bbox[1].min(c.at[1]),
+            bbox[2].max(c.at[0]),
+            bbox[3].max(c.at[1]),
+        ];
+    }
+    let cells = ((corners.len() as f64).sqrt().ceil() as usize).clamp(1, 1024);
+    Some(Grid::build(&segs, bbox, cells))
+}
+
+/// Corners that a source sees at the edges of obstacles (silhouette corners), within the reach of its
+/// diffracted paths.
+fn edge_sights(input: &NoiseInput, index: &Grid, src: &Source, star: &Star) -> Vec<Sight> {
+    let reach = secondary_reach(src);
+    let mut sights = Vec::new();
+    let around = [
+        src.at[0] - reach,
+        src.at[1] - reach,
+        src.at[0] + reach,
+        src.at[1] + reach,
+    ];
+    index.query_box(around, |id| {
+        let c = &input.corners[id as usize];
+        let to_corner = dist(src.at, c.at);
+        if to_corner >= reach || to_corner < 1e-6 {
+            return;
+        }
+        let u = sub(c.at, src.at);
+        let (side_prev, side_next) = (cross(u, sub(c.prev, c.at)), cross(u, sub(c.next, c.at)));
+        // both neighbours on one side of the line of sight: it grazes the obstacle instead of entering it
+        if side_prev * side_next <= 0.0 || !star.contains(c.outside) {
+            return;
+        }
+        sights.push(Sight {
+            corner: id as usize,
+            first: None,
+            from: src.at,
+            to_corner,
+            side: side_prev.signum(),
+        });
+        // on the convex hull, the side going on into the shadow is the one closer to straight ahead
+        let ahead = |link: Option<u32>| {
+            link.map(|k| {
+                let d = sub(input.corners[k as usize].at, c.at);
+                dot(u, d) / d[0].hypot(d[1])
+            })
+        };
+        let link = match (ahead(c.links[0]), ahead(c.links[1])) {
+            (Some(a), Some(b)) if a < b => c.links[1],
+            (Some(_), _) => c.links[0],
+            _ => c.links[1],
+        };
+        let Some(k) = link else { return };
+        let next = &input.corners[k as usize];
+        let face = dist(c.at, next.at);
+        // around the next corner the path bends towards the hull corner after it
+        let Some(&after) = next.links.iter().flatten().find(|&&j| j != id) else {
+            return;
+        };
+        let side = cross(
+            sub(next.at, c.at),
+            sub(input.corners[after as usize].at, next.at),
+        );
+        if face > 1e-6 && to_corner + face < reach && side != 0.0 && !star.contains(next.outside) {
+            sights.push(Sight {
+                corner: k as usize,
+                first: Some(id as usize),
+                from: c.at,
+                to_corner: to_corner + face,
+                side: side.signum(),
+            });
+        }
+    });
+    sights
+}
+
+/// The diffraction emitter of a source at a corner; `None` when the corner sees nothing on the shadow
+/// side.
+fn diffraction_emitter(
+    input: &NoiseInput,
+    s: usize,
+    sight: &Sight,
+    source_star: &Arc<Star>,
+    corner_stars: &[Option<Arc<Star>>],
+    crossings: &mut Vec<f64>,
+) -> Option<Emitter> {
+    let src = &input.sources[s];
+    let corner = input.corners[sight.corner].at;
+    let corner_star = corner_stars[sight.corner].as_ref()?;
+    let (c3, min_factor, first_star, veg_to) = match sight.first {
+        None => (1.0, MIN_DIFFRACTION_FACTOR, None, corner),
+        Some(k) => {
+            // ISO 9613-2's C3 for a thick barrier whose two edges are `face` metres apart
+            let face = dist(sight.from, corner);
+            let q = (5.0 * src.wavelength / face).powi(2);
+            let first = corner_stars[k].as_ref()?;
+            let c3 = (1.0 + q) / (1.0 / 3.0 + q);
+            (
+                c3,
+                MIN_DOUBLE_DIFFRACTION_FACTOR,
+                Some(Arc::clone(first)),
+                sight.from,
+            )
+        }
+    };
+    let u = sub(corner, sight.from);
+    let shadow_side = |p: Pt| cross(u, sub(p, corner)) * sight.side > 0.0;
+    // bounding box of what the corner sees on the shadow side; the edges that cross the line of
+    // sight keep both ends, so the far crossing is inside
+    let verts = &corner_star.verts;
+    let mut bbox = [corner[0], corner[1], corner[0], corner[1]];
+    let mut any = false;
+    for k in 0..verts.len() {
+        let (p, q) = (verts[k], verts[(k + 1) % verts.len()]);
+        if shadow_side(p) || shadow_side(q) {
+            for v in [p, q] {
+                bbox = [
+                    bbox[0].min(v[0]),
+                    bbox[1].min(v[1]),
+                    bbox[2].max(v[0]),
+                    bbox[3].max(v[1]),
+                ];
+            }
+            any = true;
+        }
+    }
+    if !any {
+        return None;
+    }
+    let reach = secondary_reach(src);
+    Some(Emitter {
+        source: s,
+        power: 10f64.powf(src.level_db / 10.0),
+        origin: src.at,
+        path: Path::Diffraction(Box::new(Edge {
+            corner,
+            from: sight.from,
+            to_corner: sight.to_corner,
+            veg_db: vegetation_db(input, src, src.at, veg_to, crossings),
+            side: sight.side,
+            c3,
+            min_factor,
+            corner_star: Arc::clone(corner_star),
+            source_star: Arc::clone(source_star),
+            first_star,
+        })),
+        bbox: [
+            bbox[0].max(src.at[0] - reach),
+            bbox[1].max(src.at[1] - reach),
+            bbox[2].min(src.at[0] + reach),
+            bbox[3].min(src.at[1] + reach),
+        ],
+    })
+}
+
 /// Energy (`10^(L/10)`) delivered by an emitter to receiver `r`; 0 when the path does not exist.
 fn path_energy(input: &NoiseInput, e: &Emitter, r: Pt, crossings: &mut Vec<f64>) -> f64 {
     let src = &input.sources[e.source];
     let length = dist(e.origin, r);
-    let reach = if e.reflection.is_some() {
-        src.reflection_reach.min(src.max_dist)
-    } else {
-        src.max_dist
+    let reach = match e.path {
+        Path::Direct(_) => src.max_dist,
+        _ => secondary_reach(src),
     };
     if length > reach {
         return 0.0;
@@ -335,9 +658,9 @@ fn path_energy(input: &NoiseInput, e: &Emitter, r: Pt, crossings: &mut Vec<f64>)
     if energy < input.floor_energy {
         return 0.0;
     }
-    match e.reflection {
-        None => {
-            if let Some(star) = &e.star {
+    match &e.path {
+        Path::Direct(star) => {
+            if let Some(star) = star {
                 if !star.contains(r) {
                     return 0.0;
                 }
@@ -348,7 +671,7 @@ fn path_energy(input: &NoiseInput, e: &Emitter, r: Pt, crossings: &mut Vec<f64>)
             }
             energy
         }
-        Some((a, b, wall, _)) => {
+        &Path::Reflection(a, b, wall) => {
             // receiver on the source's side of the wall, path image -> receiver through the visible part
             let side_src = cross(sub(b, a), sub(src.at, a));
             let side_rcv = cross(sub(b, a), sub(r, a));
@@ -373,6 +696,33 @@ fn path_energy(input: &NoiseInput, e: &Emitter, r: Pt, crossings: &mut Vec<f64>)
             }
             let veg = vegetation_db(input, src, src.at, p, crossings)
                 + vegetation_db(input, src, p, r, crossings);
+            if veg > 0.0 {
+                energy *= (-DB_TO_NEPER * veg).exp();
+            }
+            energy
+        }
+        Path::Diffraction(edge) => {
+            if energy * SHADOW_BOUNDARY_FACTOR < input.floor_energy {
+                return 0.0;
+            }
+            // in the obstacle's shadow, seen from the corner but not from the source (nor from the
+            // first corner of two)
+            if cross(sub(edge.corner, edge.from), sub(r, edge.corner)) * edge.side <= 0.0
+                || edge.source_star.contains(r)
+                || edge
+                    .first_star
+                    .as_ref()
+                    .is_some_and(|star| star.contains(r))
+                || !edge.corner_star.contains(r)
+            {
+                return 0.0;
+            }
+            let detour = (edge.to_corner + dist(edge.corner, r) - length).max(0.0);
+            energy *= (1.0 / (3.0 + 40.0 * edge.c3 * detour / src.wavelength)).max(edge.min_factor);
+            if energy < input.floor_energy {
+                return 0.0;
+            }
+            let veg = edge.veg_db + vegetation_db(input, src, edge.corner, r, crossings);
             if veg > 0.0 {
                 energy *= (-DB_TO_NEPER * veg).exp();
             }
@@ -442,7 +792,38 @@ mod tests {
             .collect()
     }
 
+    /// The corners of `square`, each with a point 5 cm outside it on the diagonal.
+    fn square_corners(cx: f64, cy: f64, h: f64) -> Vec<Corner> {
+        let p = [
+            [cx - h, cy - h],
+            [cx + h, cy - h],
+            [cx + h, cy + h],
+            [cx - h, cy + h],
+        ];
+        (0..4)
+            .map(|k| Corner {
+                at: p[k],
+                prev: p[(k + 3) % 4],
+                next: p[(k + 1) % 4],
+                outside: [
+                    p[k][0] + (p[k][0] - cx).signum() * 0.035,
+                    p[k][1] + (p[k][1] - cy).signum() * 0.035,
+                ],
+                links: [Some(((k + 3) % 4) as u32), Some(((k + 1) % 4) as u32)],
+            })
+            .collect()
+    }
+
     fn run(walls: Vec<Wall>, trees: Option<Vec<Seg>>, reflections: bool) -> (Vec<f64>, GridSpec) {
+        run_with(walls, trees, reflections, &[])
+    }
+
+    fn run_with(
+        walls: Vec<Wall>,
+        trees: Option<Vec<Seg>>,
+        reflections: bool,
+        corners: &[Corner],
+    ) -> (Vec<f64>, GridSpec) {
         let n = walls.len();
         let obstacles = Obstacles::from_walls(walls, 50.0);
         let trees = trees.map(|t| Obstacles::new(t, 50.0));
@@ -460,6 +841,7 @@ mod tests {
             veg_db_per_m: 0.1,
             max_dist: 70.0,
             reflection_reach: 70.0,
+            wavelength: 0.343,
         };
         let input = NoiseInput {
             walls: &obstacles,
@@ -470,6 +852,7 @@ mod tests {
             active: &vec![true; grid.nx * grid.ny],
             reflections,
             reflection_max_dist: 1e9,
+            corners,
             floor_energy: 1.0,
         };
         (receiver_energy(&input), grid)
@@ -538,6 +921,37 @@ mod tests {
         assert!(level(&e, g, 10.0, 0.0) > free + 0.5);
         let (e0, _) = run(square(20.0, 0.0, 5.0), None, false);
         assert!((level(&e0, g, 10.0, 0.0) - free).abs() < 1e-9);
+    }
+
+    #[test]
+    fn diffraction_bends_sound_around_a_corner() {
+        // the source at the origin sees the two left corners of the building at its edges
+        let (e, g) = run_with(
+            square(20.0, 0.0, 5.0),
+            None,
+            false,
+            &square_corners(20.0, 0.0, 5.0),
+        );
+        let (e0, _) = run(square(20.0, 0.0, 5.0), None, false);
+        let at = |e: &[f64], x: f64, y: f64| {
+            e[((y - g.y0) / g.step).round() as usize * g.nx
+                + ((x - g.x0) / g.step).round() as usize]
+        };
+        // receivers that see the source keep the direct sound only
+        assert_eq!(at(&e, 10.0, 0.0), at(&e0, 10.0, 0.0));
+        assert_eq!(at(&e, 30.0, 20.0), at(&e0, 30.0, 20.0));
+        // in the shadow beside the top-left corner: the direct distance minus Maekawa's attenuation,
+        // plus the way around the two lower corners at the 25 dB limit
+        let (s, v, r) = ([0.0, 0.0], [15.0, 5.0], [40.0, 8.0]);
+        assert_eq!(at(&e0, r[0], r[1]), 0.0);
+        let detour = dist(s, v) + dist(v, r) - dist(s, r);
+        let factor = 1.0 / (3.0 + 40.0 * detour / 0.343) + 10f64.powf(-2.5);
+        let expected = 90.0 - 20.0 * dist(s, r).log10() + 10.0 * factor.log10();
+        assert!((level(&e, g, r[0], r[1]) - expected).abs() < 1e-9);
+        // right behind the building it bends around two corners, above and below: 25 dB each way
+        assert_eq!(at(&e0, 40.0, 0.0), 0.0);
+        let expected = 90.0 - 20.0 * 40f64.log10() - 25.0 + 10.0 * 2f64.log10();
+        assert!((level(&e, g, 40.0, 0.0) - expected).abs() < 1e-9);
     }
 
     #[test]
