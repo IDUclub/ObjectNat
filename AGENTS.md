@@ -47,7 +47,7 @@ backend: maturin (Python package + Rust extension `objectnat._rust` from `rust/`
 # Install all dependency groups
 uv sync --all-groups            # or: make install-dev
 
-# Run the test suite (downloads OSM data from Geofabrik on first run)
+# Run the test suite (first run downloads OSM data: Overpass, Geofabrik as fallback)
 uv run pytest                   # or: make test
 
 # Run all tests that do not need the network
@@ -79,9 +79,9 @@ uv run sphinx-build -b html docs docs/_build/html   # or: make docs
 
 Every graph-based method takes an `iduedu.UrbanGraph` (not NetworkX). It stores the network as two GeoDataFrames —
 `nodes_gdf` (point geometries, unique index = node id) and `edges_gdf` (columns `u`, `v`, `geometry`,
-`length_meter`, `time_min`) — and exposes Numba-accelerated Dijkstra (`multi_source_dijkstra_path_length`,
-`multi_source_dijkstra_nearest_source`, `dijkstra_path_length_parallel`). ObjectNat calls these directly; it does not
-reimplement routing. Default weight: `time_min`; alternative: `length_meter`.
+`length_meter`, `time_min`) — and exposes Numba-accelerated Dijkstra (`multi_source_dijkstra`,
+`single_source_dijkstra`, `dijkstra_parallel` with `output="distances"`, `multi_source_dijkstra_nearest_source`).
+ObjectNat calls these directly; it does not reimplement routing. Default weight: `time_min`; alternative: `length_meter`.
 
 ### Module layout
 

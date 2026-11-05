@@ -106,7 +106,7 @@ Installation
 
    pip install objectnat
 
-ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.2 or newer within the 2.x
+ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.1 or newer within the 2.x
 series. Wheels contain the compiled extension, so ``pip`` needs no compiler; building from a source checkout requires
 a Rust toolchain (`rustup <https://rustup.rs>`__). Reading GeoTIFF terrain for insolation and viewsheds requires the
 optional ``rasterio`` package.
@@ -116,7 +116,7 @@ optional ``rasterio`` package.
 Quickstart
 ----------
 
-Graph-based methods take an ``iduedu.UrbanGraph``. IduEdu 2.4 and newer can download a Geofabrik extract, cut the
+Graph-based methods take an ``iduedu.UrbanGraph``. IduEdu can download a Geofabrik extract, cut the
 territory out of it and build the graph from the local file instead of the Overpass API (cutting needs
 ``pip install "iduedu[pbf]"``):
 
@@ -144,7 +144,7 @@ territory out of it and build the graph from the local file instead of the Overp
        geometry_type="separate",
    )
 
-Without ``download_osm_pbf`` (older IduEdu) the same calls without the ``with`` block query the Overpass API.
+Without the ``with`` block the same calls query the Overpass API.
 
 Methods that need no graph take GeoDataFrames directly, for example sun hours among buildings with a storeys column:
 

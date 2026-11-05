@@ -3,7 +3,7 @@ from typing import Any, Iterable, Literal
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from iduedu import UrbanGraph, multi_source_dijkstra_nearest_source, multi_source_dijkstra_path_length
+from iduedu import UrbanGraph, multi_source_dijkstra, multi_source_dijkstra_nearest_source
 from shapely import concave_hull
 
 from objectnat.methods.accessibility._utils import (
@@ -309,7 +309,7 @@ def get_stepped_graph_coverage(
     original_crs = gdf_destinations.crs if gdf_destinations is not None else urban_graph.nodes_gdf.crs
     local_crs = urban_graph.nodes_gdf.crs
 
-    distances = multi_source_dijkstra_path_length(
+    distances = multi_source_dijkstra(
         urban_graph,
         source_nodes=destination_nodes,
         gdf_sources=gdf_destinations,
@@ -317,6 +317,7 @@ def get_stepped_graph_coverage(
         weight=weight_type,
         cutoff=weight_value_cutoff,
         reverse=True,
+        output="distances",
     )
     distances = distances.sparse.to_dense()
     reachable_nodes = pd.DataFrame(

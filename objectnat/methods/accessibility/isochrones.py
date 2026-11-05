@@ -6,12 +6,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import shapely
-from iduedu import (
-    UrbanGraph,
-    dijkstra_path_length_parallel,
-    multi_source_dijkstra_path_length,
-    single_source_dijkstra_path_length,
-)
+from iduedu import UrbanGraph, dijkstra_parallel, multi_source_dijkstra, single_source_dijkstra
 
 from objectnat.methods.accessibility._utils import (
     SteppedGeometryType,
@@ -47,7 +42,7 @@ def _reachable_per_origin(
             resolve_graph_nodes_input,
         )
     except ImportError:  # pragma: no cover - older/newer IduEdu layouts
-        path_lengths = dijkstra_path_length_parallel(
+        path_lengths = dijkstra_parallel(
             urban_graph,
             source_nodes=origin_nodes,
             gdf_sources=gdf_origins,
@@ -55,6 +50,7 @@ def _reachable_per_origin(
             weight=weight_type,
             cutoff=cutoff,
             max_workers=max_workers,
+            output="distances",
         )
         rows = ((index, row[row < np.inf]) for index, row in path_lengths.iterrows())
         return path_lengths.attrs["source_nodes"], rows
@@ -68,7 +64,7 @@ def _reachable_per_origin(
         gdf_name="gdf_origins",
     )
     rows = (
-        (index, single_source_dijkstra_path_length(urban_graph, node, weight=weight_type, cutoff=cutoff))
+        (index, single_source_dijkstra(urban_graph, node, weight=weight_type, cutoff=cutoff, output="distances"))
         for index, node in origin_nodes_s.items()
     )
     return origin_nodes_s, rows
@@ -364,7 +360,7 @@ def get_stepped_graph_isochrones(
     original_crs = gdf_origins.crs if gdf_origins is not None else urban_graph.nodes_gdf.crs
     local_crs = urban_graph.nodes_gdf.crs
 
-    distances = multi_source_dijkstra_path_length(
+    distances = multi_source_dijkstra(
         urban_graph,
         source_nodes=origin_nodes,
         gdf_sources=gdf_origins,
@@ -372,6 +368,7 @@ def get_stepped_graph_isochrones(
         weight=weight_type,
         cutoff=weight_value_cutoff,
         reverse=False,
+        output="distances",
     )
     distances = distances.sparse.to_dense()
     reachable_nodes = pd.DataFrame(
