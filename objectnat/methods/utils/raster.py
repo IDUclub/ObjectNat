@@ -1,6 +1,5 @@
 """Regular-grid results as rasters: arrays with a transform and a CRS, for plots, GeoTIFF files and web maps."""
 
-import warnings
 from typing import Any, NamedTuple
 
 import geopandas as gpd
@@ -8,23 +7,70 @@ import numpy as np
 import shapely
 from pyproj import CRS, Transformer
 
+from objectnat._rust import label_rings  # pylint: disable=no-name-in-module
+
 GRID_ATTR = "grid"
+MAX_LABEL = 255  # label_rings takes uint8 labels
 
 
-def resolve_output(output: str, points: str, legacy_flag: bool = False) -> str:
-    """Check ``output`` of a grid method (``"zones"``, ``points`` or ``"both"``); ``return_receivers=True`` means "both"."""
-    if legacy_flag:
-        warnings.warn(
-            'return_receivers=True is deprecated and will be removed in ObjectNat 3.0; use output="both" '
-            f'(or output="{points}" when the zones are not needed)',
-            DeprecationWarning,
-            stacklevel=3,
-        )
-        if output == "zones":
-            output = "both"
+def resolve_output(output: str, points: str) -> str:
+    """Check ``output`` of a grid method: ``"zones"``, ``points`` (``"receivers"`` or ``"cells"``) or ``"both"``."""
     if output not in ("zones", points, "both"):
         raise ValueError(f'output must be "zones", "{points}" or "both"; got {output!r}')
     return output
+
+
+def label_zones(labels: np.ndarray, origin: tuple[float, float], cell_size: float) -> dict[int, object]:
+    """One (Multi)Polygon per non-zero label of the grid, keyed by label."""
+    coords, offsets, ring_labels = label_rings(labels, origin, cell_size)
+    ring_index = np.repeat(np.arange(len(ring_labels)), np.diff(offsets))
+    rings = shapely.linearrings(coords, indices=ring_index)
+    is_exterior = shapely.is_ccw(rings)
+    zones = {}
+    for label in np.unique(ring_labels):
+        shells = rings[(ring_labels == label) & is_exterior]
+        holes = rings[(ring_labels == label) & ~is_exterior]
+        shell_polys = shapely.polygons(shells)
+        hole_lists = [[] for _ in range(len(shells))]
+        if len(holes):
+            hole_polys = shapely.polygons(holes)
+            hole_ids, shell_ids = shapely.STRtree(shell_polys).query(hole_polys, predicate="within")
+            # nested shells: a hole belongs to the smallest shell around it
+            order = np.lexsort((shapely.area(shell_polys)[shell_ids], hole_ids))
+            hole_ids, shell_ids = hole_ids[order], shell_ids[order]
+            first = np.r_[True, hole_ids[1:] != hole_ids[:-1]]
+            for h, s in zip(hole_ids[first], shell_ids[first]):
+                hole_lists[s].append(holes[h])
+        polygons = [shapely.Polygon(shell, hole_list) for shell, hole_list in zip(shells, hole_lists)]
+        zone = shapely.MultiPolygon(polygons) if len(polygons) > 1 else polygons[0]
+        if not zone.is_valid:
+            zone = shapely.make_valid(zone, method="structure", keep_collapsed=False)
+        zones[int(label)] = zone
+    return zones
+
+
+def grid_zones(xy: np.ndarray, values: np.ndarray, cell_size: float, cut=None) -> list[tuple[Any, Any]]:
+    """
+    ``(value, (Multi)Polygon)`` for every distinct value of grid points ``xy`` (cell centres ``cell_size`` apart):
+    the union of their cells minus ``cut``, ordered by value. Rings are traced on the label grid in Rust.
+    """
+    if len(xy) == 0:
+        return []
+    lo = xy.min(axis=0)
+    i, j = np.round((xy - lo) / cell_size).astype(np.int64).T
+    origin = (float(lo[0] - cell_size / 2), float(lo[1] - cell_size / 2))
+    keys, codes = np.unique(values, return_inverse=True)
+    zones = []
+    for start in range(0, len(keys), MAX_LABEL):
+        labels = np.zeros((j.max() + 1, i.max() + 1), dtype=np.uint8)
+        chunk = (codes >= start) & (codes < start + MAX_LABEL)
+        labels[j[chunk], i[chunk]] = codes[chunk] - start + 1
+        for label, geometry in label_zones(labels, origin, cell_size).items():
+            if cut is not None and not cut.is_empty:
+                geometry = geometry.difference(cut)
+            if not geometry.is_empty:
+                zones.append((keys[start + label - 1], geometry))
+    return zones
 
 
 def grid_attrs(local_crs, cell_size: float, origin: tuple[float, float]) -> dict:

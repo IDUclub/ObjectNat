@@ -9,9 +9,9 @@ import shapely
 from iduedu import UrbanGraph
 
 from objectnat import config
-from objectnat._rust import label_rings, visibility_count_grid  # pylint: disable=no-name-in-module
+from objectnat._rust import visibility_count_grid  # pylint: disable=no-name-in-module
 from objectnat.methods.accessibility._utils import geometry_edges
-from objectnat.methods.utils.raster import grid_attrs, resolve_output
+from objectnat.methods.utils.raster import grid_attrs, label_zones, resolve_output
 from objectnat.methods.visibility._native import DEFAULT_QUAD_SEGS, geometries_to_segments
 
 logger = config.logger
@@ -157,34 +157,9 @@ def get_visibility_catchment(
         n_threads=max_workers,
         one_sided=one_sided,
     )
-    values = counts.astype("float64") if weight_sums is None else weight_sums
-
-    labels = _classify(values, counts > 0, classes if lower_bounds is None else lower_bounds)
-    cells = None
-    if output != "zones":
-        grid = (float(x0), float(y0), float(cell_size))
-        cells = cell_points(counts, weight_sums, labels, grid, local_crs, original_crs)
-        if output == "cells":
-            return cells
-    if not labels.any():
-        return _finish(_empty_result(value_name, original_crs), cells, output)
-
-    zones = _zones_from_labels(labels, (float(x0), float(y0)), float(cell_size))
-    rows = []
-    for label, geometry in zones.items():
-        in_class = values[labels == label]
-        rows.append(
-            {
-                "visibility_class": label,
-                f"{value_name}_min": float(in_class.min()),
-                f"{value_name}_max": float(in_class.max()),
-                "geometry": geometry,
-            }
-        )
-    result = gpd.GeoDataFrame(rows, geometry="geometry", crs=local_crs)
-    if value_name == "count":
-        result = result.astype({"count_min": "int64", "count_max": "int64"})
-    return _finish(result.to_crs(original_crs), cells, output)
+    grid = (float(x0), float(y0), float(cell_size))
+    bounds = classes if lower_bounds is None else lower_bounds
+    return count_grid_result(counts, weight_sums, bounds, grid, local_crs, original_crs, output)
 
 
 def get_observer_points(urban_graph: UrbanGraph, *, spacing: float = 15.0) -> gpd.GeoDataFrame:
@@ -259,35 +234,6 @@ def _classify(values: np.ndarray, seen: np.ndarray, classes) -> np.ndarray:
     return labels
 
 
-def _zones_from_labels(labels: np.ndarray, origin: tuple[float, float], cell_size: float) -> dict[int, object]:
-    """One (Multi)Polygon per non-zero label of the grid, keyed by label."""
-    coords, offsets, ring_labels = label_rings(labels, origin, cell_size)
-    ring_index = np.repeat(np.arange(len(ring_labels)), np.diff(offsets))
-    rings = shapely.linearrings(coords, indices=ring_index)
-    is_exterior = shapely.is_ccw(rings)
-    zones = {}
-    for label in np.unique(ring_labels):
-        shells = rings[(ring_labels == label) & is_exterior]
-        holes = rings[(ring_labels == label) & ~is_exterior]
-        shell_polys = shapely.polygons(shells)
-        hole_lists = [[] for _ in range(len(shells))]
-        if len(holes):
-            hole_polys = shapely.polygons(holes)
-            hole_ids, shell_ids = shapely.STRtree(shell_polys).query(hole_polys, predicate="within")
-            # nested shells: a hole belongs to the smallest shell around it
-            order = np.lexsort((shapely.area(shell_polys)[shell_ids], hole_ids))
-            hole_ids, shell_ids = hole_ids[order], shell_ids[order]
-            first = np.r_[True, hole_ids[1:] != hole_ids[:-1]]
-            for h, s in zip(hole_ids[first], shell_ids[first]):
-                hole_lists[s].append(holes[h])
-        polygons = [shapely.Polygon(shell, hole_list) for shell, hole_list in zip(shells, hole_lists)]
-        zone = shapely.MultiPolygon(polygons) if len(polygons) > 1 else polygons[0]
-        if not zone.is_valid:
-            zone = shapely.make_valid(zone, method="structure", keep_collapsed=False)
-        zones[int(label)] = zone
-    return zones
-
-
 def _obstacle_segments(obstacles, local_crs, bbox) -> tuple[np.ndarray, np.ndarray]:
     if obstacles is None or len(obstacles) == 0:
         return geometries_to_segments([])
@@ -295,6 +241,34 @@ def _obstacle_segments(obstacles, local_crs, bbox) -> tuple[np.ndarray, np.ndarr
     obstacles_local = obstacles_local[obstacles_local.geom_type.isin(OBSTACLE_GEOM_TYPES)]
     obstacles_local = obstacles_local.cx[bbox[0] : bbox[2], bbox[1] : bbox[3]]
     return geometries_to_segments(obstacles_local.geometry.values)
+
+
+def count_grid_result(counts, weight_sums, classes, grid, local_crs, crs, output: str):
+    """Class zones and/or seen cells of a grid of observer counts (and weight sums), as ``output`` asks."""
+    value_name = "count" if weight_sums is None else "weight"
+    values = counts.astype("float64") if weight_sums is None else weight_sums
+    labels = _classify(values, counts > 0, classes)
+    cells = cell_points(counts, weight_sums, labels, grid, local_crs, crs) if output != "zones" else None
+    if output == "cells":
+        return cells
+    if not labels.any():
+        return _finish(_empty_result(value_name, crs), cells, output)
+    x0, y0, cell = grid
+    rows = []
+    for label, geometry in label_zones(labels, (x0, y0), cell).items():
+        in_class = values[labels == label]
+        rows.append(
+            {
+                "visibility_class": label,
+                f"{value_name}_min": float(in_class.min()),
+                f"{value_name}_max": float(in_class.max()),
+                "geometry": geometry,
+            }
+        )
+    result = gpd.GeoDataFrame(rows, geometry="geometry", crs=local_crs)
+    if value_name == "count":
+        result = result.astype({"count_min": "int64", "count_max": "int64"})
+    return _finish(result.to_crs(crs), cells, output)
 
 
 def cell_points(counts, weight_sums, labels, grid, local_crs, crs) -> gpd.GeoDataFrame:

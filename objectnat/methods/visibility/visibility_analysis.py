@@ -6,16 +6,9 @@ import numpy as np
 import shapely
 from shapely import Point, Polygon
 
-from objectnat import config
 from objectnat.methods.utils.raster import grid_attrs
-from objectnat.methods.visibility._native import (
-    geometries_to_segments,
-    native_visibility_polygons,
-    native_visibility_single,
-)
+from objectnat.methods.visibility._native import geometries_to_segments, native_visibility_polygons
 from objectnat.methods.visibility.isovist import ISOVIST_METRICS, add_isovist_metrics
-
-logger = config.logger
 
 VISIBILITY_METHODS = ("accurate", "simple")
 VIEW_DISC_QUAD_SEGS = 16  # matches Point.buffer(): the view polygon the kernel clips to
@@ -48,40 +41,15 @@ def dist_to_furthest_point(point_from: Point, view_polygon: Polygon) -> float:
     return round(res, 1)
 
 
-def _visibility_accurate(point_from: Point, obstacles: gpd.GeoDataFrame, view_distance: float) -> Polygon:
-    """
-    Compute the exact visibility polygon for a single observer point.
-
-    The visible area is the view disc (the same polygon ``point_from.buffer(view_distance)`` builds)
-    minus everything hidden behind obstacle walls. It is computed by the Rust extension
-    ``objectnat._rust``: obstacle walls are clipped to the disc, every wall endpoint and wall crossing
-    becomes a critical direction, and one ray per angular interval finds the nearest wall, which gives
-    the boundary exactly.
-
-    Args:
-        point_from (Point):
-            Observer location in projected coordinates.
-        obstacles (gpd.GeoDataFrame):
-            GeoDataFrame with obstacle geometries (buildings, walls, etc.) in
-            the same CRS as ``point_from``. Expected geometry types are
-            Polygon, MultiPolygon, LineString or MultiLineString.
-        view_distance (float):
-            Maximum viewing radius around the observer, in units of the CRS.
-
-    Returns:
-        Polygon:
-            Polygon representing the visible area around ``point_from`` within
-            ``view_distance``.
-
-    Notes:
-        It is assumed that coordinates are in a metric CRS (e.g., UTM). CRS
-        management is done externally in ``get_visibility()``.
-    """
+def visibility_polygon(point_from: Point, obstacles: gpd.GeoDataFrame, view_distance: float) -> Polygon:
+    """Exact visibility polygon of one observer among ``obstacles``, both in the same metric CRS."""
     point_buffer = point_from.buffer(view_distance)
     idx = obstacles.sindex.query(point_buffer, predicate="intersects")
     if len(idx) == 0:
         return point_buffer
-    return native_visibility_single(point_from, obstacles.geometry.values[idx], view_distance)
+    segments, one_sided = geometries_to_segments(obstacles.geometry.values[idx])
+    xy = np.array([[point_from.x, point_from.y]])
+    return native_visibility_polygons(xy, np.array([float(view_distance)]), segments, one_sided, n_threads=1)[0]
 
 
 def _visibility_accurate_batch(

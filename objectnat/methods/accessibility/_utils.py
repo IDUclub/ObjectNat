@@ -4,15 +4,88 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import shapely
-from iduedu import UrbanGraph
+from iduedu import UrbanGraph, multi_source_dijkstra
 from shapely import convex_hull
-from shapely.geometry import GeometryCollection, MultiPolygon, Polygon
-from shapely.ops import polygonize, unary_union
+from shapely.geometry import GeometryCollection
 
-from objectnat.methods.utils.geom_utils import polygons_to_multilinestring
+from objectnat.methods.utils.geom_utils import overlay_by_value, remove_inner_geom
 
 SteppedGeometryType = Literal["radius", "ways", "separate"] | None
 _WALK_ONLY_GRAPH_TYPES = {"intermodal", "walk"}
+
+
+def check_buffer_args(buffer_factor: float, road_buffer_size: float) -> None:
+    """Validate the buffer arguments shared by the accessibility functions."""
+    if buffer_factor <= 0:
+        raise ValueError(f"buffer_factor must be > 0, got {buffer_factor}")
+    if road_buffer_size <= 0:
+        raise ValueError(f"road_buffer_size must be > 0, got {road_buffer_size}")
+
+
+def node_points(urban_graph: UrbanGraph, table: pd.DataFrame) -> gpd.GeoDataFrame:
+    """Graph node points for the rows of ``table`` (indexed by node id), with its columns."""
+    return urban_graph.nodes_gdf.loc[pd.Index(table.index), ["geometry"]].join(table, how="left")
+
+
+def stepped_accessibility(
+    urban_graph: UrbanGraph,
+    *,
+    source_nodes,
+    gdf_sources,
+    graph_node_column: str,
+    weight_type: str,
+    weight_value_cutoff: float | None,
+    step: float | None,
+    geometry_type: SteppedGeometryType,
+    zone,
+    buffer_factor: float,
+    road_buffer_size: float,
+    reverse: bool,
+) -> gpd.GeoDataFrame:
+    """
+    Bands of width ``step`` of the cost to the nearest source: stepped isochrones search from the origins
+    (``reverse=False``), stepped coverage towards the services (``reverse=True``).
+    """
+    if geometry_type is not None and geometry_type not in {"radius", "ways", "separate"}:
+        raise ValueError(f"Unsupported geometry_type={geometry_type!r}")
+    if step is None:
+        step = 100.0 if weight_type == "length_meter" else 1.0
+    if step <= 0:
+        raise ValueError(f"step must be > 0, got {step}")
+    check_buffer_args(buffer_factor, road_buffer_size)
+
+    distances = multi_source_dijkstra(
+        urban_graph,
+        source_nodes=source_nodes,
+        gdf_sources=gdf_sources,
+        graph_node_column=graph_node_column,
+        weight=weight_type,
+        cutoff=weight_value_cutoff,
+        reverse=reverse,
+        output="distances",
+    ).sparse.to_dense()
+    reachable = distances < np.inf
+    reachable_nodes = pd.DataFrame(
+        {"dist": distances[reachable].astype(float)}, index=pd.Index(distances.index[reachable], name="node")
+    )
+    if reachable_nodes.empty:
+        return gpd.GeoDataFrame()
+
+    weight_value = float(reachable_nodes["dist"].max()) if weight_value_cutoff is None else float(weight_value_cutoff)
+    result = build_stepped_accessibility_geometry(
+        urban_graph,
+        node_points(urban_graph, reachable_nodes),
+        geometry_type=geometry_type,
+        weight_value=weight_value,
+        weight_type=weight_type,
+        step=float(step),
+        local_crs=urban_graph.nodes_gdf.crs,
+        zone=zone,
+        buffer_factor=float(buffer_factor),
+        road_buffer_size=float(road_buffer_size),
+    )
+    original_crs = gdf_sources.crs if gdf_sources is not None else urban_graph.nodes_gdf.crs
+    return result.to_crs(original_crs)
 
 
 def geometry_edges(urban_graph: UrbanGraph) -> gpd.GeoDataFrame:
@@ -117,23 +190,6 @@ def build_radius_clip_geometry(
             speed_m_per_min=speed_m_per_min,
         )
     )
-
-
-def remove_inner_geom(geom):
-    if geom.is_empty:
-        return geom
-    if geom.geom_type == "Polygon":
-        return Polygon(geom.exterior)
-    if geom.geom_type == "MultiPolygon":
-        return MultiPolygon([Polygon(polygon.exterior) for polygon in geom.geoms])
-    if geom.geom_type == "GeometryCollection":
-        polygon_geoms = [
-            remove_inner_geom(part) for part in geom.geoms if part.geom_type in {"Polygon", "MultiPolygon"}
-        ]
-        if not polygon_geoms:
-            return GeometryCollection()
-        return unary_union(polygon_geoms)
-    return geom
 
 
 def ways_road_buffers(
@@ -242,26 +298,11 @@ def build_separated_dist_polygons(
     if points.empty:
         return empty_result()
 
-    dissolved = points.dissolve(by="dist", as_index=False)
-    lines = dissolved.geometry.apply(polygons_to_multilinestring).union_all()
-    polygons = gpd.GeoDataFrame(geometry=list(polygonize(lines)), crs=points.crs)
-    if polygons.empty:
-        return empty_result()
-
-    polygon_points = polygons.copy()
-    polygon_points.geometry = polygons.representative_point()
-    stepped = polygon_points.sjoin(dissolved[["dist", "geometry"]], predicate="within")
+    # a face covered by several bands is reached first in the earliest of them
+    stepped = overlay_by_value(points.dissolve(by="dist", as_index=False), "dist", how="min")
     if stepped.empty:
         return empty_result()
-
-    # a face covered by several bands is reached first in the earliest of them
-    stepped_dist = stepped.groupby(level=0)["dist"].min()
-    stepped_polygons = gpd.GeoDataFrame(
-        {"dist": stepped_dist.to_numpy()},
-        geometry=polygons.geometry.loc[stepped_dist.index].to_numpy(),
-        crs=points.crs,
-    )
-    return stepped_polygons.dissolve(by="dist", as_index=False).explode(ignore_index=True)
+    return stepped.explode(ignore_index=True)
 
 
 def build_stepped_accessibility_geometry(

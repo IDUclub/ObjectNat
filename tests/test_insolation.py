@@ -69,10 +69,9 @@ def test_terrain_ridge_shades_its_north_slope(as_polygons):
 def test_period_reports_mean_and_worst_day():
     building = gpd.GeoDataFrame({"height": [30.0]}, geometry=[box(X0 - 20, Y0 - 10, X0 + 20, Y0 + 10)], crs=CRS)
     area = box(X0 - 40, Y0 - 80, X0 + 40, Y0 + 60)
-    with pytest.warns(DeprecationWarning, match="return_receivers"):  # the old spelling of output="both"
-        _, points = get_insolation(
-            building, ("2026-03-21", "2026-06-21"), day_step=30, area=area, grid_step=2, return_receivers=True
-        )
+    points = get_insolation(
+        building, ("2026-03-21", "2026-06-21"), day_step=30, area=area, grid_step=2, output="receivers"
+    )
     assert points.attrs["days"] == ["2026-03-21", "2026-04-20", "2026-05-20", "2026-06-19", "2026-06-21"]
     assert (points["min_sun_hours"] <= points["sun_hours"] + 1e-9).all()
     assert (points["max_continuous_hours"] <= points["min_sun_hours"] + 1e-9).all()

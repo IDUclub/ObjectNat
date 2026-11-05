@@ -8,7 +8,6 @@ import pytest
 from shapely import LineString, MultiPolygon, Point, Polygon, box
 
 from objectnat.methods.utils.geom_utils import (
-    combine_geometry,
     distribute_points_on_linestrings,
     distribute_points_on_polygons,
     get_point_from_a_thorough_b,
@@ -81,24 +80,6 @@ def test_remove_inner_geom_multipolygon():
 def test_remove_inner_geom_non_polygon_returns_empty():
     result = remove_inner_geom(LineString([(0, 0), (1, 1)]))
     assert result.is_empty
-
-
-# --------------------------------------------------------------------------- #
-# combine_geometry
-# --------------------------------------------------------------------------- #
-def test_combine_geometry_splits_overlap():
-    gdf = gpd.GeoDataFrame(
-        {"val": [1, 2]},
-        geometry=[box(0, 0, 2, 2), box(1, 1, 3, 3)],
-        crs=3857,
-    )
-    result = combine_geometry(gdf)
-    assert isinstance(result, gpd.GeoDataFrame)
-    assert result.crs == gdf.crs
-    assert not result.empty
-    # Overlapping inputs split into distinct enclosures; attributes aggregate into lists.
-    assert "val" in result.columns
-    assert result["val"].apply(lambda v: isinstance(v, list)).all()
 
 
 # --------------------------------------------------------------------------- #

@@ -7,22 +7,18 @@ import numpy as np
 import pandas as pd
 import shapely
 
-from objectnat import config
 from objectnat._rust import noise_grid_energy  # pylint: disable=no-name-in-module
-from objectnat.methods.noise.noise_reduce import dist_to_target_db, get_air_resist_ratio
-from objectnat.methods.utils.raster import grid_attrs, resolve_output
+from objectnat.methods.noise.noise_reduce import (
+    decay_distance,
+    get_air_resist_ratio,
+    source_values,
+    vegetation_db_per_m,
+)
+from objectnat.methods.utils.raster import grid_attrs, grid_zones, resolve_output
 from objectnat.methods.visibility._native import geometries_to_segments
 
-logger = config.logger
-
-MAX_DB_VALUE = 194
 FLOOR_MARGIN_DB = 10.0  # paths this far below the target can still add up above it
 LINE_FLOOR_MARGIN_DB = 30.0  # many weak samples of a long line add up: keep more of them
-
-
-def _vegetation_db_per_m(freq_hz: float) -> float:
-    """Foliage attenuation rate of ``green_noise_reduce_db`` (dB per metre of vegetation crossed)."""
-    return 0.08 * (freq_hz ** (1 / 3)) / 8
 
 
 def _cut_holes_around_sources(geometries: np.ndarray, points: np.ndarray, radius: float) -> np.ndarray:
@@ -55,7 +51,6 @@ def simulate_noise_grid(
     source_spacing: float | None = None,
     source_position_buffer_r: float = 0,
     output: Literal["zones", "receivers", "both"] = "zones",
-    return_receivers: bool = False,
     max_workers: int | None = None,
 ) -> gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
     """
@@ -119,8 +114,6 @@ def simulate_noise_grid(
         output:
             ``"zones"`` (default) for the level bands, ``"receivers"`` for the receiver points with their exact
             levels only (no band polygons are built), ``"both"`` for the tuple ``(bands, receivers)``.
-        return_receivers:
-            Deprecated: ``True`` is ``output="both"``.
         max_workers:
             Maximum number of threads (``None`` uses all cores).
 
@@ -136,7 +129,7 @@ def simulate_noise_grid(
         Not modelled: ground effect, diffraction over or around buildings, reflections of higher
         order. Behind an obstacle only reflected sound arrives.
     """
-    output = resolve_output(output, "receivers", return_receivers)
+    output = resolve_output(output, "receivers")
     if source_points is None or len(source_points) == 0:
         raise ValueError("source_points is empty.")
     if grid_step <= 0:
@@ -146,10 +139,8 @@ def simulate_noise_grid(
     if source_position_buffer_r < 0:
         raise ValueError("source_position_buffer_r must be non-negative.")
 
-    levels = _per_source_values(source_points, "source_noise_db", source_noise_db)
-    freqs = _per_source_values(source_points, "geometric_mean_freq_hz", geometric_mean_freq_hz)
-    if (levels > MAX_DB_VALUE).any():
-        raise ValueError(f"source_noise_db exceeds the physical limit of {MAX_DB_VALUE} dB in air.")
+    levels = source_values(source_points, "source_noise_db", source_noise_db)
+    freqs = source_values(source_points, "geometric_mean_freq_hz", geometric_mean_freq_hz)
 
     original_crs = source_points.crs
     local_crs = (obstacles if obstacles is not None and len(obstacles) else source_points).estimate_utm_crs()
@@ -164,11 +155,11 @@ def simulate_noise_grid(
     source_geoms = shapely.points(xy[samples["is_point"]])
 
     air = np.array([get_air_resist_ratio(air_temperature, f, True) for f in freqs])
-    veg = np.array([_vegetation_db_per_m(f) for f in freqs])
+    veg = np.array([vegetation_db_per_m(f) for f in freqs])
     reach = np.array(
         [
-            _reach(full, target_noise_db, freq, air_temperature, k, is_point)
-            for full, freq, k, is_point in zip(samples["full_level"], freqs, air, samples["is_point"])
+            _reach(full, target_noise_db, k, is_point)
+            for full, k, is_point in zip(samples["full_level"], air, samples["is_point"])
         ]
     )
     # Reflections of a line sample are followed only while that sample alone stays within
@@ -176,8 +167,8 @@ def simulate_noise_grid(
     # direct field of the whole line, which is summed in full.
     reflection_reach = np.array(
         [
-            r if is_point else _reach(level, target_noise_db - FLOOR_MARGIN_DB, freq, air_temperature, k, True)
-            for r, level, freq, k, is_point in zip(reach, levels, freqs, air, samples["is_point"])
+            r if is_point else _reach(level, target_noise_db - FLOOR_MARGIN_DB, k, True)
+            for r, level, k, is_point in zip(reach, levels, air, samples["is_point"])
         ]
     )
 
@@ -322,31 +313,9 @@ def _sample_sources(geometries: np.ndarray, levels: np.ndarray, freqs: np.ndarra
     }
 
 
-def _reach(level: float, target: float, freq: float, temperature: float, air: float, is_point: bool) -> float:
-    """Distance at which a source drops to ``target``: point law, or line law ``L - 10 lg d - k d``."""
-    if level <= target:
-        return 0.0
-    if is_point:
-        return float(dist_to_target_db(level, target, freq, temperature))
-    lo, hi = 1.0, 1e6
-    for _ in range(100):
-        mid = 0.5 * (lo + hi)
-        if level - 10 * np.log10(mid) - air * mid > target:
-            lo = mid
-        else:
-            hi = mid
-    return lo
-
-
-def _per_source_values(source_points: gpd.GeoDataFrame, column: str, default: float | None) -> np.ndarray:
-    if column in source_points.columns:
-        values = source_points[column]
-        if values.isnull().any():
-            raise ValueError(f"Column '{column}' contains missing (NaN) values")
-        return values.to_numpy(dtype=float)
-    if default is None:
-        raise ValueError(f"Either `{column}` must be provided or `source_points` must contain a '{column}' column.")
-    return np.full(len(source_points), float(default))
+def _reach(level: float, target: float, air: float, is_point: bool) -> float:
+    """Distance at which a point (or line) source drops to ``target``."""
+    return decay_distance(level, target, air, line=not is_point) if level > target else 0.0
 
 
 def _level_bands(
@@ -356,14 +325,5 @@ def _level_bands(
     if len(points) == 0:
         return pd.DataFrame({"noise_level": pd.Series(dtype=float), "geometry": pd.Series(dtype=object)})
     label = target_db + step * np.ceil(np.round((level - target_db) / step, 9))
-    xy = shapely.get_coordinates(points)
-    half = cell / 2
-    cells = shapely.box(xy[:, 0] - half, xy[:, 1] - half, xy[:, 0] + half, xy[:, 1] + half)
-    rows = []
-    for value in np.unique(label)[::-1]:
-        geom = shapely.coverage_union_all(cells[label == value])
-        if not obstacles_union.is_empty:
-            geom = geom.difference(obstacles_union)
-        if not geom.is_empty:
-            rows.append({"noise_level": float(value), "geometry": geom})
-    return pd.DataFrame(rows)
+    zones = grid_zones(shapely.get_coordinates(points), label, cell, obstacles_union)[::-1]
+    return pd.DataFrame([{"noise_level": float(value), "geometry": geom} for value, geom in zones])

@@ -151,12 +151,3 @@ def _largest_part_at(polygon, point: Point):
     parts = _polygon_parts(shapely.union_all(parts))
     containing = [g for g in parts if g.distance(point) <= 1e-6]
     return max(containing or parts, key=lambda g: g.area)
-
-
-def native_visibility_single(point_from: Point, obstacles_geometries, view_distance: float) -> Polygon:
-    """Visibility polygon for one observer; drop-in for ``_visibility_accurate``."""
-    segments, one_sided = geometries_to_segments(obstacles_geometries)
-    poly = native_visibility_polygons(
-        np.array([[point_from.x, point_from.y]]), np.array([float(view_distance)]), segments, one_sided, n_threads=1
-    )[0]
-    return poly

@@ -6,16 +6,18 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import shapely
-from iduedu import UrbanGraph, dijkstra_parallel, multi_source_dijkstra, single_source_dijkstra
+from iduedu import UrbanGraph, dijkstra_parallel, single_source_dijkstra
 
 from objectnat.methods.accessibility._utils import (
     SteppedGeometryType,
     build_separated_dist_polygons,
-    build_stepped_accessibility_geometry,
+    check_buffer_args,
     edge_speed_m_per_min,
     finish_ways_clip_geometry,
+    node_points,
     radius_buffers,
     select_geometry_nodes,
+    stepped_accessibility,
     ways_road_buffers,
 )
 
@@ -33,9 +35,9 @@ def _reachable_per_origin(
     """
     Origins resolved to graph nodes, and for each origin the costs of the nodes it reaches.
 
-    Uses one single-source search per origin: IduEdu's batch call returns a dense origins x nodes table
-    converted column by column to a sparse frame, which costs far more than the searches themselves.
-    Falls back to the batch call if IduEdu's node resolution helper is not available.
+    Uses one single-source search per origin: IduEdu's batch call returns an origins x nodes sparse frame whose
+    rows take longer to read back than the searches themselves. Falls back to the batch call if IduEdu's node
+    resolution helper is not available.
     """
     try:
         from iduedu.graph.graph_inputs import (  # pylint: disable=import-outside-toplevel
@@ -162,10 +164,7 @@ def get_graph_isochrones(
         raise ValueError(f"Unsupported geometry_type={geometry_type!r}")
     if weight_value_cutoff < 0:
         raise ValueError(f"weight_value_cutoff must be >= 0, got {weight_value_cutoff}")
-    if buffer_factor <= 0:
-        raise ValueError(f"buffer_factor must be > 0, got {buffer_factor}")
-    if road_buffer_size <= 0:
-        raise ValueError(f"road_buffer_size must be > 0, got {road_buffer_size}")
+    check_buffer_args(buffer_factor, road_buffer_size)
     original_crs = gdf_origins.crs if gdf_origins is not None else urban_graph.nodes_gdf.crs
     local_crs = urban_graph.nodes_gdf.crs
 
@@ -191,16 +190,12 @@ def get_graph_isochrones(
     prepared = []
     for row_i, (source_index, distances) in enumerate(reachable_per_origin):
         distances = distances[np.isfinite(distances.to_numpy(dtype=float))]
-        reachable_nodes = pd.DataFrame(
+        if distances.empty:
+            continue
+        reachable = pd.DataFrame(
             {"dist": distances.to_numpy(dtype=float)}, index=pd.Index(distances.index, name="node")
         )
-        if reachable_nodes.empty:
-            continue
-
-        reachable_graph_nodes_gdf = urban_graph.nodes_gdf.loc[pd.Index(reachable_nodes.index), ["geometry"]].join(
-            reachable_nodes, how="left"
-        )
-        reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, reachable_graph_nodes_gdf)
+        reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, node_points(urban_graph, reachable))
         parts = []
         if geometry_type in ("radius", "ways"):
             parts.append(
@@ -346,49 +341,17 @@ def get_stepped_graph_isochrones(
         - An empty ``GeoDataFrame`` is returned when nothing is reachable.
     """
 
-    if geometry_type is not None and geometry_type not in {"radius", "ways", "separate"}:
-        raise ValueError(f"Unsupported geometry_type={geometry_type!r}")
-    if step is None:
-        step = 100.0 if weight_type == "length_meter" else 1.0
-    if step <= 0:
-        raise ValueError(f"step must be > 0, got {step}")
-    if buffer_factor <= 0:
-        raise ValueError(f"buffer_factor must be > 0, got {buffer_factor}")
-    if road_buffer_size <= 0:
-        raise ValueError(f"road_buffer_size must be > 0, got {road_buffer_size}")
-
-    original_crs = gdf_origins.crs if gdf_origins is not None else urban_graph.nodes_gdf.crs
-    local_crs = urban_graph.nodes_gdf.crs
-
-    distances = multi_source_dijkstra(
+    return stepped_accessibility(
         urban_graph,
         source_nodes=origin_nodes,
         gdf_sources=gdf_origins,
         graph_node_column=graph_node_column,
-        weight=weight_type,
-        cutoff=weight_value_cutoff,
-        reverse=False,
-        output="distances",
-    )
-    distances = distances.sparse.to_dense()
-    reachable_nodes = pd.DataFrame(
-        {"dist": distances.loc[distances < np.inf].astype(float)},
-        index=pd.Index(distances.index[distances < np.inf], name="node"),
-    )
-    if reachable_nodes.empty:
-        return gpd.GeoDataFrame()
-
-    weight_value = float(reachable_nodes["dist"].max()) if weight_value_cutoff is None else float(weight_value_cutoff)
-    result = build_stepped_accessibility_geometry(
-        urban_graph,
-        urban_graph.nodes_gdf.loc[pd.Index(reachable_nodes.index), ["geometry"]].join(reachable_nodes, how="left"),
-        geometry_type=geometry_type,
-        weight_value=weight_value,
         weight_type=weight_type,
-        step=float(step),
-        local_crs=local_crs,
+        weight_value_cutoff=weight_value_cutoff,
+        step=step,
+        geometry_type=geometry_type,
         zone=zone,
-        buffer_factor=float(buffer_factor),
-        road_buffer_size=float(road_buffer_size),
+        buffer_factor=buffer_factor,
+        road_buffer_size=road_buffer_size,
+        reverse=False,
     )
-    return result.to_crs(original_crs)

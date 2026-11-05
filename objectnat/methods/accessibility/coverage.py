@@ -3,17 +3,19 @@ from typing import Any, Iterable, Literal
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from iduedu import UrbanGraph, multi_source_dijkstra, multi_source_dijkstra_nearest_source
+from iduedu import UrbanGraph, multi_source_dijkstra_nearest_source
 from shapely import concave_hull
 
 from objectnat.methods.accessibility._utils import (
     SteppedGeometryType,
     build_radius_clip_geometry,
-    build_stepped_accessibility_geometry,
     build_voronoi_cells,
     build_ways_clip_geometry,
+    check_buffer_args,
     edge_speed_m_per_min,
+    node_points,
     select_geometry_nodes,
+    stepped_accessibility,
 )
 
 
@@ -114,10 +116,7 @@ def get_graph_coverage(
         raise ValueError(f"Unsupported geometry_type={geometry_type!r}")
     if geometry_type is not None and weight_value_cutoff is None:
         raise ValueError("weight_value_cutoff is required when geometry_type is set")
-    if buffer_factor <= 0:
-        raise ValueError(f"buffer_factor must be > 0, got {buffer_factor}")
-    if road_buffer_size <= 0:
-        raise ValueError(f"road_buffer_size must be > 0, got {road_buffer_size}")
+    check_buffer_args(buffer_factor, road_buffer_size)
 
     original_crs = gdf_destinations.crs if gdf_destinations is not None else urban_graph.nodes_gdf.crs
     local_crs = urban_graph.nodes_gdf.crs
@@ -144,15 +143,7 @@ def get_graph_coverage(
 
     if reachable_nodes.empty:
         return gpd.GeoDataFrame()
-
-    reachable_graph_nodes_gdf = urban_graph.nodes_gdf.loc[pd.Index(reachable_nodes.index), ["geometry"]].join(
-        reachable_nodes, how="left"
-    )
-
-    if reachable_graph_nodes_gdf.empty:
-        return gpd.GeoDataFrame()
-
-    reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, reachable_graph_nodes_gdf)
+    reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, node_points(urban_graph, reachable_nodes))
 
     if geometry_type == "radius":
         speed_m_per_min = edge_speed_m_per_min(urban_graph) if weight_type == "time_min" else None
@@ -295,51 +286,17 @@ def get_stepped_graph_coverage(
         - An empty ``GeoDataFrame`` is returned when nothing is reachable.
     """
 
-    if geometry_type is not None and geometry_type not in {"radius", "ways", "separate"}:
-        raise ValueError(f"Unsupported geometry_type={geometry_type!r}")
-    if step is None:
-        step = 100.0 if weight_type == "length_meter" else 1.0
-    if step <= 0:
-        raise ValueError(f"step must be > 0, got {step}")
-    if buffer_factor <= 0:
-        raise ValueError(f"buffer_factor must be > 0, got {buffer_factor}")
-    if road_buffer_size <= 0:
-        raise ValueError(f"road_buffer_size must be > 0, got {road_buffer_size}")
-
-    original_crs = gdf_destinations.crs if gdf_destinations is not None else urban_graph.nodes_gdf.crs
-    local_crs = urban_graph.nodes_gdf.crs
-
-    distances = multi_source_dijkstra(
+    return stepped_accessibility(
         urban_graph,
         source_nodes=destination_nodes,
         gdf_sources=gdf_destinations,
         graph_node_column=graph_node_column,
-        weight=weight_type,
-        cutoff=weight_value_cutoff,
-        reverse=True,
-        output="distances",
-    )
-    distances = distances.sparse.to_dense()
-    reachable_nodes = pd.DataFrame(
-        {"dist": distances.loc[distances < np.inf].astype(float)},
-        index=pd.Index(distances.index[distances < np.inf], name="node"),
-    )
-    if reachable_nodes.empty:
-        return gpd.GeoDataFrame()
-
-    if weight_value_cutoff is None:
-        weight_value_cutoff = float(reachable_nodes["dist"].max())
-
-    result = build_stepped_accessibility_geometry(
-        urban_graph,
-        urban_graph.nodes_gdf.loc[pd.Index(reachable_nodes.index), ["geometry"]].join(reachable_nodes, how="left"),
-        geometry_type=geometry_type,
-        weight_value=float(weight_value_cutoff),
         weight_type=weight_type,
-        step=float(step),
-        local_crs=local_crs,
+        weight_value_cutoff=weight_value_cutoff,
+        step=step,
+        geometry_type=geometry_type,
         zone=zone,
-        buffer_factor=float(buffer_factor),
-        road_buffer_size=float(road_buffer_size),
+        buffer_factor=buffer_factor,
+        road_buffer_size=road_buffer_size,
+        reverse=True,
     )
-    return result.to_crs(original_crs)

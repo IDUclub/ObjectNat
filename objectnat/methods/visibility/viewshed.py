@@ -12,16 +12,9 @@ from objectnat._rust import (  # pylint: disable=no-name-in-module
     viewshed_cells,
     viewshed_count_grid,
 )
-from objectnat.methods.utils.raster import resolve_output
+from objectnat.methods.utils.raster import label_zones, resolve_output
 from objectnat.methods.utils.scene import Scene, TerrainInput, kernel_scene, prepare_scene
-from objectnat.methods.visibility.catchment import (
-    _classify,
-    _empty_result,
-    _explicit_bounds,
-    _finish,
-    _zones_from_labels,
-    cell_points,
-)
+from objectnat.methods.visibility.catchment import _empty_result, _explicit_bounds, _finish, count_grid_result
 
 logger = config.logger
 
@@ -253,31 +246,9 @@ def get_viewshed_catchment(
         n_threads=max_workers,
         **kwargs,
     )
-    values = counts.astype(float) if sums is None else sums
-    labels = _classify(values, counts > 0, classes if lower_bounds is None else lower_bounds)
-    cells = None
-    if output != "zones":
-        grid = (float(x0), float(y0), float(cell))
-        cells = cell_points(counts, sums, labels, grid, scene.local_crs, observers.crs)
-        if output == "cells":
-            return cells
-    if not labels.any():
-        return _finish(_empty_result(value_name, observers.crs), cells, output)
-    rows = []
-    for label, geometry in _zones_from_labels(labels, (float(x0), float(y0)), float(cell)).items():
-        in_class = values[labels == label]
-        rows.append(
-            {
-                "visibility_class": label,
-                f"{value_name}_min": float(in_class.min()),
-                f"{value_name}_max": float(in_class.max()),
-                "geometry": geometry,
-            }
-        )
-    result = gpd.GeoDataFrame(rows, geometry="geometry", crs=scene.local_crs)
-    if value_name == "count":
-        result = result.astype({"count_min": "int64", "count_max": "int64"})
-    return _finish(result.to_crs(observers.crs), cells, output)
+    bounds = classes if lower_bounds is None else lower_bounds
+    grid = (float(x0), float(y0), float(cell))
+    return count_grid_result(counts, sums, bounds, grid, scene.local_crs, observers.crs, output)
 
 
 def _setup(
@@ -375,4 +346,4 @@ def _cells_polygon(cells: np.ndarray, nx: int, x0: float, y0: float, cell: float
     i0, j0 = i.min(), j.min()
     labels = np.zeros((j.max() - j0 + 1, i.max() - i0 + 1), dtype=np.uint8)
     labels[j - j0, i - i0] = 1
-    return _zones_from_labels(labels, (x0 + i0 * cell, y0 + j0 * cell), cell)[1]
+    return label_zones(labels, (x0 + i0 * cell, y0 + j0 * cell), cell)[1]

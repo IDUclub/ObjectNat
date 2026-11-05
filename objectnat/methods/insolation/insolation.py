@@ -9,10 +9,9 @@ import pandas as pd
 import shapely
 from pyproj import Transformer
 
-from objectnat import config
 from objectnat._rust import insolation_day_stats  # pylint: disable=no-name-in-module
 from objectnat.methods.insolation._sun import day_samples, solar_position
-from objectnat.methods.utils.raster import grid_attrs, resolve_output
+from objectnat.methods.utils.raster import grid_attrs, grid_zones, resolve_output
 from objectnat.methods.utils.scene import (
     Scene,
     TerrainInput,
@@ -21,8 +20,6 @@ from objectnat.methods.utils.scene import (
     kernel_scene,
     prepare_scene,
 )
-
-logger = config.logger
 
 DateInput = dt.date | str
 
@@ -46,7 +43,6 @@ def get_insolation(
     receiver_height: float = 0.0,
     hour_breaks: Sequence[float] = (1, 2, 3, 4, 6, 8),
     output: Literal["zones", "receivers", "both"] = "zones",
-    return_receivers: bool = False,
     max_workers: int | None = None,
 ) -> gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
     """
@@ -113,8 +109,6 @@ def get_insolation(
             ``"zones"`` (default) for the sun-hour zones, ``"receivers"`` for the receiver points only (faster: no
             zone polygons are built, which takes most of the time of a single day), ``"both"`` for the tuple
             ``(zones, receivers)``.
-        return_receivers (bool, optional):
-            Deprecated: ``True`` is ``output="both"``.
         max_workers (int | None, optional):
             Number of threads (``None`` uses all cores).
 
@@ -144,7 +138,7 @@ def get_insolation(
         height_column, storeys_column, storey_height, default_height,
     )  # fmt: skip
     blds = scene.blds
-    output = resolve_output(output, "receivers", return_receivers)
+    output = resolve_output(output, "receivers")
     area_geom = area_geometry(area, blds, buildings.crs, scene.local_crs)
     x0, y0, x1, y1 = area_geom.bounds
     if not np.all(np.isfinite([x0, y0, x1, y1])):
@@ -420,16 +414,8 @@ def _hour_bands(points, hours, breaks, cell, footprint) -> pd.DataFrame:
     upper = np.concatenate([[0.0], edges, [np.inf]])
     eps = 1e-9
     label = np.where(hours <= eps, 0, 1 + np.searchsorted(edges, hours + eps, side="right"))
-    xy = shapely.get_coordinates(points)
-    half = cell / 2
-    cells = shapely.box(xy[:, 0] - half, xy[:, 1] - half, xy[:, 0] + half, xy[:, 1] + half)
     rows = []
-    for k in np.unique(label):
-        geom = shapely.coverage_union_all(cells[label == k])
-        if not footprint.is_empty:
-            geom = geom.difference(footprint)
-        if geom.is_empty:
-            continue
+    for k, geom in grid_zones(shapely.get_coordinates(points), label, cell, footprint):
         lo, hi = lower[k], upper[k]
         name = "0" if k == 0 else (f"<{hi:g}" if lo == 0 else (f"≥{lo:g}" if np.isinf(hi) else f"{lo:g}–{hi:g}"))
         rows.append({"sun_hours_min": lo, "sun_hours_max": hi, "label": name, "geometry": geom})

@@ -2,18 +2,16 @@
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from shapely.ops import polygonize, unary_union
+from shapely.ops import unary_union
 
-from objectnat.methods.noise.noise_reduce import dist_to_target_db
+from objectnat.methods.noise.noise_reduce import dist_to_target_db, source_values
 from objectnat.methods.utils.geom_utils import (
     clip_polygons,
     distribute_points_on_linestrings,
     distribute_points_on_polygons,
-    polygons_to_multilinestring,
+    overlay_by_value,
 )
 from objectnat.methods.visibility.visibility_analysis import get_visibility
-
-MAX_DB_VALUE = 194
 
 
 def calculate_simplified_noise_frame(
@@ -103,16 +101,8 @@ def calculate_simplified_noise_frame(
 
     noise_sources = noise_sources.copy()
 
-    required_columns = ["source_noise_db", "geometric_mean_freq_hz"]
-    for col in required_columns:
-        if col not in noise_sources.columns:
-            raise ValueError(f"'{col}' column is missing in provided GeoDataFrame")
-        if noise_sources[col].isnull().any():
-            raise ValueError(f"Column '{col}' contains missing (NaN) values")
-    if (noise_sources["source_noise_db"] > MAX_DB_VALUE).any():
-        raise ValueError(
-            f"One or more values in 'source_noise_db' column exceed the physical limit of {MAX_DB_VALUE} dB."
-        )
+    for column in ("source_noise_db", "geometric_mean_freq_hz"):
+        source_values(noise_sources, column, None)
     original_crs = noise_sources.crs
     if len(obstacles) > 0:
         obstacles = obstacles.copy()
@@ -247,19 +237,7 @@ def calculate_simplified_noise_frame(
         frame_result.append(noise_from_feature)
 
     noise_gdf = gpd.GeoDataFrame(pd.concat(frame_result, ignore_index=True), crs=local_crs)
-    polygons = gpd.GeoDataFrame(
-        geometry=list(polygonize(noise_gdf.geometry.apply(polygons_to_multilinestring).union_all())), crs=local_crs
-    )
-    polygons_points = polygons.copy()
-    polygons_points.geometry = polygons.representative_point()
-    sim_result = polygons_points.sjoin(noise_gdf, predicate="within").reset_index()
-    sim_result = sim_result.groupby("index").agg({"noise_level": "max"})
-    sim_result["geometry"] = polygons
-    sim_result = (
-        gpd.GeoDataFrame(sim_result, geometry="geometry", crs=local_crs).dissolve(by="noise_level").reset_index()
-    )
-
-    return sim_result.to_crs(original_crs)
+    return overlay_by_value(noise_gdf, "noise_level", how="max").to_crs(original_crs)
 
 
 def _eval_donuts_gdf(initial_geometry, dist_db, local_crs, clip_poly) -> gpd.GeoDataFrame:

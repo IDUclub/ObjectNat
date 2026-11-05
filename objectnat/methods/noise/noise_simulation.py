@@ -12,19 +12,17 @@ from shapely.ops import polygonize, unary_union
 from tqdm import tqdm
 
 from objectnat import config
-from objectnat.methods.noise.noise_reduce import dist_to_target_db, green_noise_reduce_db
+from objectnat.methods.noise.noise_reduce import dist_to_target_db, green_noise_reduce_db, source_values
 from objectnat.methods.noise.noise_simulation_simplified import _eval_donuts_gdf
 from objectnat.methods.utils.geom_utils import (
     clip_polygons,
     gdf_to_circle_zones_from_point,
     get_point_from_a_thorough_b,
+    overlay_by_value,
     polygons_to_multilinestring,
 )
-from objectnat.methods.visibility.visibility_analysis import _visibility_accurate, dist_to_furthest_point
+from objectnat.methods.visibility.visibility_analysis import dist_to_furthest_point, visibility_polygon
 
-logger = config.logger
-
-MAX_DB_VALUE = 194
 ANGLE_EPS = 1e-9
 SOURCE_VERTEX_EPS = 1e-7
 
@@ -112,42 +110,8 @@ def simulate_noise(
     if source_position_buffer_r < 0:
         raise ValueError("source_position_buffer_r must be non-negative.")
 
-    # Validate optional columns or default values
-    use_column_db = False
-    if "source_noise_db" in source_points.columns:
-        if (source_points["source_noise_db"] > MAX_DB_VALUE).any():
-            raise ValueError(
-                f"One or more values in 'source_noise_db' column exceed the physical limit of {MAX_DB_VALUE} dB."
-            )
-        if source_points["source_noise_db"].isnull().any():
-            raise ValueError("Column 'source_noise_db' contains missing (NaN) values")
-        use_column_db = True
-
-    use_column_freq = False
-    if "geometric_mean_freq_hz" in source_points.columns:
-        if source_points["geometric_mean_freq_hz"].isnull().any():
-            raise ValueError("Column 'geometric_mean_freq_hz' contains missing (NaN) values")
-        use_column_freq = True
-
-    if not use_column_db:
-        if source_noise_db is None:
-            raise ValueError(
-                "Either `source_noise_db` must be provided or the `source_points` must contain a 'source_noise_db' column."
-            )
-        if source_noise_db > MAX_DB_VALUE:
-            raise ValueError(
-                f"source_noise_db ({source_noise_db} dB) exceeds the physical limit of {MAX_DB_VALUE} dB in air."
-            )
-
-    if not use_column_freq:
-        if geometric_mean_freq_hz is None:
-            raise ValueError(
-                "Either `geometric_mean_freq_hz` must be provided or the `source_points` must contain a 'geometric_mean_freq_hz' column."
-            )
-    if not use_column_db and not use_column_freq and len(source_points) > 1:
-        logger.warning(
-            "`source_noise_db` and `geometric_mean_freq_hz` will be used for all points. Per-point simulation parameters not found."
-        )
+    levels = source_values(source_points, "source_noise_db", source_noise_db)
+    freqs = source_values(source_points, "geometric_mean_freq_hz", geometric_mean_freq_hz)
 
     original_crs = source_points.crs
     source_points = source_points.copy()
@@ -182,10 +146,7 @@ def simulate_noise(
     # creating initial task and simulating for each point
     task_queue = deque()
     dead_area_dict = {}
-    for ind, row in source_points.iterrows():
-        source_point = row.geometry
-        local_db = row["source_noise_db"] if use_column_db else source_noise_db
-        local_freq = row["geometric_mean_freq_hz"] if use_column_freq else geometric_mean_freq_hz
+    for ind, source_point, local_db, local_freq in zip(source_points.index, source_points.geometry, levels, freqs):
 
         # calculating layer dist and db values
         dist_db = [(0, local_db)]
@@ -218,19 +179,7 @@ def simulate_noise(
     )
 
     noise_gdf = gpd.GeoDataFrame(pd.concat(noise_gdf, ignore_index=True), crs=local_crs)
-    polygons = gpd.GeoDataFrame(
-        geometry=list(polygonize(noise_gdf.geometry.apply(polygons_to_multilinestring).union_all())), crs=local_crs
-    )
-    polygons_points = polygons.copy()
-    polygons_points.geometry = polygons.representative_point()
-    sim_result = polygons_points.sjoin(noise_gdf, predicate="within").reset_index()
-    sim_result = sim_result.groupby("index").agg({"noise_level": "max"})
-    sim_result["geometry"] = polygons
-    sim_result = (
-        gpd.GeoDataFrame(sim_result, geometry="geometry", crs=local_crs).dissolve(by="noise_level").reset_index()
-    )
-
-    return sim_result.to_crs(original_crs)
+    return overlay_by_value(noise_gdf, "noise_level", how="max").to_crs(original_crs)
 
 
 def _iter_polygonal_geometries(geometry):
@@ -495,7 +444,7 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
     else:
         obstacles_union = obstacles.union_all()
 
-    vis_poly = _visibility_accurate(point_from, obstacles, dist)
+    vis_poly = visibility_polygon(point_from, obstacles, dist)
     max_view_dist = dist_to_furthest_point(point_from, vis_poly)
     donuts_dist_values = donuts_dist_values(dist_db, passed_dist, max_view_dist)
 
