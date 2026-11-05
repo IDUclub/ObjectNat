@@ -46,13 +46,7 @@ Object-oriented Network Analysis Tools
 инсоляцию. Входные и выходные данные — GeoDataFrame библиотеки GeoPandas; ресурсоёмкие вычисления выполняются
 в скомпилированном расширении на Rust.
 
-`Документация <https://iduclub.github.io/ObjectNat/>`__ · `Примеры <https://iduclub.github.io/ObjectNat/methods/examples/index.html>`__ ·
-`Переход с версии 1.x <https://iduclub.github.io/ObjectNat/migration_1_to_2.html>`__ (на английском)
-
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21.gif
-   :align: center
-   :width: 520
-   :alt: Тени жилого района 21 июня, кадры через 15 минут
+`Документация <https://iduclub.github.io/ObjectNat/>`__ · `Примеры <https://iduclub.github.io/ObjectNat/methods/examples/index.html>`__
 
 ----
 
@@ -114,10 +108,14 @@ Object-oriented Network Analysis Tools
 инсоляции, которую ограничивают нормативы. ``get_facade_insolation`` рассчитывает те же величины для точек на
 фасадах по этажам и проверяет их по нормативу.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_day_sun_hours.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21.gif
    :align: center
-   :width: 100%
-   :alt: Классы продолжительности прямого солнечного освещения 21 марта и 21 июня
+   :width: 520
+   :alt: Тени жилого района 21 июня, кадры через 15 минут
+
+**Растры.** Результаты на регулярной сетке (приёмники инсоляции и шума, ячейки зон видимости, поля изовист из
+``get_isovist_grid``) превращаются в растры функцией ``rasterize``: ``Raster`` можно нарисовать в matplotlib,
+записать в GeoTIFF или показать на веб-карте folium методом ``explore``.
 
 ----
 

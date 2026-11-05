@@ -18,8 +18,14 @@ sun.
 
    Sunlit and shaded ground on 21 June 2026 in the example district (Vasilyevsky Island, Saint Petersburg,
    59.96° N), one frame every 15 minutes from sunrise to sunset. The title gives Moscow time (UTC+3) and the sun
-   elevation and azimuth. The equinox animation is
-   `insolation_shadows_2026-03-21.gif <https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-03-21.gif>`__.
+   elevation and azimuth.
+
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-03-21.gif
+   :alt: Ground shadows of a residential district on 21 March, 15-minute frames
+   :align: center
+   :width: 70%
+
+   The same district on 21 March 2026, the equinox.
 
 Method
 ------
@@ -75,9 +81,12 @@ bounding box of the buildings), outside building footprints. Include the buildin
 The result is a GeoDataFrame of zones, one (Multi)Polygon per class of mean daily sun hours, with the class bounds
 ``sun_hours_min`` and ``sun_hours_max`` (``inf`` for the last class) and a text ``label``. ``hour_breaks`` sets the
 bounds (default 1, 2, 3, 4, 6 and 8 h). Class ``0`` is ground that receives no direct sun on any simulated day.
-With ``return_receivers=True`` the receiver points with ``sun_hours``, ``min_sun_hours`` and
-``max_continuous_hours`` are returned as a second GeoDataFrame. ``attrs`` of both results hold the simulated
+``output="receivers"`` returns the receiver points with ``sun_hours``, ``min_sun_hours`` and
+``max_continuous_hours`` instead of the zones, and ``output="both"`` returns both. Without zones the calculation is
+faster: building the zone polygons takes most of the time of a single day. ``attrs`` of both results hold the simulated
 ``days`` and ``day_length_hours``, the mean time the sun is above ``min_sun_elevation``.
+:func:`objectnat.rasterize` turns any receiver column into a raster for maps, GeoTIFF files and web maps (see
+:doc:`rasters`).
 
 .. autofunction:: objectnat.get_insolation
 
@@ -89,22 +98,25 @@ With ``return_receivers=True`` the receiver points with ``sun_hours``, ``min_sun
    Classes of direct sun hours on 21 March and 21 June 2026 in a 500 × 400 m area, ``grid_step=2``,
    ``time_step_min=10``. Building heights are ``storeys_count`` × 3 m.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_period.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_period_receivers.png
    :alt: Mean sun hours and longest continuous sun over a period
    :align: center
    :width: 100%
 
-   Period 22 April – 22 August 2026 with ``day_step=7`` (19 simulated days), receiver values. Left: mean daily sun
-   hours. Right: longest continuous sunlit period on the worst day.
+   Period 22 April – 22 August 2026 with ``day_step=7`` (19 simulated days), receivers rasterized with
+   :func:`objectnat.rasterize` on one scale. Left: mean daily sun hours. Right: longest continuous sunlit period on
+   the worst day.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_terrain.png
-   :alt: Sun-hour zones without and with terrain
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_terrain_ridge.png
+   :alt: Sun hours without and with a ridge south of the area, and their difference
    :align: center
    :width: 100%
 
-   The same area on 21 March on flat ground and with a synthetic hill 26 m high given as a terrain GeoDataFrame
-   of nested polygons (dashed lines every 4 m). The hill raises the receivers on its slopes and the buildings that
-   stand on it, which changes the shadows north of it.
+   The same area on 21 March on flat ground and with a synthetic ridge running west–east, 50 m high, its crest
+   50 m south of the area, given as a ``(heights, transform, crs)`` array (dashed contours in metres). The low
+   equinox sun comes from the south: the southern 40 m of the area, at the foot of the ridge, lose 7 h a day on
+   average and two thirds of them get no direct sun at all; up to 180 m further north some places still lose 1–2
+   h. A hill under the area itself changes little, because buildings and receivers rise with the ground.
 
 Facade insolation
 -----------------

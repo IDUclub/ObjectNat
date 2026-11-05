@@ -52,7 +52,8 @@ frequency-dependent rate per metre of foliage crossed. Line sources (roads, rail
 
 Levels below ``target_noise_db`` are dropped, and the rest are grouped into bands of ``db_sim_step`` dB.
 ``noise_level`` is the upper bound of the band, as in :func:`objectnat.simulate_noise`. With
-``return_receivers=True`` the receiver points with their exact levels are returned as well.
+``output="receivers"`` the receiver points with their exact levels are returned instead of the bands, with
+``output="both"`` as well.
 
 Computation time is proportional to the number of receivers times the number of point sources and line samples
 within reach. For large road networks use a coarser ``grid_step`` or ``source_spacing``, or
@@ -60,14 +61,32 @@ within reach. For large road networks use a coarser ``grid_step`` or ``source_sp
 
 .. autofunction:: objectnat.simulate_noise_grid
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_grid.png
-   :alt: Receiver-grid noise levels around a road and a point source
-   :align: center
-   :width: 75%
+The bands are polygons, so they are ``db_sim_step`` wide; the receivers (``output="receivers"``) hold the
+exact level, and :func:`objectnat.rasterize` turns them into a continuous map (see :doc:`rasters`).
 
-   :func:`objectnat.simulate_noise_grid` for a road (line source, 80 dB at 1 m, 1 kHz) and a point source (95 dB,
-   2 kHz) among the example buildings and vegetation, ``grid_step=2``, ``db_sim_step=5``,
-   ``target_noise_db=40``. Behind buildings only reflected sound arrives.
+**Reading the result.** The model is energetic: it returns the time-averaged sound level, the quantity noise maps
+and norms use, not the instantaneous pressure, so phase, wave fronts and interference are not computed and the
+level falls smoothly with distance. Sound travels along straight rays (geometric acoustics) and is not bent around
+building corners (no diffraction), so the edges of shadows are sharp and the field looks like a set of beams
+through the gaps between buildings. A first-order reflection is the field of a mirror image of the source behind
+the wall; it lights a beam of its own, bounded by the wall, which looks like one more beam. Where the direct
+sound already arrives, a reflection with a 5 % absorption ratio adds at most 3 dB, which is often within one
+``db_sim_step`` band. Places that neither the source nor a reflecting wall within ``reflection_max_dist`` sees
+directly stay below ``target_noise_db``, even next to the source; in reality sound reaches them around building
+corners, attenuated by about 5–20 dB.
+
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_grid_reflections.png
+   :alt: Continuous receiver levels and the level added by reflections
+   :align: center
+   :width: 100%
+
+   :func:`objectnat.simulate_noise_grid` for a road (line source, 80 dB at 1 m, 1 kHz) and two point sources (95 dB
+   at 2 kHz, 85 dB at 500 Hz) among the example buildings and vegetation, ``grid_step=2``,
+   ``target_noise_db=40``; receivers rasterized with :func:`objectnat.rasterize`. Left: continuous levels. Right:
+   level with first-order reflections minus the direct sound only (cells reached only by reflections are compared
+   with ``target_noise_db``). Reflections add 1–3 dB in the street canyon along the road and form new beams behind
+   the point sources, where the direct sound is blocked; only walls within ``reflection_max_dist=50`` m of a source
+   reflect.
 
 Wave-front simulation
 ---------------------

@@ -44,13 +44,7 @@ coverage and service provision on street graphs from `IduEdu <https://github.com
 2D and over building heights, noise levels and insolation. Inputs and outputs are GeoPandas GeoDataFrames; the
 computationally intensive parts run in a compiled Rust extension.
 
-`Documentation <https://iduclub.github.io/ObjectNat/>`__ · `Examples <https://iduclub.github.io/ObjectNat/methods/examples/index.html>`__ ·
-`Migration from 1.x <https://iduclub.github.io/ObjectNat/migration_1_to_2.html>`__
-
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21.gif
-   :align: center
-   :width: 520
-   :alt: Ground shadows of a residential district on 21 June, 15-minute frames
+`Documentation <https://iduclub.github.io/ObjectNat/>`__ · `Examples <https://iduclub.github.io/ObjectNat/methods/examples/index.html>`__
 
 ----
 
@@ -108,10 +102,14 @@ hours, including ground with no direct sun. Receivers also carry the hours on th
 continuous sunlit period, which insolation norms restrict. ``get_facade_insolation`` computes the same quantities
 for facade points on every floor and checks them against a norm.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_day_sun_hours.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21.gif
    :align: center
-   :width: 100%
-   :alt: Classes of direct sun hours on 21 March and 21 June
+   :width: 520
+   :alt: Ground shadows of a residential district on 21 June, 15-minute frames
+
+**Rasters.** Grid results (insolation and noise receivers, catchment cells, isovist fields from
+``get_isovist_grid``) turn into rasters with ``rasterize``: a ``Raster`` is drawn with matplotlib, written to
+GeoTIFF or shown on a folium web map with ``explore``.
 
 ----
 

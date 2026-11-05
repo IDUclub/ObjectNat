@@ -7,11 +7,13 @@ Overview
 Visibility analysis determines which parts of the urban space an **observer** can see and, aggregated over many
 observers, how often each place is seen. ObjectNat provides two models:
 
-- **2D visibility** (:func:`objectnat.get_visibility`, :func:`objectnat.get_visibility_catchment`): every obstacle
-  is a wall of infinite height. The result for one observer is its exact **visibility polygon** (isovist).
+- **2D visibility** (:func:`objectnat.get_visibility`, :func:`objectnat.get_isovist_grid`,
+  :func:`objectnat.get_visibility_catchment`): every obstacle is a wall of infinite height. The result for one
+  observer is its exact **visibility polygon** (isovist), a vector polygon whose boundary is computed exactly.
 - **2.5D visibility** (:func:`objectnat.get_viewshed`, :func:`objectnat.get_viewshed_catchment`): buildings have
-  heights and the ground can have terrain. The result for one observer is its **viewshed**, the set of grid cells
-  to which the line of sight from the eye is clear.
+  heights and the ground can have terrain. The result for one observer is its **viewshed**: the grid cells to
+  which the line of sight from the eye is clear, merged into one (Multi)Polygon per observer. Its outline follows
+  the cells, so its accuracy is ``cell_size``.
 
 The catchment functions count, for every cell of a grid, the observers that see it and merge cells into
 **catchment zones** of equal visibility class. :func:`objectnat.get_observer_points` places observers along the
@@ -29,9 +31,6 @@ may be polygons (with holes) or lines. Observers and obstacles are reprojected t
 walls are clipped to the disc, every wall endpoint and wall intersection defines a critical direction, and one ray
 per angular interval finds the nearest wall; the boundary is therefore exact, not sampled. Observers standing
 inside an obstacle get an empty polygon.
-
-``method="simple"`` (a ray-sampling approximation in ObjectNat 1.x) is deprecated: both values of ``method``
-return the exact result, and ``resolution`` and ``parallel`` have no effect.
 
 Isovist metrics
 ~~~~~~~~~~~~~~~
@@ -69,20 +68,35 @@ vertices in total).
 
 .. autofunction:: objectnat.get_visibility
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_example.png
-   :alt: Visibility polygon of one observer
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_polygons.png
+   :alt: Visibility polygons of one observer and of three observers with different radii
    :align: center
-   :width: 70%
+   :width: 100%
 
-   Visibility polygon of one observer within 800 m among the example buildings.
+   Left: visibility polygon of one observer within 800 m among the example buildings. Right: three observers with
+   ``visibility_distance`` 300, 500 and 800 m.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_isovist_metrics.png
+Isovist field
+~~~~~~~~~~~~~
+
+:func:`objectnat.get_isovist_grid` maps the metrics over an area. It places an observer at the centre of every
+``cell_size`` cell of the area outside the obstacles, computes the exact visibility polygon of each observer and its
+metrics as above, and returns the observers as points with the metric columns; obstacles outside the area but
+within ``view_distance`` of it still block the view. Every value is exact for its observer; the grid only sets
+where observers stand. :func:`objectnat.rasterize` turns any metric into a raster (see :doc:`rasters`). Time is
+proportional to the number of observers: the field below, 7,889 observers within 200 m, takes 0.7 s.
+
+.. autofunction:: objectnat.get_isovist_grid
+
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_isovist_field.png
    :alt: Maps of four isovist metrics
    :align: center
-   :width: 90%
+   :width: 100%
 
-   Isovist metrics of 5,328 observers placed every 6 m on open ground, ``view_distance=200``. Each cell shows the
-   value of the observer at its centre; colour scales span the 2nd–98th percentiles.
+   ``get_isovist_grid(buildings, area, view_distance=200, cell_size=5)`` over a 500 × 500 m area and
+   :func:`objectnat.rasterize` of four metrics: the visible share of the 200 m disc, compactness 4πA/P², total
+   length of occluding edges and drift (distance from the observer to the centroid of its isovist). Colour scales
+   span the 2nd–98th percentiles.
 
 2.5D viewsheds
 --------------
@@ -143,7 +157,9 @@ The remaining cells are grouped into classes, and every class becomes one zone:
 
 Each zone has ``visibility_class`` (``1`` is the least visible class) and the range of cell values in it,
 ``count_min`` / ``count_max`` (``weight_min`` / ``weight_max`` with weights). Zone outlines follow the cell grid;
-time and memory grow with the number of cells. Visibility is symmetric, so the value of a cell is also the number
+time and memory grow with the number of cells. ``output="cells"`` returns the seen cells as points with their
+``count`` (and ``weight``) and class instead of the zones (``"both"`` returns both); :func:`objectnat.rasterize`
+turns them into a raster of counts. Visibility is symmetric, so the value of a cell is also the number
 of observers visible from that cell.
 
 :func:`objectnat.get_viewshed_catchment` is the 2.5D counterpart: a cell counts an observer when the line of sight

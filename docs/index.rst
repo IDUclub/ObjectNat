@@ -8,8 +8,8 @@
     methods/visibility
     methods/noise
     methods/insolation
+    methods/rasters
     methods/examples/index
-    migration_1_to_2
 
 ObjectNat
 =========
@@ -75,7 +75,7 @@ computed, the algorithm, the parameters and outputs with units, an example figur
    * - :doc:`methods/visibility`
      - Visibility polygons and isovist metrics (2D), viewsheds over building heights and terrain (2.5D), catchment
        zones of many observers
-     - :func:`~objectnat.get_visibility`, :func:`~objectnat.get_viewshed`,
+     - :func:`~objectnat.get_visibility`, :func:`~objectnat.get_isovist_grid`, :func:`~objectnat.get_viewshed`,
        :func:`~objectnat.get_visibility_catchment`, :func:`~objectnat.get_viewshed_catchment`
    * - :doc:`methods/noise`
      - Sound levels (dB) around point, line and polygon sources among obstacles and vegetation
@@ -84,18 +84,14 @@ computed, the algorithm, the parameters and outputs with units, an example figur
    * - :doc:`methods/insolation`
      - Direct sun hours on the ground and on facades per floor, for a day or a period
      - :func:`~objectnat.get_insolation`, :func:`~objectnat.get_facade_insolation`
+   * - :doc:`methods/rasters`
+     - Grid results as rasters: matplotlib plots, GeoTIFF files, folium web-map overlays
+     - :func:`~objectnat.rasterize`, :class:`~objectnat.Raster`
 
 The computationally intensive parts (exact visibility, 2.5D lines of sight, insolation, receiver-grid noise and
 provision allocation) run in a compiled Rust extension, ``objectnat._rust``, multi-threaded; graph searches use
 IduEdu's Numba-accelerated Dijkstra routines. :doc:`methods/examples/index` holds an executable notebook for every
 method.
-
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-03-21.gif
-   :alt: Shadows of a residential district on 21 March
-   :align: center
-   :width: 60%
-
-   Ground shadows on 21 March 2026, 15-minute frames, computed with the insolation kernel.
 
 ----
 
@@ -170,7 +166,7 @@ Contributing, contacts and citation
 -----------------------------------
 
 Issues and pull requests are welcome on `GitHub <https://github.com/IDUclub/ObjectNat>`__; the workflow is described
-in ``CONTRIBUTING.md``. Upgrading from ObjectNat 1.x is described in :doc:`migration_1_to_2`.
+in ``CONTRIBUTING.md``.
 
 - `NCCR <https://actcognitive.org/>`_, National Center for Cognitive Research
 - `IDU <https://idu.itmo.ru/>`_, Institute of Design and Urban Studies

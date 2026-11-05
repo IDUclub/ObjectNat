@@ -66,13 +66,14 @@ Figures
    Coverage zones of the example services: within 10 minutes on the intermodal graph clipped to the district,
    within 600 m of network distance, and the graph-free :func:`objectnat.get_radius_coverage` with ``radius=800``.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_stepped.png
-   :alt: Stepped coverage zones, Voronoi cells and separate buffers
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_stepped_4types.png
+   :alt: Stepped coverage zones for geometry_type None, radius, ways and separate
    :align: center
    :width: 100%
 
-   Stepped coverage zones up to 15 minutes in bands of 2 minutes, ``geometry_type=None`` (Voronoi cells of the
-   graph nodes) and ``"separate"``.
+   Stepped coverage zones up to 15 minutes in bands of 2 minutes for the four values of ``geometry_type``:
+   ``None`` (Voronoi cells of the graph nodes) and ``"radius"``, both clipped to the district with ``zone``,
+   ``"ways"`` (buffered streets) and ``"separate"`` (independent buffers).
 
 Limitations
 -----------

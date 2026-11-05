@@ -72,20 +72,22 @@ representative point of the building to the service, with ``building_index``, ``
 
 .. autofunction:: objectnat.get_provision_links
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_value_10min.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_value.png
    :alt: Provision value of residential buildings
    :align: center
-   :width: 85%
+   :width: 100%
 
-   Provision value of residential buildings for the example services with a 10-minute threshold on the intermodal
-   travel-time matrix; circles show service capacity. Non-residential buildings are grey.
+   Provision value of residential buildings for the example schools with a 10-minute threshold on the intermodal
+   travel-time matrix (``seed=0``); square size shows school capacity. Non-residential buildings are grey.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_initial.png
-   :alt: Provision with links
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_links.png
+   :alt: Provision with building–school links
    :align: center
-   :width: 70%
+   :width: 100%
 
-   Provision result with building–service links.
+   The same result with :func:`objectnat.get_provision_links`: one line per non-zero flow, width proportional to
+   the allocated demand. Dark links lie within the threshold, light ones beyond it (up to ``3 * threshold``); the
+   latter carry the demand that the schools within 10 minutes cannot take.
 
 Recalculation and clipping
 --------------------------
@@ -101,19 +103,21 @@ and the services the links refer to. All four inputs must share one CRS.
 
 .. autofunction:: objectnat.clip_provision
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_recalculated.png
-   :alt: Recalculated provision
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_recalculated.png
+   :alt: Provision after recalculate_links
    :align: center
-   :width: 70%
+   :width: 100%
 
-   Provision after :func:`objectnat.recalculate_links`.
+   ``recalculate_links(result, 10)``: the links longer than 10 minutes are removed and the metrics are rebuilt;
+   their demand stays unallocated.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/service_provision_clipped.png
-   :alt: Clipped provision
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_clipped.png
+   :alt: Provision clipped to a selection zone
    :align: center
-   :width: 70%
+   :width: 100%
 
-   Provision clipped to a selection zone.
+   :func:`objectnat.clip_provision` with a 450 m circle: the buildings in the zone, all their links and the schools
+   these links lead to, also outside the zone.
 
 Limitations
 -----------
