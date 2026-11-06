@@ -2,6 +2,44 @@
 
 <!-- version list -->
 
+## v2.2.0 (2026-11-06)
+
+### Features
+
+- Objectnat 2.2 — insolation, 2.5D viewsheds, isovists, noise grid and rasters on a Rust core
+  ([#22](https://github.com/IDUclub/ObjectNat/pull/22),
+  [`290c240`](https://github.com/IDUclub/ObjectNat/commit/290c240638a7a439fae9ad6ec331013d4490f5eb))
+
+ObjectNat 2.2: new 2.5D and grid methods on a Rust core, plus faster existing methods.
+
+## New
+
+- **Insolation**: `get_insolation`, the direct sun hours on the ground among buildings and terrain,
+  for single days or periods. `get_facade_insolation` gives the same per floor on facades. - **2.5D
+  visibility**: `get_viewshed` and `get_viewshed_catchment`, lines of sight over building heights
+  and terrain, including a raised target point (`target_height`). - **Isovists**: isovist metrics in
+  `get_visibility`, plus `get_isovist_grid` and `get_visibility_catchment` with exact visibility in
+  Rust. `method="simple"` is now a deprecated alias. - **Noise**: `simulate_noise_grid`, a
+  receiver-grid model in Rust. It handles point, line and polygon sources, first-order reflections
+  and diffraction around one or two building corners. - **Provision**: the allocation runs in Rust
+  and accepts sparse OD matrices. - **Accessibility**: - Radius isochrones and coverage follow the
+  network (`off_network_distance`). - Per-origin isochrones are faster. - **Rasters**: `Raster` and
+  `rasterize` turn grid results into matplotlib maps, GeoTIFF files and folium web maps on a grey
+  base map.
+
+## Fixes
+
+- Noise and visibility no longer mutate their inputs, and their method validation is fixed. -
+  Reflection simulation is now deterministic. - The first stepped band keeps the sources and their
+  surroundings.
+
+## Build and docs
+
+- maturin build with the abi3 extension `objectnat._rust`. The release builds wheels for Linux,
+  macOS and Windows. - IduEdu >= 2.4.2. The examples use `iduedu.use_pbf`. - Docs and examples are
+  rewritten, with a full Russian translation (`docs/locale/ru`).
+
+
 ## v2.1.0 (2026-09-30)
 
 ### Bug Fixes

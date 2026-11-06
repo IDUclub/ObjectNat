@@ -1,7 +1,7 @@
 [project]
 name = "ObjectNat"
 # kept in sync with rust/Cargo.toml, objectnat/_version.py and CITATION.cff by python-semantic-release
-version = "2.1.0"
+version = "2.2.0"
 description = "ObjectNat is an open-source library for object-level geospatial analysis on city networks, developed by the IDU team."
 readme = "README.rst"
 requires-python = ">=3.11,<3.15"
