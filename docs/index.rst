@@ -119,14 +119,14 @@ territory out of it and build the graph from the local file instead of the Overp
 .. code-block:: python
 
    import geopandas as gpd
-   from iduedu import config, download_osm_pbf, get_4326_boundary, get_intermodal_graph
+   import iduedu
+   from iduedu import get_4326_boundary, get_intermodal_graph
    from shapely.geometry import Point
 
    from objectnat import get_stepped_graph_isochrones
 
    # Vasilyevsky Island district, Saint Petersburg (OSM relation 1114252)
-   pbf = download_osm_pbf(osm_id=1114252, region="northwestern-fed-district")
-   with config.use_pbf(pbf):
+   with iduedu.use_pbf(osm_id=1114252, region="northwestern-fed-district"):
        boundary = get_4326_boundary(osm_id=1114252)
        graph = get_intermodal_graph(territory=boundary, clip_by_territory=True)
 

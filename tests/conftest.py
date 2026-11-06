@@ -6,7 +6,7 @@ import matplotlib
 import pandas as pd
 import pytest
 import shapely
-from iduedu import UrbanGraph, config, get_4326_boundary, get_intermodal_graph
+from iduedu import UrbanGraph, config, get_4326_boundary, get_intermodal_graph, use_pbf
 from shapely import Point
 
 # Tests only render plots to PNG files; force the non-interactive backend so the
@@ -81,12 +81,7 @@ def _from_overpass():
 
 def _from_geofabrik():
     """Read OSM data from the test territory cut out of the Geofabrik extract (cached in test_cache/geofabrik)."""
-    from iduedu import download_osm_pbf  # pylint: disable=import-outside-toplevel
-
-    path = download_osm_pbf(
-        osm_id=TERRITORY_OSM_ID, region=GEOFABRIK_REGION, out_dir=os.path.join(cache_dir, "geofabrik")
-    )
-    return config.use_pbf(path)
+    return use_pbf(osm_id=TERRITORY_OSM_ID, region=GEOFABRIK_REGION, out_dir=os.path.join(cache_dir, "geofabrik"))
 
 
 _OSM_SOURCES = {"overpass": _from_overpass, "pbf": _from_geofabrik}

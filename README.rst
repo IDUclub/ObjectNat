@@ -146,10 +146,10 @@ Graph-based methods take an ``iduedu.UrbanGraph`` (nodes and edges as GeoDataFra
 can download a Geofabrik extract and cut the territory out of it, so no Overpass request is needed (cutting
 requires ``pip install "iduedu[pbf]"``)::
 
-    from iduedu import config, download_osm_pbf, get_4326_boundary, get_intermodal_graph
+    import iduedu
+    from iduedu import get_4326_boundary, get_intermodal_graph
 
-    pbf = download_osm_pbf(osm_id=1114252, region="northwestern-fed-district")
-    with config.use_pbf(pbf):
+    with iduedu.use_pbf(osm_id=1114252, region="northwestern-fed-district"):
         boundary = get_4326_boundary(osm_id=1114252)
         graph = get_intermodal_graph(territory=boundary, clip_by_territory=True)
 

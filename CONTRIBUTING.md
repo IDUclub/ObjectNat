@@ -45,7 +45,7 @@ Line length is 120. Imports are isort-sorted (`__init__.py` files are skipped).
 
 The network tests build an intermodal graph of OSM relation 1114252 (Vasileostrovsky district, Saint
 Petersburg). The data comes from the Overpass API (with a 60 s timeout and two retries); if Overpass does not
-answer, the tests fall back to the Geofabrik extract `northwestern-fed-district` (`iduedu.download_osm_pbf`): it is
+answer, the tests fall back to the Geofabrik extract `northwestern-fed-district` (`iduedu.use_pbf`): it is
 downloaded once and the district is cut out of it into `tests/test_cache/geofabrik/territories/osm_1114252.osm.pbf`.
 Set the order with `OBJECTNAT_TEST_OSM_SOURCES` (e.g. `pbf` for Geofabrik only). The boundary and the graph are
 cached in `tests/test_cache/` (git-ignored), so later runs need no network.

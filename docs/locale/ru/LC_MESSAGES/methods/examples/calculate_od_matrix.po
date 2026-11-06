@@ -35,8 +35,8 @@ msgstr "Выпуклая оболочка всех зданий и сервис�
 msgid "3. Intermodal graph"
 msgstr "3\\. Интермодальный граф"
 
-msgid "The territory is cut out of the Geofabrik extract of the Northwestern Federal District (IduEdu >= 2.4); the same call without the `with` block downloads the data from the Overpass API."
-msgstr "Территория вырезается из выгрузки Geofabrik по Северо-Западному федеральному округу (IduEdu >= 2.4); тот же вызов без блока `with` скачивает данные из Overpass API."
+msgid "The territory is cut out of the Geofabrik extract of the Northwestern Federal District (`iduedu.use_pbf`); the same call without the `with` block downloads the data from the Overpass API."
+msgstr "Территория вырезается из выгрузки Geofabrik по Северо-Западному федеральному округу (`iduedu.use_pbf`); тот же вызов без блока `with` скачивает данные из Overpass API."
 
 msgid "4. Travel-time matrix"
 msgstr "4\\. Матрица времени в пути"
@@ -53,6 +53,6 @@ msgstr "Матрица сохраняется для примера обеспе
 msgid "6. Your own area"
 msgstr "6\\. Своя территория"
 
-msgid "The notebook is the recipe for another area: put your buildings and services (GeoDataFrames in any CRS) into `buildings` and `services` in section 1 and run it. The territory around them, the graph and the matrix are then computed from them; `download_osm_pbf` chooses the Geofabrik extract itself when `region` is left out. Save the matrix under your own name and pass it to `get_service_provision` as in the [provision example](provision.ipynb)."
-msgstr "Этот ноутбук и есть рецепт для другой территории: запишите свои здания и сервисы (GeoDataFrame в любой системе координат) в `buildings` и `services` в разделе 1 и выполните его. Территория вокруг них, граф и матрица рассчитаются по ним; если `region` не задан, `download_osm_pbf` сам выбирает выгрузку Geofabrik. Сохраните матрицу под своим именем и передайте её в `get_service_provision`, как в [примере обеспеченности](provision.ipynb)."
+msgid "The notebook is the recipe for another area: put your buildings and services (GeoDataFrames in any CRS) into `buildings` and `services` in section 1 and run it. The territory around them, the graph and the matrix are then computed from them; `iduedu.use_pbf` chooses the Geofabrik extract itself when `region` is left out. Save the matrix under your own name and pass it to `get_service_provision` as in the [provision example](provision.ipynb)."
+msgstr "Этот ноутбук и есть рецепт для другой территории: запишите свои здания и сервисы (GeoDataFrame в любой системе координат) в `buildings` и `services` в разделе 1 и выполните его. Территория вокруг них, граф и матрица рассчитаются по ним; если `region` не задан, `iduedu.use_pbf` сам выбирает выгрузку Geofabrik. Сохраните матрицу под своим именем и передайте её в `get_service_provision`, как в [примере обеспеченности](provision.ipynb)."
 

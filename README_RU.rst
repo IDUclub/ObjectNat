@@ -154,10 +154,10 @@ ObjectNat поддерживает Python 3.11–3.14 в Linux, macOS и Windows
 IduEdu загружает выгрузку Geofabrik и вырезает из неё территорию, поэтому запросы к Overpass не нужны
 (для вырезания требуется ``pip install "iduedu[pbf]"``)::
 
-    from iduedu import config, download_osm_pbf, get_4326_boundary, get_intermodal_graph
+    import iduedu
+    from iduedu import get_4326_boundary, get_intermodal_graph
 
-    pbf = download_osm_pbf(osm_id=1114252, region="northwestern-fed-district")
-    with config.use_pbf(pbf):
+    with iduedu.use_pbf(osm_id=1114252, region="northwestern-fed-district"):
         boundary = get_4326_boundary(osm_id=1114252)
         graph = get_intermodal_graph(territory=boundary, clip_by_territory=True)
 
