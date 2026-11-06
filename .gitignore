@@ -37,6 +37,8 @@ docs/_autoapi/
 docs/api/generated/
 docs/_autosummary/
 docs/_doctrees/
+# translation catalogues compiled by Sphinx at build time (the .po files are the source)
+docs/locale/**/*.mo
 docs/api/generated
 _build/
 _autosummary/
