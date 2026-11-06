@@ -22,7 +22,7 @@
 | objectnat/methods/noise/noise\_init\_data.py             |        3 |        0 |        0 |        0 |    100% |           |
 | objectnat/methods/noise/noise\_reduce.py                 |       47 |        2 |       20 |        2 |     94% |  125, 128 |
 | objectnat/methods/noise/noise\_simulation.py             |      364 |       23 |      122 |       20 |     91% |144, 208, 253, 260, 264, 272, 274, 279, 284, 286, 288, 297, 302, 313, 356-357, 401, 462-463, 470-\>465, 473, 525, 530, 549 |
-| objectnat/methods/noise/noise\_simulation\_simplified.py |       94 |        3 |       36 |        3 |     95% |192, 197, 232 |
+| objectnat/methods/noise/noise\_simulation\_simplified.py |       94 |        3 |       36 |        3 |     95% |187, 192, 225 |
 | objectnat/methods/provision/\_\_init\_\_.py              |        2 |        0 |        0 |        0 |    100% |           |
 | objectnat/methods/provision/\_matrix.py                  |       40 |        1 |       10 |        1 |     96% |        40 |
 | objectnat/methods/provision/provision.py                 |       20 |        0 |        2 |        0 |    100% |           |
@@ -38,8 +38,8 @@
 | objectnat/methods/visibility/catchment.py                |      101 |       14 |       36 |       10 |     81% |73, 75, 77, 85, 88, 102, 112, 120, 163, 167, 209-212 |
 | objectnat/methods/visibility/isovist.py                  |       89 |        2 |        4 |        1 |     97% |     72-73 |
 | objectnat/methods/visibility/viewshed.py                 |      131 |       20 |       42 |       12 |     78% |122-\>119, 205-210, 215-\>220, 218, 221, 223, 253, 264, 266, 270, 285-290, 303 |
-| objectnat/methods/visibility/visibility\_analysis.py     |      100 |       10 |       38 |       11 |     85% |144, 147, 166, 232, 234, 237, 240, 243, 247, 256-\>263, 265 |
-| **TOTAL**                                                | **2461** |  **295** |  **766** |  **188** | **84%** |           |
+| objectnat/methods/visibility/visibility\_analysis.py     |       93 |       10 |       34 |       11 |     83% |130, 133, 143, 209, 211, 214, 217, 220, 224, 233-\>240, 242 |
+| **TOTAL**                                                | **2454** |  **295** |  **762** |  **188** | **84%** |           |
 
 
 ## Setup coverage badge
