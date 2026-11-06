@@ -80,7 +80,7 @@ def get_insolation(
             - a GeoDataFrame of polygons with the height in ``terrain_height_column`` (e.g. elevation zones);
               it is rasterized with ``terrain_cell`` cells, overlapping polygons take the highest value and
               places no polygon covers count as no data;
-            - a GeoTIFF path (needs ``rasterio``);
+            - a GeoTIFF path (requires ``rasterio``);
             - a tuple ``(heights, transform, crs)`` with a 2-D array, an affine transform ``(a, b, c, d, e,
               f)`` as in rasterio (``x = a * col + c``, ``y = e * row + f``, north-up, no rotation) and a
               projected CRS.
@@ -121,10 +121,10 @@ def get_insolation(
 
             - ``sun_hours``: mean hours of direct sun per day;
             - ``min_sun_hours``: hours on the worst day;
-            - ``max_continuous_hours``: the longest uninterrupted sunny period on the worst day (the least
-              of the daily longest periods), which insolation norms usually limit.
+            - ``max_continuous_hours``: the longest uninterrupted sunlit period on the worst day (the least
+              of the daily longest periods), for which insolation norms usually set a minimum.
 
-            ``attrs`` hold ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is
+            ``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is
             above ``min_sun_elevation``); the receivers' ``attrs`` also record the grid, so
             :func:`rasterize` turns any of their columns into a :class:`Raster`.
 
@@ -207,14 +207,14 @@ def get_facade_insolation(
     max_workers: int | None = None,
 ) -> gpd.GeoDataFrame:
     """
-    Hours of direct sunlight on building facades, floor by floor: where windows get sun and where not.
+    Hours of direct sunlight on building facades, floor by floor: which windows get sun and which do not.
 
     Calculation points are placed along every wall of the buildings in ``area`` (outer walls and courtyard
     walls) every ``spacing`` metres, on every floor at ``window_height`` above the floor level, just in
     front of the wall. Walls shared with a neighbouring building get no points. A point is sunlit when the
     sun is in front of its facade, at least ``min_facade_angle`` away from the facade plane, and the ray
     towards the sun passes above every other wall and the terrain, as in :func:`get_insolation`. All
-    buildings cast shadows, also those outside ``area``.
+    buildings cast shadows, including those outside ``area``.
 
     Args:
         buildings (gpd.GeoDataFrame):
@@ -252,7 +252,7 @@ def get_facade_insolation(
             of the building), ``floor``, ``height`` (above the ground), ``facade_azimuth`` (direction the
             facade faces, degrees clockwise from true north), ``sun_hours``, ``min_sun_hours`` and
             ``max_continuous_hours`` (as in :func:`get_insolation`) and, with ``norm_hours``,
-            ``meets_norm``. ``attrs`` hold ``days`` and ``day_length_hours``.
+            ``meets_norm``. ``attrs`` contain ``days`` and ``day_length_hours``.
     """
     days = _simulated_days(date, day_step)
     scene = prepare_scene(

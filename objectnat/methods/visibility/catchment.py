@@ -51,7 +51,7 @@ def get_visibility_catchment(
             Obstacle geometries (Polygon, MultiPolygon, LineString, MultiLineString) in any CRS. ``None`` or an
             empty frame means no occlusion.
         view_distance (float | None, optional):
-            Viewing radius of every observer, in metres. Used when ``observers`` has no
+            View distance of every observer, in metres. Used when ``observers`` has no
             ``"visibility_distance"`` column; one of the two is required.
         cell_size (float, optional):
             Cell side in metres. Smaller cells give finer zone outlines at a quadratic memory and time cost.
@@ -82,7 +82,7 @@ def get_visibility_catchment(
     Raises:
         TypeError: If ``observers`` is not a GeoDataFrame.
         ValueError: If ``observers`` is empty or has no CRS, if no view distance is given, if ``cell_size`` or
-            ``classes`` is invalid, if ``weight_column`` is missing or holds negative values, or if the grid
+            ``classes`` is invalid, if ``weight_column`` is missing or contains negative values, or if the grid
             would exceed 200 million cells.
 
     Notes:

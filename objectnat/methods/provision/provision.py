@@ -93,7 +93,7 @@ def clip_provision(
 
 def recalculate_links(provision_result: ProvisionResult, new_max_dist: float) -> ProvisionResult:
     """
-    Recalculate provision result after tightening the maximum allowed link distance.
+    Recalculate a provision result with a shorter maximum link cost.
 
     Flows whose cost exceeds ``new_max_dist`` are removed, and building/service
     aggregates are recomputed without redistributing removed demand.

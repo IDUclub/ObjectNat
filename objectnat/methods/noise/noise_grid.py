@@ -65,18 +65,19 @@ def simulate_noise_grid(
 
     * the direct path, when no obstacle blocks it;
     * first-order reflections from obstacle walls (image-source method), when ``reflections`` is True;
-    * diffraction around one corner of an obstacle (a vertical building edge) into its shadow, when
+    * diffraction around one or two corners of an obstacle (vertical building edges) into its shadow, when
       ``diffraction`` is True.
 
     Each path loses ``20 lg r`` (geometric spreading, ``r`` in metres), air absorption ``k r`` (``k`` from
     temperature and frequency, as in :func:`simulate_noise`), a reflection loss ``-10 lg(1 - a)`` per
     reflection (``a`` = absorption ratio of the wall) and, through vegetation, the foliage rate of
     :func:`simulate_noise` times the length crossed. A diffracted path has the level at the direct distance
-    minus Maekawa's barrier attenuation ``10 lg(3 + 20 N)``, with the Fresnel number ``N = 2 δ / λ`` (``δ``:
-    how much longer the way through the corner is, ``λ``: wavelength), at most 20 dB as ISO 9613-2 allows
-    for one edge. Paths and sources add up as energies, so two equal
-    sources give +3 dB. Receivers inside obstacles are skipped. The levels are then grouped into bands of
-    ``db_sim_step`` and returned as polygons, like :func:`simulate_noise`.
+    minus the barrier attenuation of ISO 9613-2 without the ground term, ``10 lg(3 + 40 C3 δ / λ)``: ``δ`` is
+    how much longer the path through the corners is, ``λ`` the wavelength, ``C3 = 1`` around one corner
+    (Maekawa's formula) and ``(1 + (5 λ / e)²) / (1/3 + (5 λ / e)²)`` around two corners ``e`` metres apart.
+    The attenuation is at most 20 dB around one corner and 25 dB around two. Paths and sources add up as
+    energies, so two equal sources give +3 dB. Receivers inside obstacles are skipped. The levels are then
+    grouped into bands of ``db_sim_step`` dB and returned as polygons, like :func:`simulate_noise`.
 
     The computation runs in parallel in ObjectNat's Rust extension.
 
@@ -112,8 +113,9 @@ def simulate_noise_grid(
             reflection distance of engineering models). Larger values are slower.
         diffraction:
             Bend sound around the corners of obstacles: a receiver hidden from a source but seen from a
-            corner that the source sees at the edge of an obstacle gets the diffracted sound. Corners are the
-            convex vertices of the outlines simplified by 0.5 m, and the ends of lines.
+            corner that the source sees at the edge of an obstacle gets the diffracted sound, and along the
+            shadowed side of the obstacle's convex hull the sound also bends around the next corner. Corners
+            are the convex vertices of the merged outlines simplified by 0.5 m, and the ends of lines.
         grid_step:
             Receiver spacing in metres; smaller is finer and slower.
         source_spacing:
@@ -133,15 +135,14 @@ def simulate_noise_grid(
     Returns:
         GeoDataFrame with columns ``noise_level`` (upper bound of each ``db_sim_step`` band, dB, like
         :func:`simulate_noise`) and ``geometry`` (one polygon per band), in the CRS of ``source_points``.
-        With ``output="receivers"`` the receivers, with ``output="both"`` a tuple ``(bands, receivers)``; the
-        receivers have the
-        exact ``noise_level`` of every receiver that hears at least ``target_noise_db``; their ``attrs``
-        record the grid, so :func:`rasterize` turns ``noise_level`` into a :class:`Raster`.
+        With ``output="receivers"`` the receivers, with ``output="both"`` a tuple ``(bands, receivers)``. The
+        receivers have the exact ``noise_level`` of every receiver that hears at least ``target_noise_db``;
+        their ``attrs`` record the grid, so :func:`rasterize` turns ``noise_level`` into a :class:`Raster`.
 
     Notes:
-        Not modelled: ground effect, diffraction over roofs (obstacle heights are not used) and around
-        more than one corner, reflections of higher order. Right behind a building, where the sound would
-        have to bend around two corners, only reflected sound arrives.
+        Not modelled: ground effect, diffraction over roofs (obstacle heights are not used), paths around
+        three or more corners and reflections of higher order. Places that sound reaches only around three
+        or more corners (inner courtyards, the second row of buildings) get reflected sound only.
     """
     output = resolve_output(output, "receivers")
     if source_points is None or len(source_points) == 0:

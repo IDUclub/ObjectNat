@@ -33,15 +33,15 @@ def calculate_simplified_noise_frame(
     This function provides a fast approximation of noise dispersion from a variety of source geometries, including
     points (e.g., traffic noise measurement points), lines (e.g., roads or railways), and polygons (e.g., industrial
     zones or buildings). Instead of simulating detailed wave interactions and reflections, it constructs an
-    envelope of potential noise exposure by buffering the source geometry and applying simplified decay formulas
-    based on sound power, frequency and temperature.
+    envelope of potential noise exposure from the visibility polygons of points sampled on the sources and a
+    distance decay that depends on the source level, frequency and temperature.
 
     Args:
         noise_sources (gpd.GeoDataFrame):
             A GeoDataFrame containing geometries of noise sources (Point, LineString,
             or Polygon). Each feature must have the following two columns:
 
-            - 'source_noise_db': Initial sound level at the source, in decibels (dB).
+            - 'source_noise_db': Sound level at 1 m from the source, in decibels (dB).
             - 'geometric_mean_freq_hz': Characteristic sound frequency (Hz) used to model distance-based attenuation.
 
             Values in 'source_noise_db' must not exceed the physical maximum of 194 dB. Missing or NaN values in
@@ -49,7 +49,7 @@ def calculate_simplified_noise_frame(
 
         obstacles (gpd.GeoDataFrame):
             A GeoDataFrame representing physical obstructions in the environment
-            (e.g., buildings, walls, terrain). These are used to build visibility masks that affect where sound can
+            (e.g., buildings, walls). These are used to build visibility masks that affect where sound can
             propagate. Geometry will be simplified for performance using a default tolerance of 1 unit.
 
         air_temperature (float):
@@ -58,7 +58,7 @@ def calculate_simplified_noise_frame(
             range may lead to inaccurate results.
 
         target_noise_db (float, default=40):
-            The minimum sound level threshold (in dB) to be modeled. Any value below
+            The minimum sound level threshold (in dB) to be modelled. Any value below
             this threshold is considered insignificant and will be excluded from the resulting noise frame.
             Default is 40 dB.
 
@@ -77,8 +77,8 @@ def calculate_simplified_noise_frame(
             represent the full sound-emitting area.
 
         visibility_parallel (bool, optional):
-            Ignored, kept for compatibility: visibility for all sample points is always computed
-            multi-threaded by the Rust extension.
+            Deprecated and ignored: visibility for all sample points is always computed
+            in parallel threads by the Rust extension.
 
         visibility_max_workers (int | None, optional):
             Maximum number of threads for the visibility computation. None uses all cores.
@@ -91,7 +91,7 @@ def calculate_simplified_noise_frame(
             the original coordinate reference system (CRS) of the input sources.
 
     Notes:
-        - The function does not model reflections or complex diffraction effects. It uses straight-line
+        - The function does not model reflections or diffraction. It uses straight-line
           visibility (line-of-sight) and a layered distance-decay approach for rapid estimation.
         - Obstacles are used for visibility masking only, not as reflectors or absorbers.
         - Output resolution and accuracy depend heavily on the geometry type and point distribution settings.

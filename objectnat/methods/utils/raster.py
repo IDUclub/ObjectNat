@@ -125,7 +125,7 @@ class Raster(NamedTuple):
         Draw the raster with ``ax.imshow`` in the CRS of the grid (cells without a value stay transparent).
 
         Keyword arguments go to ``imshow`` (``cmap``, ``vmin``, ``vmax``, ``alpha``, ...). Layers drawn on the same
-        axes must be in :attr:`crs`, e.g. ``buildings.to_crs(raster.crs).plot(ax=ax)``. Needs matplotlib.
+        axes must be in :attr:`crs`, e.g. ``buildings.to_crs(raster.crs).plot(ax=ax)``. Requires matplotlib.
 
         Returns:
             The ``AxesImage``, e.g. for ``fig.colorbar``.
@@ -140,7 +140,7 @@ class Raster(NamedTuple):
         return image
 
     def to_geotiff(self, path, *, nodata: float = np.nan) -> None:
-        """Write a single-band float32 GeoTIFF; cells without a value get ``nodata``. Needs rasterio."""
+        """Write a single-band float32 GeoTIFF; cells without a value get ``nodata``. Requires rasterio."""
         try:
             import rasterio  # pylint: disable=import-outside-toplevel
             from rasterio.transform import Affine  # pylint: disable=import-outside-toplevel
@@ -177,7 +177,7 @@ class Raster(NamedTuple):
 
         Web maps show images in Web Mercator, so the grid is resampled (nearest cell) to a Mercator grid with
         about the same number of cells before colouring; the overlay then lines up with the base map. Add it
-        with ``.add_to(m)``, e.g. to a map from ``GeoDataFrame.explore()``. Needs folium and matplotlib.
+        with ``.add_to(m)``, e.g. to a map from ``GeoDataFrame.explore()``. Requires folium and matplotlib.
 
         Args:
             cmap: Matplotlib colormap or its name.
@@ -236,7 +236,7 @@ class Raster(NamedTuple):
             **kwargs: Passed to ``folium.Map`` when a new map is created.
 
         Returns:
-            The ``folium.Map``. Needs folium and matplotlib.
+            The ``folium.Map``. Requires folium and matplotlib.
         """
         import branca.colormap  # pylint: disable=import-outside-toplevel
         import folium  # pylint: disable=import-outside-toplevel
@@ -297,7 +297,7 @@ def rasterize(points: gpd.GeoDataFrame, column: str, *, cell_size: float | None 
     ``attrs`` record the grid (CRS, cell size, position), so the raster reproduces it exactly in the local metric
     CRS of the calculation, whatever CRS the points were returned in, and also after filtering rows.
 
-    Points without that record (for example, read from a file) need ``cell_size``; they are then placed in their
+    Points without that record (for example, read from a file) require ``cell_size``; they are then placed in their
     own CRS if it is projected, or in an estimated UTM zone, with the first point as a cell centre.
 
     Args:

@@ -131,7 +131,8 @@ def get_graph_isochrones(
             - ``"radius"``: union of residual-radius buffers around reachable nodes
             - ``"ways"``: buffered reachable road geometry (walk edges only on
               intermodal/walk graphs)
-            - ``"separate"``: a single merged buffer-based isochrone
+            - ``"separate"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes,
+              merged into one polygon
 
         zone (gpd.GeoDataFrame | gpd.GeoSeries, optional):
             Boundary polygon to clip the resulting isochrones.
@@ -157,7 +158,7 @@ def get_graph_isochrones(
         - Origins with no reachable nodes are dropped from the result.
         - On walk and intermodal graphs the geometry is built from nodes reachable on
           foot; transit route nodes, whose distance includes the wait to board, only
-          carry the search.
+          take part in the search.
     """
 
     if geometry_type not in {"radius", "ways", "separate"}:

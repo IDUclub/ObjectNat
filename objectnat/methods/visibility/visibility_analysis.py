@@ -113,11 +113,11 @@ def get_visibility(
         isovist_metrics (bool, optional):
             If ``True``, add isovist metric columns to the result, measured in metres in the local CRS:
             ``area``, ``perimeter``, ``compactness`` (4πA/P², 1 for the full disc), ``occlusivity``
-            (length of the occluding radial edges), ``n_occlusions``, ``min_radial``, ``max_radial``,
+            (total length of the occluding edges), ``n_occlusions``, ``min_radial``, ``max_radial``,
             ``mean_radial``, ``std_radial``, ``skew_radial`` (moments of the distance to the boundary over
             all directions, integrated exactly), ``drift`` (distance from the observer to the centroid),
-            ``visible_share`` (area / area of the view disc) and ``open_share`` (share of the perimeter on the
-            view-distance limit). Observers inside an obstacle get NaN.
+            ``visible_share`` (area / area of the view disc) and ``open_share`` (share of the boundary on the
+            view limit). Observers inside an obstacle get NaN.
 
     Returns:
         gpd.GeoDataFrame:
@@ -211,7 +211,7 @@ def get_isovist_grid(
         area (gpd.GeoDataFrame | gpd.GeoSeries | shapely.Geometry):
             Area to cover. A shapely geometry is taken in the CRS of ``obstacles``.
         view_distance (float, optional):
-            Viewing radius of every observer in metres. Defaults to 200.
+            View distance of every observer in metres. Defaults to 200.
         cell_size (float, optional):
             Observer spacing in metres. Time grows with ``(area / cell_size²) * view_distance``. Defaults to 5.
         max_workers (int | None, optional):

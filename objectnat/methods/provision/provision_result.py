@@ -15,7 +15,7 @@ logger = config.logger
 @dataclass(slots=True)
 class ProvisionResult:
     """
-    Result of service provision calculation.
+    Result of a service provision calculation.
 
     Attributes:
         flow:
@@ -24,20 +24,20 @@ class ProvisionResult:
             allocated demand units.
         demand_rows:
             Per-building metrics indexed like ``flow.index``. Includes original
-            demand, remaining demand, supplied demand inside/outside the
-            threshold, minimum distance, average weighted distance, and
+            demand, remaining demand, supplied demand within/beyond the
+            threshold, the cost to the nearest service, the flow-weighted mean cost and
             provision value.
         capacity_rows:
             Per-service metrics indexed like ``flow.columns``. Includes
             original capacity, remaining capacity, carried capacity
-            inside/outside the threshold, and total service load.
+            within/beyond the threshold, and total service load.
         distance_matrix:
             Aligned OD cost matrix used for the calculation (dense, or pandas
             sparse when a sparse matrix was passed). Its index and columns
             must match ``flow``.
         threshold:
             Normative distance or time threshold used to split flows into
-            within-threshold and outside-threshold metrics.
+            within-threshold and beyond-threshold metrics.
     """
 
     flow: pd.DataFrame

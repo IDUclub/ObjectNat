@@ -59,7 +59,7 @@ def get_viewshed(
             Building footprints with heights (see ``height_column``, ``storeys_column``); ``None`` for terrain
             only.
         view_distance (float | None, optional):
-            Viewing radius in metres, unless ``point_from`` has ``visibility_distance``.
+            View distance in metres, unless ``point_from`` has ``visibility_distance``.
         height_column, storeys_column, storey_height, default_height:
             Building heights, as in :func:`get_insolation`.
         terrain, terrain_height_column, terrain_cell:
@@ -81,10 +81,11 @@ def get_viewshed(
         gpd.GeoDataFrame:
             Same index and attributes as ``point_from`` with the geometry replaced by the visible area (cells
             merged into polygons, an empty polygon when nothing is visible) in the CRS of ``point_from``, plus
-            ``visible_area`` (m²) and ``visible_share`` (visible part of the target cells within the radius).
+            ``visible_area`` (m²) and ``visible_share`` (the share of the target cells within the view distance
+            that are visible).
 
     Raises:
-        ValueError: If ``point_from`` is empty or has no CRS, or no viewing distance is given.
+        ValueError: If ``point_from`` is empty or has no CRS, or no view distance is given.
     """
     scene, observers, radius, eye_offset = _setup(
         point_from, buildings, view_distance, observer_height,
@@ -170,7 +171,7 @@ def get_viewshed_catchment(
         buildings (gpd.GeoDataFrame | None):
             Building footprints with heights; ``None`` for terrain only.
         view_distance (float | None, optional):
-            Viewing radius in metres, unless ``observers`` has ``visibility_distance``.
+            View distance in metres, unless ``observers`` has ``visibility_distance``.
         height_column, storeys_column, storey_height, default_height:
             Building heights, as in :func:`get_insolation`.
         terrain, terrain_height_column, terrain_cell:

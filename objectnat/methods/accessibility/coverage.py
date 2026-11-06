@@ -33,15 +33,15 @@ def get_graph_coverage(
     road_buffer_size: float = 5.0,
 ) -> gpd.GeoDataFrame:
     """
-    Calculate coverage zones from source objects through a graph network using
+    Calculate coverage zones of destinations (services) on an urban graph using
     Dijkstra reachability and Voronoi partitioning.
 
-    Coverage answers *"which area is served by each source object"*. The function:
+    Coverage answers *"which area is served by each destination"*. The function:
 
-    1. Snaps each source object to its nearest graph node (or uses the provided
+    1. Snaps each destination to its nearest graph node (or uses the provided
        ``destination_nodes``).
     2. Runs a multi-source Dijkstra search on the reversed graph, so every
-       reachable node is labelled with its nearest source within
+       reachable node is labelled with its nearest destination within
        ``weight_value_cutoff``.
     3. Builds Voronoi polygons around the graph nodes.
     4. Dissolves the reachable Voronoi cells per source into one zone each.
@@ -53,16 +53,16 @@ def get_graph_coverage(
             City graph with node (``nodes_gdf``) and edge (``edges_gdf``) tables.
 
         gdf_destinations (gpd.GeoDataFrame, optional):
-            Source objects the coverage is measured *to*. If the table already
+            Destinations the coverage is measured *to*. If the table already
             contains ``graph_node_column`` those node ids are used directly;
             otherwise each geometry is snapped to its nearest graph node. Pass
             either this or ``destination_nodes``.
 
         destination_nodes (Iterable, optional):
-            Ready-made source node ids, used instead of ``gdf_destinations``.
+            Node ids of the destinations, used instead of ``gdf_destinations``.
 
         graph_node_column:
-            Name of the column holding graph node ids in ``gdf_destinations``.
+            Name of the column with graph node ids in ``gdf_destinations``.
 
         weight_type:
             Type of edge weight used for path calculation:
@@ -100,15 +100,15 @@ def get_graph_coverage(
 
     Returns:
         gpd.GeoDataFrame:
-            One coverage polygon per source object, returned in the CRS of
+            One coverage polygon per destination, returned in the CRS of
             ``gdf_destinations`` (or the graph CRS when node ids are passed). The
             index matches ``gdf_destinations`` / ``destination_nodes``.
 
     Notes:
         - For a directed graph the search runs on the reversed edges, so a zone
-          describes the area from which its source can be reached.
+          describes the area from which its destination can be reached.
         - On walk and intermodal graphs the zones are built from nodes reachable on foot,
-          so route nodes sharing a stop cannot give one place to several sources.
+          so route nodes sharing a stop cannot give one place to several destinations.
         - An empty ``GeoDataFrame`` is returned when nothing is reachable.
     """
 
@@ -209,17 +209,17 @@ def get_stepped_graph_coverage(
     road_buffer_size: float = 5.0,
 ) -> gpd.GeoDataFrame:
     """
-    Calculate stepped coverage zones from source objects, combining graph
+    Calculate stepped coverage zones of destinations (services), combining graph
     reachability with banded (stepped) isochrone geometry.
 
-    Like :func:`get_graph_coverage`, but instead of one zone per source the
+    Like :func:`get_graph_coverage`, but instead of one zone per destination the
     reachable area is split into concentric bands of width ``step``. The
     function:
 
-    1. Snaps each source object to its nearest graph node (or uses the provided
+    1. Snaps each destination to its nearest graph node (or uses the provided
        ``destination_nodes``).
     2. Runs a multi-source Dijkstra search on the reversed graph, labelling
-       every reachable node with the distance to its nearest source.
+       every reachable node with the cost to its nearest destination.
     3. Buckets the nodes into steps and builds banded geometry with the
        selected ``geometry_type``.
     4. Optionally clips the bands to ``zone``.
@@ -229,12 +229,12 @@ def get_stepped_graph_coverage(
             City graph with node and edge tables.
 
         gdf_destinations (gpd.GeoDataFrame, optional):
-            Source objects the coverage is measured *to*. If the table contains
+            Destinations the coverage is measured *to*. If the table contains
             ``graph_node_column`` those ids are used; otherwise geometries are
             snapped to nearest nodes. Pass either this or ``destination_nodes``.
 
         destination_nodes (Iterable, optional):
-            Ready-made source node ids, used instead of ``gdf_destinations``.
+            Node ids of the destinations, used instead of ``gdf_destinations``.
 
         graph_node_column:
             Name of the graph node id column in ``gdf_destinations``.
@@ -282,7 +282,7 @@ def get_stepped_graph_coverage(
         - For a directed graph the search runs on the reversed edges; for an
           undirected graph on the original symmetric adjacency.
         - On walk and intermodal graphs the bands are built from nodes reachable on foot,
-          so transit route nodes on a stop do not paint it with a later band.
+          so transit route nodes at a stop, whose cost includes the wait, do not move it to a later band.
         - An empty ``GeoDataFrame`` is returned when nothing is reachable.
     """
 
