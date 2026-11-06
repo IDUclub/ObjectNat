@@ -1,0 +1,106 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "2D visibility: visibility polygons, isovist metrics and catchment"
+msgstr "Видимость 2D: полигоны видимости, метрики изовист и охват"
+
+msgid "`get_visibility` computes the exact visibility polygon (isovist) of each observer within a view distance; obstacles are walls of infinite height. This notebook shows"
+msgstr "`get_visibility` вычисляет точный полигон видимости (изовисту) каждого наблюдателя в пределах дальности обзора; препятствия — стены бесконечной высоты. Этот ноутбук показывает"
+
+msgid "the visibility polygon of one observer and of several observers with individual radii;"
+msgstr "полигон видимости одного наблюдателя и нескольких наблюдателей с индивидуальными радиусами;"
+
+msgid "isovist metrics (`isovist_metrics=True`) and an isovist field over an area (`get_isovist_grid`, `rasterize`);"
+msgstr "метрики изовист (`isovist_metrics=True`) и поле изовист по территории (`get_isovist_grid`, `rasterize`);"
+
+msgid "the visibility catchment, how many observers see every cell (`get_visibility_catchment`)."
+msgstr "охват видимости — сколько наблюдателей видят каждую ячейку (`get_visibility_catchment`)."
+
+msgid "2.5D viewsheds over building heights are covered in the [viewshed notebook](viewshed.ipynb)."
+msgstr "Области видимости 2.5D с учётом высот зданий разобраны в [ноутбуке областей видимости](viewshed.ipynb)."
+
+msgid "The last section, *Your own area*, shows what to replace to get the same pictures for another territory."
+msgstr "Последний раздел, *Своя территория*, показывает, что заменить, чтобы получить такие же картинки для другой территории."
+
+msgid "1. One observer"
+msgstr "1\\. Один наблюдатель"
+
+msgid "Observers may be in any CRS; the calculation runs in an estimated UTM zone and the result is returned in the CRS of the observers."
+msgstr "Наблюдатели могут быть в любой системе координат; расчёт идёт в оценённой зоне UTM, а результат возвращается в системе координат наблюдателей."
+
+msgid "2. Several observers"
+msgstr "2\\. Несколько наблюдателей"
+
+msgid "A `visibility_distance` column sets the radius of every observer (metres). Observers are processed in parallel by the Rust extension; observers inside an obstacle get an empty polygon."
+msgstr "Столбец `visibility_distance` задаёт радиус каждого наблюдателя (метры). Наблюдатели обрабатываются параллельно расширением на Rust; наблюдатели внутри препятствия получают пустой полигон."
+
+msgid "3. Isovist metrics and isovist fields"
+msgstr "3\\. Метрики изовист и поля изовист"
+
+msgid "`isovist_metrics=True` describes every visibility polygon with numbers; lengths are in metres and areas in m². The [visibility page](../visibility.rst) explains each metric with examples. In short:"
+msgstr "`isovist_metrics=True` описывает каждый полигон видимости числами; длины — в метрах, площади — в м². [Страница видимости](../visibility.rst) объясняет каждую метрику на примерах. Кратко:"
+
+msgid "`area` and `visible_share`: how much the observer sees, in m² and as a share of the view disc;"
+msgstr "`area` и `visible_share`: сколько видит наблюдатель, в м² и как долю круга обзора;"
+
+msgid "`perimeter` and `compactness` (4πA/P²): the length of the boundary, and 1 for a full disc down to almost 0 for a spiky shape with long narrow views;"
+msgstr "`perimeter` и `compactness` (4πA/P²): длина границы и показатель от 1 для полного круга почти до 0 для звездообразной формы с длинными узкими взглядами;"
+
+msgid "`occlusivity` and `n_occlusions`: the total length and the number of edges where the view disappears behind a building corner, that is, how much space is hidden right behind corners;"
+msgstr "`occlusivity` и `n_occlusions`: суммарная длина и число рёбер, на которых взгляд уходит за угол здания, то есть сколько пространства скрыто прямо за углами;"
+
+msgid "`min_radial`, `max_radial`, `mean_radial`, `std_radial` and `skew_radial`: statistics of the distance from the observer to the boundary of the view over all directions;"
+msgstr "`min_radial`, `max_radial`, `mean_radial`, `std_radial` и `skew_radial`: статистики расстояния от наблюдателя до границы обзора по всем направлениям;"
+
+msgid "`drift`: the distance from the observer to the centroid of the visible area, that is, how far the view is shifted to one side;"
+msgstr "`drift`: расстояние от наблюдателя до центроида видимой области, то есть насколько обзор смещён в одну сторону;"
+
+msgid "`open_share`: the share of the boundary on the view limit, that is, not on walls."
+msgstr "`open_share`: доля границы, лежащая на границе дальности обзора, то есть не на стенах."
+
+msgid "`get_isovist_grid` maps the metrics over an area: it places an observer at the centre of every `cell_size` cell of the open ground and returns the observers with their metrics. Buildings outside the area but within `view_distance` still block the view. `rasterize` turns a metric into a `Raster`, which `plot` draws with matplotlib; `to_geotiff` and `to_folium` write it to a file or a web map (see the [insolation notebook](insolation.ipynb))."
+msgstr "`get_isovist_grid` строит карту метрик по территории: функция ставит наблюдателя в центр каждой ячейки размером `cell_size` на открытой территории и возвращает наблюдателей с их метриками. Здания за пределами территории, но в пределах `view_distance`, тоже закрывают обзор. `rasterize` превращает метрику в `Raster`, который `plot` рисует в matplotlib; `to_geotiff` и `to_folium` записывают его в файл или на веб-карту (см. [ноутбук инсоляции](insolation.ipynb))."
+
+msgid "Every cell shows what an observer standing at its centre sees. Open squares and wide streets have a high `visible_share`, narrow yards a low one. `compactness` is high where the visible area is a simple, nearly convex shape, in an open square or inside a closed courtyard, and low where long narrow views between buildings make it spiky. `occlusivity` is high where many building corners hide space close to the observer, at crossings of passages between buildings. `drift` is high next to walls that face an open area: the observer sees mostly to one side."
+msgstr "Каждая ячейка показывает, что видит наблюдатель, стоящий в её центре. У открытых площадей и широких улиц высокий `visible_share`, у узких дворов — низкий. `compactness` высока там, где видимая область простой, почти выпуклой формы, — на открытой площади или внутри закрытого двора, и низка там, где длинные узкие взгляды между зданиями делают её звездообразной. `occlusivity` высока там, где много углов зданий скрывают пространство рядом с наблюдателем, — на пересечениях проходов между зданиями. `drift` велик у стен, обращённых к открытому пространству: наблюдатель видит в основном одну сторону."
+
+msgid "4. Visibility catchment"
+msgstr "4\\. Охват видимости"
+
+msgid "`get_visibility_catchment` counts, for every `cell_size` cell, the observers whose visibility polygon contains the cell centre, and returns the seen cells with their `count`; `rasterize` draws them. Observers along streets are usually placed with `get_observer_points(urban_graph, spacing=15)`; for example, with a walk graph from IduEdu:"
+msgstr "`get_visibility_catchment` подсчитывает для каждой ячейки размером `cell_size` наблюдателей, полигон видимости которых содержит центр ячейки, и возвращает видимые ячейки с их `count`; `rasterize` их рисует. Наблюдателей вдоль улиц обычно расставляют функцией `get_observer_points(urban_graph, spacing=15)`; например, с пешеходным графом из IduEdu:"
+
+msgid "Here, to stay independent of downloads, observers are placed every 15 m on open ground within 12 m of a building, over the area extended by the view distance (250 m): a cell near the edge of the area is also seen by observers outside it, and without them its count would come out too low."
+msgstr "Здесь, чтобы не зависеть от загрузок, наблюдатели размещены через 15 м на открытой территории не дальше 12 м от зданий, по территории, расширенной на дальность обзора (250 м): ячейку у края территории видят и наблюдатели за её пределами, и без них её счёт получился бы заниженным."
+
+msgid "The counts are in observers, so rasters of different areas or scenarios with the same observer spacing share one colour scale. `weight_column` replaces counts by sums of observer weights, for example pedestrian flow."
+msgstr "Значения выражены в числе наблюдателей, поэтому растры разных территорий или сценариев с одинаковым шагом наблюдателей можно рисовать в одной цветовой шкале. `weight_column` заменяет число наблюдателей суммой их весов, например пешеходного потока."
+
+msgid "Isovist metrics of your own observers"
+msgstr "Метрики изовист для своих наблюдателей"
+
+msgid "`get_isovist_grid` places observers on a grid. For observers placed in another way, for example along the streets, `get_visibility(observers, obstacles, view_distance, isovist_metrics=True)` returns the same metrics, one row per observer; draw them as points. Unlike catchment counts, these values have no edge effect: each describes its own observer."
+msgstr "`get_isovist_grid` ставит наблюдателей по сетке. Для наблюдателей, расставленных иначе, например вдоль улиц, `get_visibility(observers, obstacles, view_distance, isovist_metrics=True)` возвращает те же метрики, по строке на наблюдателя; рисуйте их точками. В отличие от счёта охвата, у этих значений нет краевого эффекта: каждое описывает своего наблюдателя."
+
+msgid "5. Your own area"
+msgstr "5\\. Своя территория"
+
+msgid "Observers every 20 m along the pedestrian graph of the district from IduEdu (`get_observer_points`); the buildings are only obstacles, they add no observers. Some 44 thousand observers take a few seconds. The raster covers everything the observers see, also beyond the district boundary. Counts depend on the observer spacing, so compare rasters made with the same spacing. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
+msgstr "Наблюдатели через каждые 20 м вдоль пешеходного графа района из IduEdu (`get_observer_points`); здания служат только препятствиями и наблюдателей не добавляют. Около 44 тысяч наблюдателей рассчитываются за несколько секунд. Растр покрывает всё, что видят наблюдатели, в том числе за границей района. Значения зависят от шага наблюдателей, поэтому сравнивайте растры, построенные с одинаковым шагом. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
+
+msgid "The catchment and `visible_share` answer different questions. `visible_share` (an isovist metric, section 3) looks out of a place: how much of its view disc an observer standing there sees. The catchment looks at a place from all observers: how many of them see it, that is how visible it is from the streets. The middle of a large square has a high `visible_share`, but a low catchment if few streets lead to it. The isovist field of section 3 is obtained for any area in the same way, for example `rasterize(get_isovist_grid(my_obstacles, my_area, view_distance=200, cell_size=5), \"visible_share\")`."
+msgstr "Охват и `visible_share` отвечают на разные вопросы. `visible_share` (метрика изовисты, раздел 3) смотрит из места наружу: какую долю круга обзора видит наблюдатель, стоящий в нём. Охват смотрит на место со стороны всех наблюдателей: сколько из них его видят, то есть насколько оно заметно с улиц. У середины большой площади `visible_share` высокий, а охват низкий, если к ней ведёт мало улиц. Поле изовист из раздела 3 строится для любой территории так же, например `rasterize(get_isovist_grid(my_obstacles, my_area, view_distance=200, cell_size=5), \"visible_share\")`."
+

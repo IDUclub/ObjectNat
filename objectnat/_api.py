@@ -7,7 +7,8 @@ from .methods.accessibility import (
     get_stepped_graph_coverage,
     get_stepped_graph_isochrones,
 )
-from .methods.noise import calculate_simplified_noise_frame, simulate_noise
+from .methods.insolation import get_facade_insolation, get_insolation
+from .methods.noise import calculate_simplified_noise_frame, simulate_noise, simulate_noise_grid
 from .methods.provision import (
     ProvisionResult,
     clip_provision,
@@ -17,4 +18,12 @@ from .methods.provision import (
     get_service_provision,
     recalculate_links,
 )
-from .methods.visibility import get_visibility
+from .methods.utils.raster import Raster, rasterize
+from .methods.visibility import (
+    get_isovist_grid,
+    get_observer_points,
+    get_viewshed,
+    get_viewshed_catchment,
+    get_visibility,
+    get_visibility_catchment,
+)

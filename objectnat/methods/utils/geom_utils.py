@@ -1,12 +1,31 @@
 import math
 
 import geopandas as gpd
+import numpy as np
+import shapely
 from shapely import LineString, MultiLineString, MultiPolygon, Point, Polygon
 from shapely.ops import polygonize, unary_union
 
-from objectnat import config
+POLYGON_TYPE_ID = 3
 
-logger = config.logger
+
+def clip_polygons(geometries, mask) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Vectorised ``GeoDataFrame.clip(mask, keep_geom_type=True).explode()`` for polygonal geometries.
+
+    Returns the polygon parts of ``geometry ∩ mask`` (collections and multi-parts flattened, lines and
+    points dropped) and, for each part, the position of the input geometry it comes from.
+    """
+    geometries = np.asarray(geometries, dtype=object)
+    if geometries.size == 0 or mask is None or mask.is_empty:
+        return np.empty(0, dtype=object), np.empty(0, dtype=np.int64)
+    clipped = shapely.intersection(geometries, mask)
+    parts, owner = shapely.get_parts(clipped, return_index=True)
+    # collections may hold multi-parts: flatten once more
+    parts, inner = shapely.get_parts(parts, return_index=True)
+    owner = np.asarray(owner, dtype=np.int64)[inner]
+    keep = (shapely.get_type_id(parts) == POLYGON_TYPE_ID) & ~shapely.is_empty(parts)
+    return parts[keep], owner[keep]
 
 
 def polygons_to_multilinestring(geom: Polygon | MultiPolygon) -> MultiLineString:
@@ -19,24 +38,6 @@ def polygons_to_multilinestring(geom: Polygon | MultiPolygon) -> MultiLineString
     if geom.geom_type == "MultiPolygon":
         return MultiLineString([line for polygon in geom.geoms for line in polygon_to_lines(polygon)])
     raise TypeError(f"Expected Polygon or MultiPolygon, got {geom.geom_type}")
-
-
-def explode_linestring(geometry: LineString) -> list[LineString]:
-    """A function to return all segments of a linestring as a list of linestrings"""
-    coords_ext = geometry.coords  # Create a list of all line node coordinates
-    result = [LineString(part) for part in zip(coords_ext, coords_ext[1:])]
-    return result
-
-
-def point_side_of_line(line: LineString, point: Point) -> int:
-    """A positive indicates the left-hand side a negative indicates the right-hand side"""
-    x1, y1 = line.coords[0]
-    x2, y2 = line.coords[-1]
-    x, y = point.coords[0]
-    cross_product = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1)
-    if cross_product > 0:
-        return 1
-    return -1
 
 
 def get_point_from_a_thorough_b(a: Point, b: Point, dist):
@@ -55,70 +56,49 @@ def gdf_to_circle_zones_from_point(
     """n_segments = 4*resolution,e.g. if resolution = 4 that means there will be 16 segments"""
     crs = gdf.crs
     buffer = point_from.buffer(zone_radius, quad_segs=resolution)
-    gdf_unary = gdf.clip(buffer, keep_geom_type=True).union_all()
-    gdf_geometry = (
-        gpd.GeoDataFrame(geometry=[gdf_unary], crs=crs)
-        .explode(index_parts=True)
-        .geometry.apply(polygons_to_multilinestring)
-        .union_all()
-    )
+    parts, _ = clip_polygons(gdf.geometry.values, buffer)
+    gdf_unary = shapely.union_all(parts)
+    if gdf_unary.is_empty:
+        return gpd.GeoDataFrame(geometry=[], crs=crs)
+    boundaries = shapely.boundary(shapely.get_parts(gdf_unary))
     zones_lines = [LineString([Point(coords1), Point(point_from)]) for coords1 in buffer.exterior.coords[:-1]]
+    zones = np.asarray(list(polygonize(unary_union(list(boundaries) + zones_lines))), dtype=object)
     if explode_multigeom:
-        return (
-            gpd.GeoDataFrame(geometry=list(polygonize(unary_union([gdf_geometry] + zones_lines))), crs=crs)
-            .clip(gdf_unary, keep_geom_type=True)
-            .explode(index_parts=False)
-        )
-    return gpd.GeoDataFrame(geometry=list(polygonize(unary_union([gdf_geometry] + zones_lines))), crs=crs).clip(
-        gdf_unary, keep_geom_type=True
-    )
+        zone_parts, _ = clip_polygons(zones, gdf_unary)
+        return gpd.GeoDataFrame(geometry=zone_parts, crs=crs)
+    clipped = shapely.intersection(zones, gdf_unary)
+    clipped = clipped[~shapely.is_empty(clipped)]
+    return gpd.GeoDataFrame(geometry=clipped, crs=crs)
 
 
-def remove_inner_geom(polygon: Polygon | MultiPolygon):
-    """function to get rid of inner polygons"""
-    if isinstance(polygon, Polygon):
-        return Polygon(polygon.exterior.coords)
-    if isinstance(polygon, MultiPolygon):
-        polys = []
-        for poly in polygon.geoms:
-            polys.append(Polygon(poly.exterior.coords))
-        return MultiPolygon(polys)
+def remove_inner_geom(geom):
+    """The polygonal parts of ``geom`` without their holes; an empty polygon for other geometries."""
+    if geom.geom_type == "Polygon":
+        return Polygon(geom.exterior)
+    if geom.geom_type == "MultiPolygon":
+        return MultiPolygon([Polygon(polygon.exterior) for polygon in geom.geoms])
+    if geom.geom_type == "GeometryCollection":
+        polygons = [remove_inner_geom(part) for part in geom.geoms if part.geom_type in {"Polygon", "MultiPolygon"}]
+        return unary_union(polygons) if polygons else Polygon()
     return Polygon()
 
 
-def combine_geometry(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def overlay_by_value(gdf: gpd.GeoDataFrame, column: str, how: str = "max") -> gpd.GeoDataFrame:
     """
-    Combine geometry of intersecting layers into a single GeoDataFrame.
-    Parameters
-    ----------
-    gdf: gpd.GeoDataFrame
-        A GeoPandas GeoDataFrame
-
-    Returns
-    -------
-    gpd.GeoDataFrame
-        The combined GeoDataFrame with aggregated in lists columns.
-
-    Examples
-    --------
-    >>> gdf = gpd.read_file('path_to_your_file.geojson')
-    >>> result = combine_geometry(gdf)
+    Split overlapping polygons into faces, give each face the ``how`` ("max" or "min") of ``column`` over the
+    polygons covering it, and dissolve faces of equal value.
     """
-
-    crs = gdf.crs
-
-    enclosures = gpd.GeoDataFrame(
-        geometry=list(polygonize(gdf["geometry"].apply(polygons_to_multilinestring).union_all())), crs=crs
+    faces = gpd.GeoDataFrame(
+        geometry=list(polygonize(gdf.geometry.apply(polygons_to_multilinestring).union_all())), crs=gdf.crs
     )
-    enclosures_points = enclosures.copy()
-    enclosures_points.geometry = enclosures.representative_point()
-    joined = gpd.sjoin(enclosures_points, gdf, how="inner", predicate="within").reset_index()
-    cols = joined.columns.tolist()
-    cols.remove("geometry")
-    joined = joined.groupby("index").agg({column: list for column in cols})
-    joined["geometry"] = enclosures
-    joined = gpd.GeoDataFrame(joined, geometry="geometry", crs=crs)
-    return joined
+    points = faces.copy()
+    points.geometry = faces.representative_point()
+    joined = points.sjoin(gdf[[column, "geometry"]], predicate="within")
+    if joined.empty:
+        return gpd.GeoDataFrame({column: []}, geometry=[], crs=gdf.crs)
+    value = joined.groupby(level=0)[column].agg(how)
+    result = gpd.GeoDataFrame({column: value.to_numpy()}, geometry=faces.geometry.loc[value.index].values, crs=gdf.crs)
+    return result.dissolve(by=column, as_index=False)
 
 
 def distribute_points_on_linestrings(lines: gpd.GeoDataFrame, radius, lloyd_relax_n=2) -> gpd.GeoDataFrame:

@@ -3,15 +3,93 @@ from typing import Any, Literal
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from iduedu import UrbanGraph
+import shapely
+from iduedu import UrbanGraph, multi_source_dijkstra
 from shapely import convex_hull
-from shapely.geometry import GeometryCollection, MultiPolygon, Polygon
-from shapely.ops import polygonize, unary_union
+from shapely.geometry import GeometryCollection
 
-from objectnat.methods.utils.geom_utils import polygons_to_multilinestring
+from objectnat.methods.utils.geom_utils import overlay_by_value, remove_inner_geom
 
 SteppedGeometryType = Literal["radius", "ways", "separate"] | None
 _WALK_ONLY_GRAPH_TYPES = {"intermodal", "walk"}
+
+
+def check_buffer_args(buffer_factor: float, road_buffer_size: float, off_network_distance: float | None = None) -> None:
+    """Validate the buffer arguments shared by the accessibility functions."""
+    if buffer_factor <= 0:
+        raise ValueError(f"buffer_factor must be > 0, got {buffer_factor}")
+    if road_buffer_size <= 0:
+        raise ValueError(f"road_buffer_size must be > 0, got {road_buffer_size}")
+    if off_network_distance is not None and not off_network_distance > 0:
+        raise ValueError(f"off_network_distance must be > 0 or None, got {off_network_distance}")
+
+
+def node_points(urban_graph: UrbanGraph, table: pd.DataFrame) -> gpd.GeoDataFrame:
+    """Graph node points for the rows of ``table`` (indexed by node id), with its columns."""
+    return urban_graph.nodes_gdf.loc[pd.Index(table.index), ["geometry"]].join(table, how="left")
+
+
+def stepped_accessibility(
+    urban_graph: UrbanGraph,
+    *,
+    source_nodes,
+    gdf_sources,
+    graph_node_column: str,
+    weight_type: str,
+    weight_value_cutoff: float | None,
+    step: float | None,
+    geometry_type: SteppedGeometryType,
+    zone,
+    buffer_factor: float,
+    road_buffer_size: float,
+    off_network_distance: float | None,
+    reverse: bool,
+) -> gpd.GeoDataFrame:
+    """
+    Bands of width ``step`` of the cost to the nearest source: stepped isochrones search from the origins
+    (``reverse=False``), stepped coverage towards the services (``reverse=True``).
+    """
+    if geometry_type is not None and geometry_type not in {"radius", "ways", "separate"}:
+        raise ValueError(f"Unsupported geometry_type={geometry_type!r}")
+    if step is None:
+        step = 100.0 if weight_type == "length_meter" else 1.0
+    if step <= 0:
+        raise ValueError(f"step must be > 0, got {step}")
+    check_buffer_args(buffer_factor, road_buffer_size, off_network_distance)
+
+    distances = multi_source_dijkstra(
+        urban_graph,
+        source_nodes=source_nodes,
+        gdf_sources=gdf_sources,
+        graph_node_column=graph_node_column,
+        weight=weight_type,
+        cutoff=weight_value_cutoff,
+        reverse=reverse,
+        output="distances",
+    ).sparse.to_dense()
+    reachable = distances < np.inf
+    reachable_nodes = pd.DataFrame(
+        {"dist": distances[reachable].astype(float)}, index=pd.Index(distances.index[reachable], name="node")
+    )
+    if reachable_nodes.empty:
+        return gpd.GeoDataFrame()
+
+    weight_value = float(reachable_nodes["dist"].max()) if weight_value_cutoff is None else float(weight_value_cutoff)
+    result = build_stepped_accessibility_geometry(
+        urban_graph,
+        node_points(urban_graph, reachable_nodes),
+        geometry_type=geometry_type,
+        weight_value=weight_value,
+        weight_type=weight_type,
+        step=float(step),
+        local_crs=urban_graph.nodes_gdf.crs,
+        zone=zone,
+        buffer_factor=float(buffer_factor),
+        road_buffer_size=float(road_buffer_size),
+        off_network_distance=off_network_distance,
+    )
+    original_crs = gdf_sources.crs if gdf_sources is not None else urban_graph.nodes_gdf.crs
+    return result.to_crs(original_crs)
 
 
 def geometry_edges(urban_graph: UrbanGraph) -> gpd.GeoDataFrame:
@@ -84,37 +162,78 @@ def edge_speed_m_per_min(urban_graph: UrbanGraph) -> float:
     return float(edge_speeds.median())
 
 
+def radius_buffers(
+    reachable_graph_nodes_gdf: gpd.GeoDataFrame,
+    *,
+    weight_value: float,
+    weight_type: str,
+    speed_m_per_min: float | None,
+    max_distance: float | None = None,
+) -> np.ndarray:
+    """
+    Buffers of the reachable nodes by their remaining budget as a distance (the parts of a radius isochrone),
+    at most ``max_distance`` metres: the budget left at a node is spent off the network only that far.
+    """
+    buffer_size = (float(weight_value) - reachable_graph_nodes_gdf["dist"].to_numpy(dtype=float)).clip(min=0.0)
+
+    if weight_type == "time_min":
+        if speed_m_per_min is None:
+            raise ValueError("speed_m_per_min is required for weight_type='time_min'")
+        buffer_size = buffer_size * float(speed_m_per_min)
+    if max_distance is not None:
+        buffer_size = np.minimum(buffer_size, float(max_distance))
+    return shapely.buffer(reachable_graph_nodes_gdf.geometry.values, buffer_size, quad_segs=4)
+
+
 def build_radius_clip_geometry(
     reachable_graph_nodes_gdf: gpd.GeoDataFrame,
     *,
     weight_value: float,
     weight_type: str,
     speed_m_per_min: float | None,
+    max_distance: float | None = None,
 ):
-    buffer_size = (float(weight_value) - reachable_graph_nodes_gdf["dist"].astype(float)).clip(lower=0.0)
+    return shapely.union_all(
+        radius_buffers(
+            reachable_graph_nodes_gdf,
+            weight_value=weight_value,
+            weight_type=weight_type,
+            speed_m_per_min=speed_m_per_min,
+            max_distance=max_distance,
+        )
+    )
 
-    if weight_type == "time_min":
-        if speed_m_per_min is None:
-            raise ValueError("speed_m_per_min is required for weight_type='time_min'")
-        buffer_size = buffer_size * float(speed_m_per_min)
-    return reachable_graph_nodes_gdf.geometry.buffer(buffer_size, resolution=4).union_all()
+
+def ways_road_buffers(
+    urban_graph: UrbanGraph, reachable_graph_nodes_gdf: gpd.GeoDataFrame, road_buffer_size: float
+) -> np.ndarray:
+    """
+    Buffers of the geometry edges touching reachable nodes. Edges stored once per direction share
+    their geometry; each is kept once, which halves the union work without changing its result.
+    """
+    reachable_node_index = pd.Index(reachable_graph_nodes_gdf.index)
+    edges = geometry_edges(urban_graph)
+    edge_mask = edges["u"].isin(reachable_node_index) | edges["v"].isin(reachable_node_index)
+    lines = shapely.normalize(edges.geometry.values[edge_mask.to_numpy()])
+    if len(lines) == 0:
+        return lines
+    _, first = np.unique(shapely.to_wkb(lines), return_index=True)
+    return shapely.buffer(lines[np.sort(first)], float(road_buffer_size), quad_segs=1)
 
 
-def remove_inner_geom(geom):
-    if geom.is_empty:
-        return geom
-    if geom.geom_type == "Polygon":
-        return Polygon(geom.exterior)
-    if geom.geom_type == "MultiPolygon":
-        return MultiPolygon([Polygon(polygon.exterior) for polygon in geom.geoms])
-    if geom.geom_type == "GeometryCollection":
-        polygon_geoms = [
-            remove_inner_geom(part) for part in geom.geoms if part.geom_type in {"Polygon", "MultiPolygon"}
-        ]
-        if not polygon_geoms:
-            return GeometryCollection()
-        return unary_union(polygon_geoms)
-    return geom
+def finish_ways_clip_geometry(radius_geom, roads_geom, reachable_graph_nodes_gdf: gpd.GeoDataFrame, crs):
+    """Keep the parts of the road buffers inside the radius isochrone that hold a reachable node."""
+    if roads_geom is None or roads_geom.is_empty:
+        return GeometryCollection()
+    roads = gpd.GeoDataFrame(geometry=[roads_geom], crs=crs)
+    clipped_roads = roads.clip(radius_geom, keep_geom_type=True).explode(ignore_index=True)
+    if clipped_roads.empty:
+        return GeometryCollection()
+
+    geom_to_keep = clipped_roads.sjoin(reachable_graph_nodes_gdf[["geometry"]], how="inner").index.unique()
+    if len(geom_to_keep) == 0:
+        return GeometryCollection()
+    return remove_inner_geom(clipped_roads.loc[geom_to_keep].union_all())
 
 
 def build_ways_clip_geometry(
@@ -132,24 +251,12 @@ def build_ways_clip_geometry(
         weight_type=weight_type,
         speed_m_per_min=speed_m_per_min,
     )
-    reachable_node_index = pd.Index(reachable_graph_nodes_gdf.index)
-    edges = geometry_edges(urban_graph)
-    edge_mask = edges["u"].isin(reachable_node_index) | edges["v"].isin(reachable_node_index)
-    if not edge_mask.any():
+    road_buffers = ways_road_buffers(urban_graph, reachable_graph_nodes_gdf, road_buffer_size)
+    if len(road_buffers) == 0:
         return GeometryCollection()
-
-    roads = gpd.GeoDataFrame(
-        geometry=[edges.loc[edge_mask].geometry.buffer(float(road_buffer_size), resolution=1).union_all()],
-        crs=urban_graph.edges_gdf.crs,
+    return finish_ways_clip_geometry(
+        radius_geom, shapely.union_all(road_buffers), reachable_graph_nodes_gdf, urban_graph.edges_gdf.crs
     )
-    clipped_roads = roads.clip(radius_geom, keep_geom_type=True).explode(ignore_index=True)
-    if clipped_roads.empty:
-        return GeometryCollection()
-
-    geom_to_keep = clipped_roads.sjoin(reachable_graph_nodes_gdf[["geometry"]], how="inner").index.unique()
-    if len(geom_to_keep) == 0:
-        return GeometryCollection()
-    return remove_inner_geom(clipped_roads.loc[geom_to_keep].union_all())
 
 
 def build_separated_dist_polygons(
@@ -165,7 +272,7 @@ def build_separated_dist_polygons(
     Build independent per-step buffer polygons over reachable graph nodes.
 
     ``points`` must contain point geometry and a ``dist`` column in units of
-    ``weight_type``. For ``time_min`` the buffer size is converted to meters via
+    ``weight_type``. For ``time_min`` the buffer size is converted to metres via
     ``speed_m_per_min``.
     """
 
@@ -193,8 +300,9 @@ def build_separated_dist_polygons(
     if weight_type == "time_min":
         buffer_size = buffer_size * float(speed_m_per_min)
 
+    # the first band is [0, step]: sources at cost 0 belong to it, not to a band of their own
     points["dist"] = np.minimum(
-        np.ceil(points["dist"].astype(float).to_numpy() / float(step)) * float(step),
+        np.maximum(np.ceil(points["dist"].astype(float).to_numpy() / float(step)), 1.0) * float(step),
         float(weight_value),
     )
     points.geometry = points.geometry.buffer(buffer_size)
@@ -202,26 +310,11 @@ def build_separated_dist_polygons(
     if points.empty:
         return empty_result()
 
-    dissolved = points.dissolve(by="dist", as_index=False)
-    lines = dissolved.geometry.apply(polygons_to_multilinestring).union_all()
-    polygons = gpd.GeoDataFrame(geometry=list(polygonize(lines)), crs=points.crs)
-    if polygons.empty:
-        return empty_result()
-
-    polygon_points = polygons.copy()
-    polygon_points.geometry = polygons.representative_point()
-    stepped = polygon_points.sjoin(dissolved[["dist", "geometry"]], predicate="within")
+    # a face covered by several bands is reached first in the earliest of them
+    stepped = overlay_by_value(points.dissolve(by="dist", as_index=False), "dist", how="min")
     if stepped.empty:
         return empty_result()
-
-    stepped_dist = stepped.groupby(level=0)["dist"].mean()
-    stepped_dist = np.minimum(np.floor(stepped_dist / float(step)) * float(step), float(weight_value))
-    stepped_polygons = gpd.GeoDataFrame(
-        {"dist": stepped_dist.to_numpy()},
-        geometry=polygons.geometry.loc[stepped_dist.index].to_numpy(),
-        crs=points.crs,
-    )
-    return stepped_polygons.dissolve(by="dist", as_index=False).explode(ignore_index=True)
+    return stepped.explode(ignore_index=True)
 
 
 def build_stepped_accessibility_geometry(
@@ -236,6 +329,7 @@ def build_stepped_accessibility_geometry(
     zone: gpd.GeoDataFrame | gpd.GeoSeries | None,
     buffer_factor: float,
     road_buffer_size: float,
+    off_network_distance: float | None = None,
 ) -> gpd.GeoDataFrame:
     if reachable_graph_nodes_gdf.empty:
         return gpd.GeoDataFrame()
@@ -267,6 +361,7 @@ def build_stepped_accessibility_geometry(
             weight_value=float(weight_value),
             weight_type=weight_type,
             speed_m_per_min=speed_m_per_min,
+            max_distance=off_network_distance,
         )
     elif geometry_type == "ways":
         clip_geom = build_ways_clip_geometry(
@@ -284,8 +379,9 @@ def build_stepped_accessibility_geometry(
         clip_geom = clip_geom.intersection(zone.to_crs(local_crs).union_all())
 
     nodes_for_voronoi = reachable_graph_nodes_gdf.copy()
+    # the first band is [0, step]: sources at cost 0 belong to it, not to a band of their own
     nodes_for_voronoi["dist"] = np.minimum(
-        np.ceil(nodes_for_voronoi["dist"].astype(float).to_numpy() / float(step)) * float(step),
+        np.maximum(np.ceil(nodes_for_voronoi["dist"].astype(float).to_numpy() / float(step)), 1.0) * float(step),
         float(weight_value),
     )
 

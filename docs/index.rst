@@ -7,18 +7,18 @@
     methods/provision
     methods/visibility
     methods/noise
+    methods/insolation
+    methods/rasters
     methods/examples/index
-    migration_1_to_2
 
 ObjectNat
 =========
 
-Object-oriented Network Analysis Tools
---------------------------------------
+Object-level network and spatial analysis for cities
+----------------------------------------------------
 
-**ObjectNat** — an open-source Python library for **object-oriented network analysis** and **spatial accessibility modeling**,  
-developed by the **IDU team** at ITMO University.
-
+**ObjectNat** is an open-source Python library for spatial analysis of urban objects: buildings, services, street
+observers and noise sources. It is developed by the IDU team at ITMO University.
 
 |badge-black| |badge-pypi| |badge-ci| |badge-cov| |badge-license| |badge-github|
 
@@ -51,41 +51,47 @@ developed by the **IDU team** at ITMO University.
 Overview
 --------
 
-**ObjectNat** extends urban network analysis with a focus on **object-level geospatial computation**.
-It provides a unified set of tools for analyzing **coverage**, **provision**, **accessibility**,  
-**visibility**, and **noise simulation** on city-scale geospatial data.
+ObjectNat works with GeoPandas data and with street graphs (``iduedu.UrbanGraph``) built by
+`IduEdu <https://github.com/IDUclub/IduEdu>`__ from OpenStreetMap and GTFS. Every method page describes what is
+computed, the algorithm, the parameters and outputs with units, an example figure and the limitations.
 
-The library integrates seamlessly with:
+.. list-table::
+   :header-rows: 1
+   :widths: 24 46 30
 
-- **GeoPandas** and **Shapely** for spatial operations;
-- **IduEdu** ``UrbanGraph`` for graph preparation and multimodal routing;
-- Python's scientific ecosystem (NumPy, Pandas, Matplotlib, etc).
+   * - Method
+     - Result
+     - Functions
+   * - :doc:`methods/isochrones`
+     - Area reachable from origins within a time (min) or distance (m) budget on a graph
+     - :func:`~objectnat.get_graph_isochrones`, :func:`~objectnat.get_stepped_graph_isochrones`
+   * - :doc:`methods/coverage`
+     - Non-overlapping zones served by each service within a budget
+     - :func:`~objectnat.get_graph_coverage`, :func:`~objectnat.get_stepped_graph_coverage`,
+       :func:`~objectnat.get_radius_coverage`
+   * - :doc:`methods/provision`
+     - Allocation of building demand to services of limited capacity within a cost threshold
+     - :func:`~objectnat.get_service_provision` and helpers
+   * - :doc:`methods/visibility`
+     - Visibility polygons and isovist metrics (2D), viewsheds over building heights and terrain (2.5D), catchment
+       zones of many observers
+     - :func:`~objectnat.get_visibility`, :func:`~objectnat.get_isovist_grid`, :func:`~objectnat.get_viewshed`,
+       :func:`~objectnat.get_visibility_catchment`, :func:`~objectnat.get_viewshed_catchment`
+   * - :doc:`methods/noise`
+     - Sound levels (dB) around point, line and polygon sources among obstacles and vegetation
+     - :func:`~objectnat.simulate_noise_grid`, :func:`~objectnat.simulate_noise`,
+       :func:`~objectnat.calculate_simplified_noise_frame`
+   * - :doc:`methods/insolation`
+     - Direct sun hours on the ground and on facades per floor, for a day or a period
+     - :func:`~objectnat.get_insolation`, :func:`~objectnat.get_facade_insolation`
+   * - :doc:`methods/rasters`
+     - Grid results as rasters: matplotlib plots, GeoTIFF files, folium web-map overlays
+     - :func:`~objectnat.rasterize`, :class:`~objectnat.Raster`
 
-----
-
-Features
---------
-
-- **Isochrones & Accessibility**
-
-  - :func:`objectnat.get_graph_isochrones`, :func:`objectnat.get_stepped_graph_isochrones`
-- **Coverage Zones**
-
-  - :func:`objectnat.get_graph_coverage`, :func:`objectnat.get_radius_coverage`, :func:`objectnat.get_stepped_graph_coverage`
-- **Service Provision**
-
-  - :func:`objectnat.get_service_provision`, :func:`objectnat.get_provision_buildings`,
-    :func:`objectnat.get_provision_services`, :func:`objectnat.get_provision_links`,
-    :func:`objectnat.recalculate_links`, :func:`objectnat.clip_provision`
-- **Noise Simulation**
-
-  - :func:`objectnat.simulate_noise`, :func:`objectnat.calculate_simplified_noise_frame`
-- **Visibility Analysis**
-
-  - :func:`objectnat.get_visibility`
-- **Utilities**
-
-  - Geometry helpers used by accessibility, visibility, and noise workflows
+The computationally intensive parts (exact visibility, 2.5D lines of sight, insolation, receiver-grid noise and
+provision allocation) run in parallel threads in a compiled Rust extension, ``objectnat._rust``; graph searches use
+IduEdu's Numba-accelerated Dijkstra routines. :doc:`methods/examples/index` contains an executable notebook for
+every method.
 
 ----
 
@@ -96,87 +102,77 @@ Installation
 
    pip install objectnat
 
-Requires Python 3.11–3.14 and the standard geospatial stack (Pandas, GeoPandas,
-Shapely, NumPy, SciPy). Graph-based accessibility methods consume ``UrbanGraph``
-objects from IduEdu, which is installed with ObjectNat.
+ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.1 or newer within the 2.x
+series. Wheels contain the compiled extension, so ``pip`` needs no compiler; building from a source checkout requires
+a Rust toolchain (`rustup <https://rustup.rs>`__). Reading GeoTIFF terrain for insolation and viewsheds requires the
+optional ``rasterio`` package.
 
 ----
 
 Quickstart
 ----------
 
-To ensure optimal performance of ObjectNat's geospatial analysis functions, it's recommended
-to utilize urban graphs sourced from the `IduEdu <https://pypi.org/project/iduedu/>`_ library.
-**IduEdu** is an open-source Python library designed for the creation and manipulation of complex
-city networks from OpenStreetMap and GTFS Schedule data.
+Graph-based methods take an ``iduedu.UrbanGraph``. IduEdu can download a Geofabrik extract, cut the
+territory out of it and build the graph from the local file instead of the Overpass API (cutting requires
+``pip install "iduedu[pbf]"``):
 
 .. code-block:: python
 
-   # Install required packages (uncomment if needed)
-   # !pip install iduedu objectnat
-
    import geopandas as gpd
+   import iduedu
+   from iduedu import get_4326_boundary, get_intermodal_graph
    from shapely.geometry import Point
 
-   from iduedu import get_4326_boundary, get_intermodal_graph
    from objectnat import get_stepped_graph_isochrones
 
-   # Load boundary and build graph for a region (OSM ID 1114252)
-   poly = get_4326_boundary(osm_id=1114252)
-   graph = get_intermodal_graph(territory=poly, clip_by_territory=True)
+   # Vasilyevsky Island district, Saint Petersburg (OSM relation 1114252)
+   with iduedu.use_pbf(osm_id=1114252, region="northwestern-fed-district"):
+       boundary = get_4326_boundary(osm_id=1114252)
+       graph = get_intermodal_graph(territory=boundary, clip_by_territory=True)
 
-   # Compute stepped accessibility isochrones from one or more origin points.
-   origins = gpd.GeoDataFrame(
-       geometry=[Point(30.3141, 59.9386)],
-       crs=4326,
-   )
-
-   stepped_isochrones = get_stepped_graph_isochrones(
+   origins = gpd.GeoDataFrame(geometry=[Point(30.2706, 59.9355)], crs=4326)
+   bands = get_stepped_graph_isochrones(
        graph,
        gdf_origins=origins,
        weight_type="time_min",
-       weight_value_cutoff=10,
-       geometry_type="separate",
+       weight_value_cutoff=10,  # minutes
        step=2,
+       geometry_type="separate",
    )
 
-   stepped_isochrones.explore()
+Without the ``with`` block the same calls query the Overpass API.
+
+Methods without a graph take GeoDataFrames directly, for example sun hours among buildings with a storeys column:
+
+.. code-block:: python
+
+   from objectnat import get_insolation
+
+   zones = get_insolation(buildings, "2026-06-21", height_column=None, storeys_column="storeys_count")
+
+Configuration
+-------------
+
+.. code-block:: python
+
+   from objectnat import config
+
+   config.change_logger_lvl("INFO")  # hide debug messages
+   config.set_enable_tqdm(False)     # disable progress bars
 
 ----
 
-Contributions are very welcome!
-Open an issue or PR on GitHub to suggest new features or improvements.
+Contributing, contacts and citation
+-----------------------------------
 
-----
+Issues and pull requests are welcome on `GitHub <https://github.com/IDUclub/ObjectNat>`__; the workflow is described
+in ``CONTRIBUTING.md``.
 
-Contacts
---------
+- `NCCR <https://actcognitive.org/>`_, National Center for Cognitive Research
+- `IDU <https://idu.itmo.ru/>`_, Institute of Design and Urban Studies
+- `Natalya Chichkova <https://t.me/nancy_nat>`_, project manager
+- `Danila Oleynikov (Donny) <https://t.me/ddonny_dd>`_, lead software engineer
 
-- `NCCR <https://actcognitive.org/>`_ — National Center for Cognitive Research  
-- `IDU <https://idu.itmo.ru/>`_ — Institute of Design and Urban Studies  
-- `Natalya Chichkova <https://t.me/nancy_nat>`_ — Project Manager  
-- `Danila Oleynikov (Donny) <https://t.me/ddonny_dd>`_ — Lead Software Engineer
-
-----
-
-License
--------
-
-This project is open-source. See the :file:`LICENSE.txt` file for details.
-
-----
-
-Citing ObjectNat
-----------------
-
-If you use ObjectNat in research, please cite it. Citation metadata is kept in
-`CITATION.cff <https://github.com/IDUclub/ObjectNat/blob/master/CITATION.cff>`__; on GitHub,
-**Cite this repository** in the repository sidebar copies it as APA or BibTeX.
-Publications describing ObjectNat will be listed below.
-
-----
-
-Publications
-------------
-
-Coming soon…
+ObjectNat is distributed under the BSD 3-Clause license (``LICENSE.txt``). To cite it, use the metadata in
+`CITATION.cff <https://github.com/IDUclub/ObjectNat/blob/master/CITATION.cff>`__ (on GitHub, **Cite this repository**
+exports it as APA or BibTeX). Publications describing ObjectNat will be listed here.

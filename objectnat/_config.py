@@ -6,8 +6,7 @@ from loguru import logger
 
 class Config:
     """
-    A configuration class to manage global settings for the application, such as Overpass API URL,
-    timeouts, and logging options.
+    Global settings of ObjectNat: the logging level and the progress bars.
 
     Attributes
     ----------

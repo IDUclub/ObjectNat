@@ -1,0 +1,289 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Coverage Zones"
+msgstr "Зоны покрытия"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "A **coverage zone** is the area served by one service (a destination) within a travel-time or distance budget, where each place is assigned to the service that is closest along the network. Coverage differs from an isochrone in two respects: the network search runs **towards** the services (on the reversed graph), and zones of different services do not overlap."
+msgstr "**Зона покрытия** — территория, которую обслуживает один сервис (пункт назначения) в пределах бюджета времени или расстояния; каждое место относится к сервису, ближайшему по сети. Зона покрытия отличается от изохроны в двух отношениях: поиск по сети идёт **к** сервисам (по обращённому графу), и зоны разных сервисов не перекрываются."
+
+msgid ":func:`objectnat.get_graph_coverage` builds one zone per service on an ``iduedu.UrbanGraph``;"
+msgstr ":func:`objectnat.get_graph_coverage` строит по одной зоне на сервис на графе ``iduedu.UrbanGraph``;"
+
+msgid ":func:`objectnat.get_stepped_graph_coverage` splits the covered area into bands of width ``step``;"
+msgstr ":func:`objectnat.get_stepped_graph_coverage` делит обслуживаемую территорию на пояса шириной ``step``;"
+
+msgid ":func:`objectnat.get_radius_coverage` is a graph-free variant: a Voronoi partition of the services limited by a fixed radius."
+msgstr ":func:`objectnat.get_radius_coverage` — вариант без графа: разбиение Вороного по сервисам, ограниченное фиксированным радиусом."
+
+msgid "Method"
+msgstr "Метод"
+
+msgid "Every service is snapped to its nearest graph node, or node ids are taken from ``graph_node_column`` or ``destination_nodes``."
+msgstr "Каждый сервис привязывается к ближайшему узлу графа, либо идентификаторы узлов берутся из ``graph_node_column`` или ``destination_nodes``."
+
+msgid "A multi-source Dijkstra search runs on the reversed graph from all services at once, so every node is labelled with the service it reaches at the lowest cost (``time_min`` in minutes or ``length_meter`` in metres) within ``weight_value_cutoff``."
+msgstr "Многоисточниковый поиск Дейкстры выполняется по обращённому графу сразу от всех сервисов, поэтому каждый узел помечается сервисом, до которого стоимость пути минимальна (``time_min`` в минутах или ``length_meter`` в метрах), в пределах ``weight_value_cutoff``."
+
+msgid "Voronoi cells are built around the graph nodes, and the cells of the nodes labelled with one service are dissolved into its zone."
+msgstr "Вокруг узлов графа строятся ячейки Вороного, и ячейки узлов, помеченных одним сервисом, объединяются в его зону."
+
+msgid "The zones are clipped to ``zone`` (for example, a city boundary) or, without it, to the concave hull of the reachable nodes. ``geometry_type=\"radius\"`` additionally clips them to buffers around the reachable nodes by the residual distance, at most ``off_network_distance`` (150 m by default, as for isochrones), and ``geometry_type=\"ways\"`` to the buffered streets. For ``time_min`` the residual time is converted to a distance with the median edge speed of the graph."
+msgstr "Зоны обрезаются по ``zone`` (например, по границе города), а без него — по вогнутой оболочке достижимых узлов. ``geometry_type=\"radius\"`` дополнительно обрезает их по буферам вокруг достижимых узлов радиусом в остаточное расстояние, но не больше ``off_network_distance`` (по умолчанию 150 м, как для изохрон), а ``geometry_type=\"ways\"`` — по буферам улиц. Для ``time_min`` остаток времени переводится в расстояние по медианной скорости на рёбрах графа."
+
+msgid "On walk and intermodal graphs only pedestrian (``type == \"walk\"``) edges shape ``\"ways\"``, and only their end nodes shape any geometry, as for isochrones."
+msgstr "На пешеходных и интермодальных графах форму ``\"ways\"`` задают только пешеходные рёбра (``type == \"walk\"``), а геометрию любого типа — только их концевые узлы, как и для изохрон."
+
+msgid "Stepped coverage labels every node with the cost to its nearest service and builds one band per cost interval of width ``step``: Voronoi cells (``geometry_type=None``), cells clipped to residual-radius buffers or streets (``\"radius\"``, ``\"ways\"``) or independent buffers (``\"separate\"``)."
+msgstr "Ступенчатое покрытие помечает каждый узел стоимостью пути до ближайшего сервиса и строит по одному поясу на интервал стоимости шириной ``step``: ячейки Вороного (``geometry_type=None``), ячейки, обрезанные по буферам остаточного расстояния или по улицам (``\"radius\"``, ``\"ways\"``), или независимые буферы (``\"separate\"``)."
+
+msgid ":func:`objectnat.get_radius_coverage` reprojects the services to a local UTM zone, builds their Voronoi polygons, clips them to the union of ``radius``-metre buffers around the services and smooths every polygon by an inward buffer followed by a slightly smaller outward buffer, both proportional to the cube root of the polygon area. The smoothing rounds the corners, so zones can be slightly smaller than the clipped Voronoi cells."
+msgstr ":func:`objectnat.get_radius_coverage` перепроецирует сервисы в локальную зону UTM, строит их полигоны Вороного, обрезает их по объединению буферов радиусом ``radius`` метров вокруг сервисов и сглаживает каждый полигон внутренним буфером и следующим за ним чуть меньшим внешним, оба пропорциональны кубическому корню из площади полигона. Сглаживание скругляет углы, поэтому зоны могут быть немного меньше обрезанных ячеек Вороного."
+
+msgid "Outputs"
+msgstr "Результаты"
+
+msgid ":func:`objectnat.get_graph_coverage` and :func:`objectnat.get_radius_coverage` return one polygon per service, indexed like the input services (join service attributes back by index). :func:`objectnat.get_stepped_graph_coverage` returns polygons with the column ``dist`` (upper bound of the interval, in minutes or metres). All results are in the CRS of the input services."
+msgstr ":func:`objectnat.get_graph_coverage` и :func:`objectnat.get_radius_coverage` возвращают по одному полигону на сервис с индексом входных сервисов (атрибуты сервисов присоединяются по индексу). :func:`objectnat.get_stepped_graph_coverage` возвращает полигоны со столбцом ``dist`` (верхняя граница интервала в минутах или метрах). Все результаты — в системе координат входных сервисов."
+
+msgid "Calculate coverage zones of destinations (services) on an urban graph using Dijkstra reachability and Voronoi partitioning."
+msgstr "Рассчитывает зоны покрытия пунктов назначения (сервисов) на городском графе по достижимости Дейкстры и разбиению Вороного."
+
+msgid "Coverage answers *\"which area is served by each destination\"*. The function:"
+msgstr "Зона покрытия отвечает на вопрос *«какую территорию обслуживает каждый пункт назначения»*. Функция:"
+
+msgid "Snaps each destination to its nearest graph node (or uses the provided ``destination_nodes``)."
+msgstr "Привязывает каждый пункт назначения к ближайшему узлу графа (или использует переданные ``destination_nodes``)."
+
+msgid "Runs a multi-source Dijkstra search on the reversed graph, so every reachable node is labelled with its nearest destination within ``weight_value_cutoff``."
+msgstr "Выполняет многоисточниковый поиск Дейкстры по обращённому графу, так что каждый достижимый узел помечается ближайшим пунктом назначения в пределах ``weight_value_cutoff``."
+
+msgid "Builds Voronoi polygons around the graph nodes."
+msgstr "Строит полигоны Вороного вокруг узлов графа."
+
+msgid "Dissolves the reachable Voronoi cells per destination into one zone each."
+msgstr "Объединяет достижимые ячейки Вороного каждого пункта назначения в одну зону."
+
+msgid "Clips the result to ``zone``, to a residual-radius / road geometry (``geometry_type``), or to the concave hull of the reachable nodes."
+msgstr "Обрезает результат по ``zone``, по геометрии остаточного радиуса или улиц (``geometry_type``) или по вогнутой оболочке достижимых узлов."
+
+msgid "Parameters"
+msgstr "Параметры"
+
+msgid "City graph with node (``nodes_gdf``) and edge (``edges_gdf``) tables."
+msgstr "Городской граф с таблицами узлов (``nodes_gdf``) и рёбер (``edges_gdf``)."
+
+msgid "Destinations the coverage is measured *to*. If the table already contains ``graph_node_column`` those node ids are used directly; otherwise each geometry is snapped to its nearest graph node. Pass either this or ``destination_nodes``."
+msgstr "Пункты назначения, *до* которых измеряется покрытие. Если в таблице уже есть ``graph_node_column``, используются эти идентификаторы узлов; иначе каждая геометрия привязывается к ближайшему узлу графа. Передайте либо этот параметр, либо ``destination_nodes``."
+
+msgid "Node ids of the destinations, used instead of ``gdf_destinations``."
+msgstr "Идентификаторы узлов пунктов назначения, используются вместо ``gdf_destinations``."
+
+msgid "Name of the column with graph node ids in ``gdf_destinations``."
+msgstr "Имя столбца с идентификаторами узлов графа в ``gdf_destinations``."
+
+msgid "Type of edge weight used for path calculation:  - ``\"time_min\"``: edge travel time in minutes - ``\"length_meter\"``: edge length in metres"
+msgstr "Type of edge weight used for path calculation:  - ``\"time_min\"``: edge travel time in minutes - ``\"length_meter\"``: edge length in metres"
+
+msgid "Type of edge weight used for path calculation:"
+msgstr "Тип веса рёбер для расчёта путей:"
+
+msgid "``\"time_min\"``: edge travel time in minutes"
+msgstr "``\"time_min\"``: время проезда по ребру в минутах"
+
+msgid "``\"length_meter\"``: edge length in metres"
+msgstr "``\"length_meter\"``: длина ребра в метрах"
+
+msgid "Optional refinement of the coverage shape:  - ``None``: raw Voronoi cells clipped to ``zone`` or the concave hull - ``\"radius\"``: additionally clip to buffers around the reachable nodes   (remaining budget as a distance, at most ``off_network_distance``) - ``\"ways\"``: additionally clip to buffered road geometry inside the   residual radii (walk edges only on intermodal/walk graphs)  Requires ``weight_value_cutoff`` when set."
+msgstr "Optional refinement of the coverage shape:  - ``None``: raw Voronoi cells clipped to ``zone`` or the concave hull - ``\"radius\"``: additionally clip to buffers around the reachable nodes   (remaining budget as a distance, at most ``off_network_distance``) - ``\"ways\"``: additionally clip to buffered road geometry inside the   residual radii (walk edges only on intermodal/walk graphs)  Requires ``weight_value_cutoff`` when set."
+
+msgid "Optional refinement of the coverage shape:"
+msgstr "Необязательное уточнение формы зон:"
+
+msgid "``None``: raw Voronoi cells clipped to ``zone`` or the concave hull"
+msgstr "``None``: исходные ячейки Вороного, обрезанные по ``zone`` или по вогнутой оболочке"
+
+msgid "``\"radius\"``: additionally clip to buffers around the reachable nodes (remaining budget as a distance, at most ``off_network_distance``)"
+msgstr "``\"radius\"``: дополнительная обрезка по буферам вокруг достижимых узлов (остаток бюджета в виде расстояния, не больше ``off_network_distance``)"
+
+msgid "``\"ways\"``: additionally clip to buffered road geometry inside the residual radii (walk edges only on intermodal/walk graphs)"
+msgstr "``\"ways\"``: дополнительная обрезка по буферам улиц внутри остаточных радиусов (на интермодальных и пешеходных графах только пешеходные рёбра)"
+
+msgid "Requires ``weight_value_cutoff`` when set."
+msgstr "Если задан, требует ``weight_value_cutoff``."
+
+msgid "Maximum path cost, e.g. max travel time or distance. Units depend on ``weight_type``."
+msgstr "Максимальная стоимость пути, например время в пути или расстояние. Единицы зависят от ``weight_type``."
+
+msgid "Boundary polygon to clip the resulting zones. If ``None`` and no ``geometry_type`` is given, the concave hull of the reachable nodes is used."
+msgstr "Полигон границы, по которому обрезаются зоны. Если ``None`` и ``geometry_type`` не задан, используется вогнутая оболочка достижимых узлов."
+
+msgid "Not used by coverage zones; accepted for symmetry with :func:`get_stepped_graph_coverage` (default 0.7)."
+msgstr "Не используется зонами покрытия; принимается для единообразия с :func:`get_stepped_graph_coverage` (по умолчанию 0.7)."
+
+msgid "Buffer applied to graph edges for ``geometry_type=\"ways\"``, in metres (default 5.0)."
+msgstr "Буфер рёбер графа для ``geometry_type=\"ways\"``, в метрах (по умолчанию 5.0)."
+
+msgid "For ``geometry_type=\"radius\"``: how far from the network, in metres, a place may lie and still count as reached. Every reachable node is buffered by its remaining budget converted to a distance, but by no more than this, so the area follows the network instead of growing into a straight-line circle around the start. ``None`` buffers by the whole remaining budget. Defaults to 150."
+msgstr "Для ``geometry_type=\"radius\"``: насколько далеко от сети, в метрах, может лежать место, чтобы считаться достигнутым. Каждый достижимый узел получает буфер радиусом в остаток бюджета, переведённый в расстояние, но не больше этого значения, поэтому территория повторяет сеть, а не разрастается в круг по прямой вокруг начальной точки. ``None`` строит буферы на весь остаток бюджета. По умолчанию 150."
+
+msgid "Returns"
+msgstr "Возвращает"
+
+msgid "One coverage polygon per destination, returned in the CRS of ``gdf_destinations`` (or the graph CRS when node ids are passed). The index matches ``gdf_destinations`` / ``destination_nodes``."
+msgstr "Один полигон покрытия на пункт назначения в системе координат ``gdf_destinations`` (или графа, если переданы идентификаторы узлов). Индекс совпадает с ``gdf_destinations`` / ``destination_nodes``."
+
+msgid "Return type"
+msgstr "Тип возвращаемого значения"
+
+msgid "Notes"
+msgstr "Примечания"
+
+msgid "For a directed graph the search runs on the reversed edges, so a zone describes the area from which its destination can be reached."
+msgstr "Для ориентированного графа поиск идёт по обращённым рёбрам, поэтому зона описывает территорию, из которой можно добраться до её пункта назначения."
+
+msgid "On walk and intermodal graphs the zones are built from nodes reachable on foot, so route nodes sharing a stop cannot give one place to several destinations."
+msgstr "На пешеходных и интермодальных графах зоны строятся по узлам, достижимым пешком, поэтому узлы маршрутов на одной остановке не могут отдать одно место нескольким пунктам назначения."
+
+msgid "An empty ``GeoDataFrame`` is returned when nothing is reachable."
+msgstr "Если ничего не достижимо, возвращается пустой ``GeoDataFrame``."
+
+msgid "Calculate stepped coverage zones of destinations (services), combining graph reachability with banded (stepped) isochrone geometry."
+msgstr "Рассчитывает ступенчатые зоны покрытия пунктов назначения (сервисов), сочетая достижимость по графу с поясной (ступенчатой) геометрией изохрон."
+
+msgid "Like :func:`get_graph_coverage`, but instead of one zone per destination the reachable area is split into concentric bands of width ``step``. The function:"
+msgstr "Как :func:`get_graph_coverage`, но вместо одной зоны на пункт назначения достижимая территория делится на концентрические пояса шириной ``step``. Функция:"
+
+msgid "Runs a multi-source Dijkstra search on the reversed graph, labelling every reachable node with the cost to its nearest destination."
+msgstr "Выполняет многоисточниковый поиск Дейкстры по обращённому графу и помечает каждый достижимый узел стоимостью пути до ближайшего пункта назначения."
+
+msgid "Buckets the nodes into steps and builds banded geometry with the selected ``geometry_type``."
+msgstr "Распределяет узлы по ступеням и строит геометрию поясов с выбранным ``geometry_type``."
+
+msgid "Optionally clips the bands to ``zone``."
+msgstr "При необходимости обрезает пояса по ``zone``."
+
+msgid "City graph with node and edge tables."
+msgstr "Городской граф с таблицами узлов и рёбер."
+
+msgid "Destinations the coverage is measured *to*. If the table contains ``graph_node_column`` those ids are used; otherwise geometries are snapped to nearest nodes. Pass either this or ``destination_nodes``."
+msgstr "Пункты назначения, *до* которых измеряется покрытие. Если в таблице есть ``graph_node_column``, используются эти идентификаторы; иначе геометрии привязываются к ближайшим узлам. Передайте либо этот параметр, либо ``destination_nodes``."
+
+msgid "Name of the graph node id column in ``gdf_destinations``."
+msgstr "Имя столбца с идентификаторами узлов графа в ``gdf_destinations``."
+
+msgid "Method used to build each step's geometry:  - ``None``: Voronoi cells around graph nodes - ``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``) - ``\"ways\"``: Voronoi cells clipped to buffered road geometry   (walk edges only on intermodal/walk graphs) - ``\"separate\"``: independent circular buffers per step"
+msgstr "Method used to build each step's geometry:  - ``None``: Voronoi cells around graph nodes - ``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``) - ``\"ways\"``: Voronoi cells clipped to buffered road geometry   (walk edges only on intermodal/walk graphs) - ``\"separate\"``: independent circular buffers per step"
+
+msgid "Method used to build each step's geometry:"
+msgstr "Способ построения геометрии каждой ступени:"
+
+msgid "``None``: Voronoi cells around graph nodes"
+msgstr "``None``: ячейки Вороного вокруг узлов графа"
+
+msgid "``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``)"
+msgstr "``\"radius\"``: ячейки Вороного, обрезанные по буферам радиуса (см. ``off_network_distance``)"
+
+msgid "``\"ways\"``: Voronoi cells clipped to buffered road geometry (walk edges only on intermodal/walk graphs)"
+msgstr "``\"ways\"``: ячейки Вороного, обрезанные по буферам улиц (на интермодальных и пешеходных графах только пешеходные рёбра)"
+
+msgid "``\"separate\"``: independent circular buffers per step"
+msgstr "``\"separate\"``: независимые круговые буферы для каждой ступени"
+
+msgid "Maximum path cost limiting the coverage extent. If ``None``, the farthest reachable node defines the extent."
+msgstr "Максимальная стоимость пути, ограничивающая покрытие. Если ``None``, границу задаёт самый дальний достижимый узел."
+
+msgid "Boundary polygon to clip the resulting stepped zones."
+msgstr "Полигон границы, по которому обрезаются ступенчатые зоны."
+
+msgid "Width of each step, in units of ``weight_type``. Defaults to 100 metres for ``length_meter`` and 1 minute for ``time_min``."
+msgstr "Ширина каждой ступени в единицах ``weight_type``. По умолчанию 100 метров для ``length_meter`` и 1 минута для ``time_min``."
+
+msgid "Buffer multiplier used by ``geometry_type=\"separate\"`` (default 0.7)."
+msgstr "Множитель буфера для ``geometry_type=\"separate\"`` (по умолчанию 0.7)."
+
+msgid "Edge buffer for ``geometry_type=\"ways\"``, in metres (default 5.0)."
+msgstr "Буфер рёбер для ``geometry_type=\"ways\"``, в метрах (по умолчанию 5.0)."
+
+msgid "Stepped coverage polygons with a ``dist`` column (the upper bound of each step, in units of ``weight_type``) and ``geometry``, returned in the CRS of ``gdf_destinations`` (or the graph CRS)."
+msgstr "Полигоны ступенчатого покрытия со столбцом ``dist`` (верхняя граница каждой ступени в единицах ``weight_type``) и ``geometry`` в системе координат ``gdf_destinations`` (или графа)."
+
+msgid "For a directed graph the search runs on the reversed edges; for an undirected graph on the original symmetric adjacency."
+msgstr "Для ориентированного графа поиск идёт по обращённым рёбрам; для неориентированного — по исходной симметричной смежности."
+
+msgid "On walk and intermodal graphs the bands are built from nodes reachable on foot, so transit route nodes at a stop, whose cost includes the wait, do not move it to a later band."
+msgstr "На пешеходных и интермодальных графах пояса строятся по узлам, достижимым пешком, поэтому узлы маршрутов транспорта на остановке, стоимость которых включает ожидание, не переносят её в более поздний пояс."
+
+msgid "Calculate radius-based coverage zones using Voronoi polygons."
+msgstr "Рассчитывает зоны покрытия по радиусу с помощью полигонов Вороного."
+
+msgid "This is a graph-free coverage: zones are built purely from the service points, a fixed radius and a Voronoi partition, with no network involved."
+msgstr "Это покрытие без графа: зоны строятся только по точкам сервисов, фиксированному радиусу и разбиению Вороного, без сети."
+
+msgid "Service points for which coverage zones are calculated."
+msgstr "Точки сервисов, для которых рассчитываются зоны покрытия."
+
+msgid "Maximum coverage radius in metres."
+msgstr "Максимальный радиус покрытия в метрах."
+
+msgid "Number of segments per quarter circle of the buffers (default 32)."
+msgstr "Число сегментов на четверть окружности в буферах (по умолчанию 32)."
+
+msgid "Smoothed coverage zones, one polygon per point, in the CRS of ``gdf_from``."
+msgstr "Сглаженные зоны покрытия, по одному полигону на точку, в системе координат ``gdf_from``."
+
+msgid "The calculation runs in a local UTM zone, so ``radius`` is in metres."
+msgstr "Расчёт выполняется в локальной зоне UTM, поэтому ``radius`` задаётся в метрах."
+
+msgid "The zones are smoothed by a slight inward and outward buffer, which rounds their corners."
+msgstr "Зоны сглаживаются небольшим внутренним и внешним буфером, который скругляет их углы."
+
+msgid "Figures"
+msgstr "Рисунки"
+
+msgid "Coverage zones by time, by distance and by radius"
+msgstr "Зоны покрытия по времени, по расстоянию и по радиусу"
+
+msgid "Coverage zones of the example services: within 10 minutes on the intermodal graph clipped to the district, within 600 m of network distance, and the graph-free :func:`objectnat.get_radius_coverage` with ``radius=800``. Background: pedestrian streets of the graph and the district boundary."
+msgstr "Зоны покрытия сервисов из примера: в пределах 10 минут на интермодальном графе с обрезкой по району, в пределах 600 м сетевого расстояния и без графа, :func:`objectnat.get_radius_coverage` с ``radius=800``. Фон: пешеходные улицы графа и граница района."
+
+msgid "Stepped coverage zones for geometry_type None and separate"
+msgstr "Ступенчатые зоны покрытия для geometry_type None и separate"
+
+msgid "Stepped coverage zones up to 15 minutes in bands of 2 minutes: ``geometry_type=None`` (Voronoi cells of the graph nodes, clipped to the district with ``zone``) and ``\"separate\"`` (independent buffers). ``\"radius\"`` and ``\"ways\"`` clip the same Voronoi bands to the radius buffers or to the buffered streets. Background: pedestrian streets of the graph and the district boundary."
+msgstr "Ступенчатые зоны покрытия до 15 минут поясами по 2 минуты: ``geometry_type=None`` (ячейки Вороного узлов графа, обрезанные по району через ``zone``) и ``\"separate\"`` (независимые буферы). ``\"radius\"`` и ``\"ways\"`` обрезают те же пояса Вороного по буферам радиуса или по буферам улиц. Фон: пешеходные улицы графа и граница района."
+
+msgid "Limitations"
+msgstr "Ограничения"
+
+msgid "Each place is assigned to one service, the one with the lowest network cost; capacity is not considered. Use :doc:`provision` to allocate demand under capacity limits."
+msgstr "Каждое место относится к одному сервису — с наименьшей сетевой стоимостью; вместимость не учитывается. Для распределения спроса с учётом вместимости используйте :doc:`provision`."
+
+msgid "Zone outlines between network nodes come from Voronoi cells and residual-distance buffers, not from the street layout; their accuracy depends on the density of graph nodes."
+msgstr "Границы зон между узлами сети задаются ячейками Вороного и буферами остаточного расстояния, а не планировкой улиц; их точность зависит от плотности узлов графа."
+
+msgid ":func:`objectnat.get_radius_coverage` ignores the network and barriers such as rivers or railways."
+msgstr ":func:`objectnat.get_radius_coverage` не учитывает сеть и барьеры, например реки или железные дороги."
+
+msgid "Example notebook"
+msgstr "Пример в ноутбуке"
+
+msgid ":doc:`examples/coverage`"
+msgstr ":doc:`examples/coverage`"
+

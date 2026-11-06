@@ -52,8 +52,17 @@ jobs:
       - name: Install project + docs deps
         run: uv sync --no-dev --group docs
 
-      - name: Build Sphinx HTML
+      # Pages, notebook text and docstrings are translated in docs/locale/ru; a pull request fails while
+      # anything is left untranslated (see docs/i18n.py and CONTRIBUTING.md).
+      - name: Check the Russian translation
+        if: ${{ github.event_name == 'pull_request' }}
+        run: uv run python docs/i18n.py check
+
+      - name: Build Sphinx HTML (English)
         run: uv run sphinx-build -E -b html -d docs/_build/doctrees docs docs/_build/html --keep-going
+
+      - name: Build Sphinx HTML (Russian)
+        run: uv run sphinx-build -E -b html -D language=ru -d docs/_build/doctrees-ru docs docs/_build/html/ru --keep-going
 
       - name: Upload docs artifact (for PR preview)
         if: ${{ github.event_name == 'pull_request' }}

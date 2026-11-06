@@ -1,17 +1,48 @@
 [project]
 name = "ObjectNat"
-dynamic = ["version"]
+# kept in sync with rust/Cargo.toml, objectnat/_version.py and CITATION.cff by python-semantic-release
+version = "2.1.0"
 description = "ObjectNat is an open-source library for object-level geospatial analysis on city networks, developed by the IDU team."
 readme = "README.rst"
 requires-python = ">=3.11,<3.15"
 license = "BSD-3-Clause"
 license-files = ["LICENSE.txt"]
 authors = [
-    { name = "DDonnyy", email = "63115678+DDonnyy@users.noreply.github.com" },
+    { name = "DDonnyy", email = "ddonnyy@itmo.ru" },
+]
+keywords = [
+    "urban analytics",
+    "geospatial",
+    "GIS",
+    "accessibility",
+    "isochrones",
+    "service provision",
+    "visibility analysis",
+    "isovist",
+    "noise simulation",
+    "street network",
+    "GeoPandas",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Rust",
+    "Typing :: Typed",
 ]
 dependencies = [
     "geopandas>=1.1.0,<2.0.0",
-    "iduedu>=2.2.0,<3.0.0",
+    "iduedu>=2.4.2,<3.0.0",
     "loguru>=0.7.3,<0.8.0",
     "numpy>=2.0.0,<3.0.0; python_version < '3.14'",
     "numpy>=2.4.0,<3.0.0; python_version >= '3.14'",
@@ -21,6 +52,13 @@ dependencies = [
     "scipy>=1.17.0,<2.0.0; python_version >= '3.14'",
     "tqdm>=4.66.2,<5.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/IDUclub/ObjectNat"
+Documentation = "https://iduclub.github.io/ObjectNat/"
+Repository = "https://github.com/IDUclub/ObjectNat"
+Issues = "https://github.com/IDUclub/ObjectNat/issues"
+Changelog = "https://github.com/IDUclub/ObjectNat/blob/master/CHANGELOG.md"
 
 [dependency-groups]
 dev = [
@@ -43,9 +81,9 @@ docs = [
     "sphinx-design>=0.6.0,<0.7.0",
 ]
 lint = [
-    "black>=25.9.0,<26.0.0",
+    "black>=26.10.1,<27.0.0",
     "isort>=6.1.0,<7.0.0",
-    "pylint>=3.3.5,<4.0.0",
+    "pylint>=4.0.9,<5.0.0",
 ]
 notebooks = [
     "jupyter>=1.1.1,<2.0.0",
@@ -54,11 +92,11 @@ release = [
     "python-semantic-release>=9.15.0,<10.0.0",
 ]
 test = [
+    "osmium>=4.0,<5",  # reads the Geofabrik extract of the test territory (iduedu[pbf])
     "matplotlib>=3.8.0,<4.0.0; python_version < '3.14'",
     "matplotlib>=3.10.7,<4.0.0; python_version >= '3.14'",
-    "pyarrow>=18.1.0,<26.0.0; python_version < '3.14'",
-    "pyarrow>=22.0.0,<26.0.0; python_version >= '3.14'",
-    "pytest>=8.3.5,<9.0.0",
+    "pyarrow>=23.0.1,<26.0.0",
+    "pytest>=9.0.3,<10.0.0",
     "pytest-cov>=6.0.0,<7.0.0",
 ]
 viz = [
@@ -66,29 +104,32 @@ viz = [
     "mapclassify>=2.8.1,<3.0.0",
     "matplotlib>=3.8.0,<4.0.0; python_version < '3.14'",
     "matplotlib>=3.10.7,<4.0.0; python_version >= '3.14'",
+    "rasterio>=1.4.3,<2.0.0",
 ]
 
 
 [build-system]
-requires = ["hatchling>=1.26.0"]
-build-backend = "hatchling.build"
+requires = ["maturin>=1.9,<2.0"]
+build-backend = "maturin"
 
-# Single source of truth for the version: objectnat/_version.py (VERSION = "x.y.z").
-# python-semantic-release bumps that file; hatchling reads it at build time.
-[tool.hatch.version]
-path = "objectnat/_version.py"
-pattern = 'VERSION = "(?P<version>[^"]+)"'
-
-[tool.hatch.build.targets.wheel]
-packages = ["objectnat"]
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "/objectnat",
-    "/LICENSE.txt",
-    "/README.rst",
-    "/pyproject.toml",
+# The package is pure Python plus one compiled extension, objectnat._rust, built from rust/ (PyO3, abi3:
+# one wheel per platform covers every supported Python version).
+[tool.maturin]
+bindings = "pyo3"
+manifest-path = "rust/Cargo.toml"
+module-name = "objectnat._rust"
+python-source = "."
+python-packages = ["objectnat"]
+features = ["pyo3/extension-module"]
+exclude = [
+    { path = "objectnat/**/__pycache__/**", format = "sdist" },
+    { path = "objectnat/_rust*.so", format = "sdist" },
+    { path = "objectnat/_rust*.pyd", format = "sdist" },
 ]
+
+[tool.uv]
+# rebuild the extension when the Rust sources change, not only when pyproject.toml does
+cache-keys = [{ file = "pyproject.toml" }, { file = "rust/Cargo.toml" }, { file = "rust/src/**/*.rs" }]
 
 [tool.black]
 line-length = 120
@@ -139,7 +180,7 @@ exclude_lines = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["network: requires a live Overpass request to build an OSM graph"]
+markers = ["network: needs the OSM graph of the test territory (Overpass or Geofabrik on first run)"]
 
 # ---------------------------------------------------------------------------
 # Automated releases (python-semantic-release)
@@ -147,14 +188,18 @@ markers = ["network: requires a live Overpass request to build an OSM graph"]
 # The next version is derived from Conventional Commit messages since the last
 # tag: feat -> minor, fix/perf -> patch, feat!/BREAKING CHANGE -> major.
 # In the official repository, the release workflow runs after Tests and Coverage
-# succeeds on master, bumps objectnat/_version.py, updates CHANGELOG.md, commits,
-# tags vX.Y.Z, and publishes. See CONTRIBUTING.md.
+# succeeds on master, bumps the version in pyproject.toml, rust/Cargo.toml,
+# objectnat/_version.py and CITATION.cff, refreshes uv.lock, updates CHANGELOG.md,
+# commits, tags vX.Y.Z, builds the sdist and the abi3 wheels, and publishes.
+# See CONTRIBUTING.md.
 # ---------------------------------------------------------------------------
 [tool.semantic_release]
+version_toml = ["pyproject.toml:project.version", "rust/Cargo.toml:package.version"]
 version_variables = ["objectnat/_version.py:VERSION", "CITATION.cff:version"]
+assets = ["uv.lock"]
 tag_format = "v{version}"
 commit_message = "chore(release): v{version} [skip ci]\n\nAutomated release, see CHANGELOG.md."
-build_command = "python -m pip install uv && uv build"
+build_command = "python -m pip install uv 'maturin>=1.9,<2.0' && uv lock && maturin sdist --out dist"
 allow_zero_version = false
 major_on_zero = true
 

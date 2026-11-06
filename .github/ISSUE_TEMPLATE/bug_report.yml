@@ -1,0 +1,34 @@
+name: Bug report
+description: Something in ObjectNat gives an error or a wrong result
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you ran, what you got and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal example
+      description: >
+        Code that reproduces the problem, ideally on small synthetic data or the example data from
+        `docs/methods/examples/examples_data/`. Paste the full traceback if there is one.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions
+      description: "Output of: python -c \"import objectnat, iduedu, geopandas, shapely, sys; print(sys.version, objectnat.__version__, iduedu.__version__, geopandas.__version__, shapely.__version__)\""
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Ubuntu 24.04 / macOS 15 arm64 / Windows 11

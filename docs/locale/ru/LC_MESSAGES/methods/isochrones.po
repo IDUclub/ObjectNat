@@ -1,0 +1,250 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Isochrones"
+msgstr "Изохроны"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "An **isochrone** is the area reachable from an origin within a travel-time or distance budget along a transport network. ObjectNat builds isochrones on an ``iduedu.UrbanGraph`` prepared by `IduEdu <https://github.com/IDUclub/IduEdu>`__ (walk, drive, public transport or intermodal graph). :func:`objectnat.get_graph_isochrones` returns one polygon per origin; :func:`objectnat.get_stepped_graph_isochrones` splits the reachable area into bands of width ``step``."
+msgstr "**Изохрона** — территория, достижимая из точки отправления по транспортной сети в пределах бюджета времени или расстояния. ObjectNat строит изохроны на графе ``iduedu.UrbanGraph``, подготовленном `IduEdu <https://github.com/IDUclub/IduEdu>`__ (пешеходный, автомобильный, граф общественного транспорта или интермодальный). :func:`objectnat.get_graph_isochrones` возвращает один полигон на точку отправления; :func:`objectnat.get_stepped_graph_isochrones` делит достижимую территорию на пояса шириной ``step``."
+
+msgid "Method"
+msgstr "Метод"
+
+msgid "Every origin is snapped to its nearest graph node, or node ids are taken from ``graph_node_column`` or ``origin_nodes``."
+msgstr "Каждая точка отправления привязывается к ближайшему узлу графа, либо идентификаторы узлов берутся из ``graph_node_column`` или ``origin_nodes``."
+
+msgid "A Dijkstra search runs outward from the origins along the edge direction, with edge weights ``time_min`` (minutes, default) or ``length_meter`` (metres), up to ``weight_value_cutoff``. The searches of all origins run in one parallel call of IduEdu's Numba routines."
+msgstr "Поиск Дейкстры идёт от точек отправления по направлению рёбер с весами ``time_min`` (минуты, по умолчанию) или ``length_meter`` (метры) до ``weight_value_cutoff``. Поиски от всех точек выполняются одним параллельным вызовом процедур Numba из IduEdu."
+
+msgid "The reachable nodes are turned into a polygon according to ``geometry_type``. The residual budget of a node (cutoff minus its cost) is converted to a distance, for ``time_min`` with the median edge speed of the graph (``length_meter / time_min``):"
+msgstr "Достижимые узлы превращаются в полигон в зависимости от ``geometry_type``. Остаток бюджета в узле (предел минус стоимость пути до узла) переводится в расстояние, для ``time_min`` — по медианной скорости на рёбрах графа (``length_meter / time_min``):"
+
+msgid "``\"radius\"`` (default): union of buffers around the reachable nodes; the radius of a buffer is the residual distance of its node, but at most ``off_network_distance`` (150 m by default);"
+msgstr "``\"radius\"`` (по умолчанию): объединение буферов вокруг достижимых узлов; радиус буфера — остаточное расстояние узла, но не больше ``off_network_distance`` (по умолчанию 150 м);"
+
+msgid "``\"ways\"``: reachable edges buffered by ``road_buffer_size`` metres, limited by buffers of the full residual distance;"
+msgstr "``\"ways\"``: достижимые рёбра с буфером ``road_buffer_size`` метров, ограниченные буферами на всё остаточное расстояние;"
+
+msgid "``\"separate\"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes, merged into one polygon."
+msgstr "``\"separate\"``: буферы радиусом ``buffer_factor`` × остаточное расстояние вокруг достижимых узлов, объединённые в один полигон."
+
+msgid "The result is clipped to ``zone`` when it is given."
+msgstr "Если задан ``zone``, результат обрезается по нему."
+
+msgid "**Why the radius is capped.** A buffer by the whole residual distance assumes that a person can walk straight from a node in any direction for the rest of the budget, across blocks, courtyards and water. At the origin this is the whole budget, so a 10-minute walk isochrone becomes a disc of about 800 m whatever the street layout. The cap follows the approach of trip planners such as OpenTripPlanner and Conveyal R5: the search runs along the network, and only the last stretch from a street to a place, at most ``off_network_distance``, is walked off the network. The isochrone then follows the streets that are actually reachable and narrows where they end. ``off_network_distance=None`` gives the uncapped buffers."
+msgstr "**Почему радиус ограничен.** Буфер на всё остаточное расстояние предполагает, что из узла можно идти по прямой в любом направлении на весь остаток бюджета — через кварталы, дворы и воду. У точки отправления это весь бюджет, поэтому 10-минутная пешая изохрона превращается в круг радиусом около 800 м независимо от планировки улиц. Ограничение повторяет подход планировщиков поездок, таких как OpenTripPlanner и Conveyal R5: поиск идёт по сети, и только последний отрезок от улицы до места, не длиннее ``off_network_distance``, проходится вне сети. Тогда изохрона следует за действительно достижимыми улицами и сужается там, где они заканчиваются. ``off_network_distance=None`` даёт буферы без ограничения."
+
+msgid "On walk and intermodal graphs only pedestrian edges (``type == \"walk\"``) shape ``\"ways\"``, and only their end nodes shape any geometry: transit route nodes take part in the search, but their cost includes the boarding wait, and several route nodes can share one stop location."
+msgstr "На пешеходных и интермодальных графах форму ``\"ways\"`` задают только пешеходные рёбра (``type == \"walk\"``), а геометрию любого типа — только их концевые узлы: узлы маршрутов транспорта участвуют в поиске, но их стоимость включает ожидание посадки, и несколько узлов маршрутов могут совпадать с одной остановкой."
+
+msgid "Stepped isochrones assign every reachable node to the interval ``[0, step), [step, 2·step), …`` that contains its cost, up to ``weight_value_cutoff`` (by default the cost of the farthest reachable node), and build one band per interval: ``geometry_type=None`` uses Voronoi cells around the nodes, ``\"radius\"`` and ``\"ways\"`` clip these cells to the residual-radius buffers or to the buffered streets, and ``\"separate\"`` builds independent buffers per interval. With several origins, the bands describe their combined reachability: each node keeps the cost from its nearest origin. The column ``dist`` contains the upper bound of the interval."
+msgstr "Ступенчатые изохроны относят каждый достижимый узел к интервалу ``[0, step), [step, 2·step), …``, в который попадает его стоимость, вплоть до ``weight_value_cutoff`` (по умолчанию — стоимость самого дальнего достижимого узла), и строят по одному поясу на интервал: ``geometry_type=None`` использует ячейки Вороного вокруг узлов, ``\"radius\"`` и ``\"ways\"`` обрезают эти ячейки по буферам остаточного расстояния или по буферам улиц, а ``\"separate\"`` строит независимые буферы для каждого интервала. При нескольких точках отправления пояса описывают их совместную достижимость: каждый узел получает стоимость от ближайшей точки. Столбец ``dist`` содержит верхнюю границу интервала."
+
+msgid "Outputs"
+msgstr "Результаты"
+
+msgid "GeoDataFrames in the CRS of the input origins. :func:`objectnat.get_graph_isochrones` has one row per origin with ``source_node`` and the input attributes; :func:`objectnat.get_stepped_graph_isochrones` has one row per band and the column ``dist`` (minutes or metres)."
+msgstr "GeoDataFrame в системе координат входных точек. У :func:`objectnat.get_graph_isochrones` одна строка на точку отправления со столбцом ``source_node`` и входными атрибутами; у :func:`objectnat.get_stepped_graph_isochrones` одна строка на пояс и столбец ``dist`` (минуты или метры)."
+
+msgid "Calculate accessibility isochrones from origin objects over an urban graph."
+msgstr "Рассчитывает изохроны доступности от объектов-точек отправления по городскому графу."
+
+msgid "An isochrone is the area reachable from an origin within ``weight_value_cutoff``. Unlike coverage, each origin gets its own independent isochrone, but all shortest-path searches run in a single parallel Numba call. The function:"
+msgstr "Изохрона — территория, достижимая из точки отправления в пределах ``weight_value_cutoff``. В отличие от зон покрытия, каждая точка получает собственную независимую изохрону, но все поиски кратчайших путей выполняются одним параллельным вызовом Numba. Функция:"
+
+msgid "Snaps each origin to its nearest graph node (or uses the provided ``origin_nodes``)."
+msgstr "Привязывает каждую точку отправления к ближайшему узлу графа (или использует переданные ``origin_nodes``)."
+
+msgid "Runs one Dijkstra search per origin in parallel."
+msgstr "Параллельно выполняет по одному поиску Дейкстры на точку."
+
+msgid "Builds a reachability polygon for each origin with the selected ``geometry_type``."
+msgstr "Строит полигон достижимости для каждой точки с выбранным ``geometry_type``."
+
+msgid "Optionally clips each isochrone to ``zone``."
+msgstr "При необходимости обрезает каждую изохрону по ``zone``."
+
+msgid "Parameters"
+msgstr "Параметры"
+
+msgid "City graph with node and edge tables."
+msgstr "Городской граф с таблицами узлов и рёбер."
+
+msgid "Maximum travel time (minutes) or distance (metres) defining the isochrone extent."
+msgstr "Максимальное время в пути (минуты) или расстояние (метры), задающее размер изохроны."
+
+msgid "Origin objects. If the table contains ``graph_node_column`` those ids are used; otherwise geometries are snapped to nearest nodes. Pass either this or ``origin_nodes``."
+msgstr "Точки отправления. Если в таблице есть ``graph_node_column``, используются эти идентификаторы; иначе геометрии привязываются к ближайшим узлам. Передайте либо этот параметр, либо ``origin_nodes``."
+
+msgid "Ready-made origin node ids, used instead of ``gdf_origins``."
+msgstr "Готовые идентификаторы узлов отправления, используются вместо ``gdf_origins``."
+
+msgid "Name of the graph node id column in ``gdf_origins``."
+msgstr "Имя столбца с идентификаторами узлов графа в ``gdf_origins``."
+
+msgid "Type of edge weight used for path calculation:  - ``\"time_min\"``: time-based accessibility in minutes - ``\"length_meter\"``: distance-based accessibility in metres"
+msgstr "Type of edge weight used for path calculation:  - ``\"time_min\"``: time-based accessibility in minutes - ``\"length_meter\"``: distance-based accessibility in metres"
+
+msgid "Type of edge weight used for path calculation:"
+msgstr "Тип веса рёбер для расчёта путей:"
+
+msgid "``\"time_min\"``: time-based accessibility in minutes"
+msgstr "``\"time_min\"``: доступность по времени в минутах"
+
+msgid "``\"length_meter\"``: distance-based accessibility in metres"
+msgstr "``\"length_meter\"``: доступность по расстоянию в метрах"
+
+msgid "Method used to build each isochrone:  - ``\"radius\"``: union of buffers around the reachable nodes by their remaining budget as a   distance, at most ``off_network_distance`` - ``\"ways\"``: buffered reachable road geometry (walk edges only on   intermodal/walk graphs) - ``\"separate\"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes,   merged into one polygon"
+msgstr "Method used to build each isochrone:  - ``\"radius\"``: union of buffers around the reachable nodes by their remaining budget as a   distance, at most ``off_network_distance`` - ``\"ways\"``: buffered reachable road geometry (walk edges only on   intermodal/walk graphs) - ``\"separate\"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes,   merged into one polygon"
+
+msgid "Method used to build each isochrone:"
+msgstr "Способ построения каждой изохроны:"
+
+msgid "``\"radius\"``: union of buffers around the reachable nodes by their remaining budget as a distance, at most ``off_network_distance``"
+msgstr "``\"radius\"``: объединение буферов вокруг достижимых узлов радиусом в остаток бюджета, переведённый в расстояние, но не больше ``off_network_distance``"
+
+msgid "``\"ways\"``: buffered reachable road geometry (walk edges only on intermodal/walk graphs)"
+msgstr "``\"ways\"``: буферы достижимых улиц (на интермодальных и пешеходных графах только пешеходные рёбра)"
+
+msgid "``\"separate\"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes, merged into one polygon"
+msgstr "``\"separate\"``: буферы радиусом ``buffer_factor`` × остаточное расстояние вокруг достижимых узлов, объединённые в один полигон"
+
+msgid "Boundary polygon to clip the resulting isochrones."
+msgstr "Полигон границы, по которому обрезаются изохроны."
+
+msgid "Buffer multiplier used by ``geometry_type=\"separate\"`` (default 0.7)."
+msgstr "Множитель буфера для ``geometry_type=\"separate\"`` (по умолчанию 0.7)."
+
+msgid "Edge buffer for ``geometry_type=\"ways\"``, in metres (default 5.0)."
+msgstr "Буфер рёбер для ``geometry_type=\"ways\"``, в метрах (по умолчанию 5.0)."
+
+msgid "For ``geometry_type=\"radius\"``: how far from the network, in metres, a place may lie and still count as reached. Every reachable node is buffered by its remaining budget converted to a distance, but by no more than this, so the area follows the network instead of growing into a straight-line circle around the start. ``None`` buffers by the whole remaining budget. Defaults to 150."
+msgstr "Для ``geometry_type=\"radius\"``: насколько далеко от сети, в метрах, может лежать место, чтобы считаться достигнутым. Каждый достижимый узел получает буфер радиусом в остаток бюджета, переведённый в расстояние, но не больше этого значения, поэтому территория повторяет сеть, а не разрастается в круг по прямой вокруг начальной точки. ``None`` строит буферы на весь остаток бюджета. По умолчанию 150."
+
+msgid "Number of parallel Numba threads. Defaults to the Numba runtime."
+msgstr "Число параллельных потоков Numba. По умолчанию определяется средой Numba."
+
+msgid "Returns"
+msgstr "Возвращает"
+
+msgid "One isochrone polygon per origin with a ``source_node`` column and ``geometry``, returned in the CRS of ``gdf_origins`` (or the graph CRS). The index matches ``gdf_origins`` / ``origin_nodes``."
+msgstr "Один полигон изохроны на точку отправления со столбцом ``source_node`` и ``geometry`` в системе координат ``gdf_origins`` (или графа). Индекс совпадает с ``gdf_origins`` / ``origin_nodes``."
+
+msgid "Return type"
+msgstr "Тип возвращаемого значения"
+
+msgid "Notes"
+msgstr "Примечания"
+
+msgid "For ``geometry_type=\"ways\"`` the search budget is slightly extended so road edges are not clipped short of the boundary."
+msgstr "Для ``geometry_type=\"ways\"`` бюджет поиска немного увеличивается, чтобы рёбра улиц не обрывались раньше границы."
+
+msgid "Origins with no reachable nodes are dropped from the result."
+msgstr "Точки отправления без достижимых узлов исключаются из результата."
+
+msgid "On walk and intermodal graphs the geometry is built from nodes reachable on foot; transit route nodes, whose distance includes the wait to board, only take part in the search."
+msgstr "На пешеходных и интермодальных графах геометрия строится по узлам, достижимым пешком; узлы маршрутов транспорта, расстояние до которых включает ожидание посадки, только участвуют в поиске."
+
+msgid "Calculate stepped accessibility isochrones from origin objects over an urban graph, splitting each reachable area into concentric bands of width ``step``."
+msgstr "Рассчитывает ступенчатые изохроны доступности от объектов-точек отправления по городскому графу, разбивая каждую достижимую территорию на концентрические пояса шириной ``step``."
+
+msgid "Unlike coverage, the search runs outward from the origins (along the original edge direction on a directed graph). The function:"
+msgstr "В отличие от зон покрытия, поиск идёт от точек отправления наружу (по исходному направлению рёбер ориентированного графа). Функция:"
+
+msgid "Runs a multi-source Dijkstra search outward from the origins."
+msgstr "Выполняет многоисточниковый поиск Дейкстры от точек отправления."
+
+msgid "Buckets reachable nodes into steps and builds banded geometry with the selected ``geometry_type``."
+msgstr "Распределяет достижимые узлы по ступеням и строит геометрию поясов с выбранным ``geometry_type``."
+
+msgid "Optionally clips the bands to ``zone``."
+msgstr "При необходимости обрезает пояса по ``zone``."
+
+msgid "Method used to build each step's geometry:  - ``None``: Voronoi cells around graph nodes - ``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``) - ``\"ways\"``: Voronoi cells clipped to buffered road geometry   (walk edges only on intermodal/walk graphs) - ``\"separate\"``: independent circular buffers per step"
+msgstr "Method used to build each step's geometry:  - ``None``: Voronoi cells around graph nodes - ``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``) - ``\"ways\"``: Voronoi cells clipped to buffered road geometry   (walk edges only on intermodal/walk graphs) - ``\"separate\"``: independent circular buffers per step"
+
+msgid "Method used to build each step's geometry:"
+msgstr "Способ построения геометрии каждой ступени:"
+
+msgid "``None``: Voronoi cells around graph nodes"
+msgstr "``None``: ячейки Вороного вокруг узлов графа"
+
+msgid "``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``)"
+msgstr "``\"radius\"``: ячейки Вороного, обрезанные по буферам радиуса (см. ``off_network_distance``)"
+
+msgid "``\"ways\"``: Voronoi cells clipped to buffered road geometry (walk edges only on intermodal/walk graphs)"
+msgstr "``\"ways\"``: ячейки Вороного, обрезанные по буферам улиц (на интермодальных и пешеходных графах только пешеходные рёбра)"
+
+msgid "``\"separate\"``: independent circular buffers per step"
+msgstr "``\"separate\"``: независимые круговые буферы для каждой ступени"
+
+msgid "Maximum travel time or distance. If ``None``, the isochrone is built out to the farthest reachable node."
+msgstr "Максимальное время в пути или расстояние. Если ``None``, изохрона строится до самого дальнего достижимого узла."
+
+msgid "Boundary polygon to clip the resulting stepped isochrones."
+msgstr "Полигон границы, по которому обрезаются ступенчатые изохроны."
+
+msgid "Width of each step, in units of ``weight_type``. Defaults to 100 metres for ``length_meter`` and 1 minute for ``time_min``."
+msgstr "Ширина каждой ступени в единицах ``weight_type``. По умолчанию 100 метров для ``length_meter`` и 1 минута для ``time_min``."
+
+msgid "Stepped isochrone polygons with a ``dist`` column (the upper bound of each step, in units of ``weight_type``) and ``geometry``, returned in the CRS of ``gdf_origins`` (or the graph CRS)."
+msgstr "Полигоны ступенчатых изохрон со столбцом ``dist`` (верхняя граница каждой ступени в единицах ``weight_type``) и ``geometry`` в системе координат ``gdf_origins`` (или графа)."
+
+msgid "Multiple origins are processed together: the bands describe the combined reachability of all origins (each node keeps the distance to its nearest origin)."
+msgstr "Несколько точек отправления обрабатываются вместе: пояса описывают совместную достижимость всех точек (каждый узел получает расстояние от ближайшей точки)."
+
+msgid "On walk and intermodal graphs the bands are built from nodes reachable on foot, so a stop is drawn in the band it is walked to, not in the bands of the waits for the vehicles that call there."
+msgstr "На пешеходных и интермодальных графах пояса строятся по узлам, достижимым пешком, поэтому остановка попадает в пояс, в котором до неё можно дойти, а не в пояса с ожиданием транспорта на ней."
+
+msgid "An empty ``GeoDataFrame`` is returned when nothing is reachable."
+msgstr "Если ничего не достижимо, возвращается пустой ``GeoDataFrame``."
+
+msgid "Figures"
+msgstr "Рисунки"
+
+msgid "Isochrones with geometry_type ways and radius, and isochrones of three origins"
+msgstr "Изохроны с geometry_type ways и radius и изохроны трёх точек отправления"
+
+msgid "15-minute isochrone on the intermodal graph of Vasilyevsky Island with ``geometry_type=\"ways\"`` and ``\"radius\"``, and 8-minute ``\"radius\"`` isochrones of three origins (one polygon per origin). Background: pedestrian streets of the graph and the district boundary."
+msgstr "15-минутная изохрона на интермодальном графе Васильевского острова с ``geometry_type=\"ways\"`` и ``\"radius\"`` и 8-минутные изохроны ``\"radius\"`` трёх точек отправления (по одному полигону на точку). Фон: пешеходные улицы графа и граница района."
+
+msgid "Stepped isochrones with geometry_type ways, radius and separate"
+msgstr "Ступенчатые изохроны с geometry_type ways, radius и separate"
+
+msgid "Stepped isochrones up to 15 minutes in bands of 3 minutes, ``geometry_type=\"ways\"``, ``\"radius\"`` and ``\"separate\"``; ``dist`` is the upper bound of the band. Background: pedestrian streets of the graph and the district boundary."
+msgstr "Ступенчатые изохроны до 15 минут поясами по 3 минуты, ``geometry_type=\"ways\"``, ``\"radius\"`` и ``\"separate\"``; ``dist`` — верхняя граница пояса. Фон: пешеходные улицы графа и граница района."
+
+msgid "Limitations"
+msgstr "Ограничения"
+
+msgid "Travel times are those stored in the graph (``time_min``); congestion, timetables beyond the waiting times modelled by IduEdu, and turn penalties are not considered."
+msgstr "Время в пути берётся из графа (``time_min``); пробки, расписания (кроме времени ожидания, которое моделирует IduEdu) и штрафы за повороты не учитываются."
+
+msgid "The polygon outside the network is an interpolation. ``\"radius\"`` assumes straight-line movement for at most ``off_network_distance`` from the streets; ``\"separate\"`` assumes it for the whole residual budget and therefore overestimates reach across blocks without paths."
+msgstr "Полигон вне сети — интерполяция. ``\"radius\"`` предполагает движение по прямой не дальше ``off_network_distance`` от улиц; ``\"separate\"`` — на весь остаток бюджета и поэтому завышает достижимость через кварталы без проходов."
+
+msgid "Origins are snapped to the nearest graph node; the access distance from the origin to that node is not added."
+msgstr "Точки отправления привязываются к ближайшему узлу графа; расстояние от точки до этого узла не добавляется."
+
+msgid "Example notebook"
+msgstr "Пример в ноутбуке"
+
+msgid ":doc:`examples/isochrones`"
+msgstr ":doc:`examples/isochrones`"
+

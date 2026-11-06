@@ -1,0 +1,439 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Visibility Analysis"
+msgstr "Анализ видимости"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "Visibility analysis determines which parts of the urban space an **observer** can see and, aggregated over many observers, how often each place is seen. ObjectNat provides two models:"
+msgstr "Анализ видимости определяет, какие части городского пространства видит **наблюдатель**, а при агрегировании по множеству наблюдателей — как часто видно каждое место. В ObjectNat есть две модели:"
+
+msgid "**2D visibility** (:func:`objectnat.get_visibility`, :func:`objectnat.get_isovist_grid`, :func:`objectnat.get_visibility_catchment`): every obstacle is a wall of infinite height. The result for one observer is its **visibility polygon** (isovist), a vector polygon whose boundary is computed exactly."
+msgstr "**Видимость 2D** (:func:`objectnat.get_visibility`, :func:`objectnat.get_isovist_grid`, :func:`objectnat.get_visibility_catchment`): каждое препятствие — стена бесконечной высоты. Результат для одного наблюдателя — его **полигон видимости** (изовиста), векторный полигон, граница которого вычисляется точно."
+
+msgid "**2.5D visibility** (:func:`objectnat.get_viewshed`, :func:`objectnat.get_viewshed_catchment`): buildings have heights, and terrain can raise the ground. The result for one observer is its **viewshed**, the grid cells to which the line of sight from the eye is clear, merged into one (Multi)Polygon per observer. Its outline follows the cells, so its accuracy is ``cell_size``."
+msgstr "**Видимость 2.5D** (:func:`objectnat.get_viewshed`, :func:`objectnat.get_viewshed_catchment`): у зданий есть высота, а рельеф может поднимать землю. Результат для одного наблюдателя — его **область видимости**: ячейки сетки, до которых луч зрения от глаз свободен, объединённые в один (Multi)Polygon на наблюдателя. Её контур идёт по ячейкам, поэтому точность равна ``cell_size``."
+
+msgid "The **catchment** functions count, for every cell of a grid, the observers that see it; the counts are drawn as a raster. :func:`objectnat.get_observer_points` places observers along the streets of an IduEdu graph. All calculations run in parallel threads in ObjectNat's Rust extension."
+msgstr "Функции **охвата** подсчитывают для каждой ячейки сетки наблюдателей, которые её видят; результат рисуется растром. :func:`objectnat.get_observer_points` размещает наблюдателей вдоль улиц графа IduEdu. Все расчёты выполняются в параллельных потоках в расширении ObjectNat на Rust."
+
+msgid "Grid results answer two different questions, and their values have different units. An **isovist field** (:func:`objectnat.get_isovist_grid`) describes what an observer standing in each cell sees, for example the visible share of the view disc: it looks out of the place. A **catchment** counts the observers that see each cell: it looks at the place from the streets. Its unit is the number of observers (or the sum of their weights) in 2D and in 2.5D alike. The middle of a large square has a high visible share, but a low catchment if few streets lead to it."
+msgstr "Результаты на сетке отвечают на два разных вопроса, и их значения имеют разные единицы. **Поле изовист** (:func:`objectnat.get_isovist_grid`) описывает, что видит наблюдатель, стоящий в каждой ячейке, например видимую долю круга обзора: оно смотрит из места наружу. **Охват** подсчитывает наблюдателей, которые видят каждую ячейку: он смотрит на место со стороны улиц. Его единица — число наблюдателей (или сумма их весов) и в 2D, и в 2.5D. У середины большой площади видимая доля высокая, а охват низкий, если к ней ведёт мало улиц."
+
+msgid "2D visibility polygons"
+msgstr "Полигоны видимости 2D"
+
+msgid "Method"
+msgstr "Метод"
+
+msgid ":func:`objectnat.get_visibility` returns, for each observer, the part of the view disc (radius ``view_distance`` or the per-observer column ``visibility_distance``, in metres) that is not hidden behind obstacle walls. Obstacles may be polygons (with holes) or lines. Observers and obstacles are reprojected to an estimated UTM zone. Obstacle walls are clipped to the disc, every wall endpoint and wall intersection defines a critical direction, and one ray per angular interval finds the nearest wall. The boundary is therefore exact; no rays are sampled at fixed angles. Observers standing inside an obstacle get an empty polygon."
+msgstr ":func:`objectnat.get_visibility` возвращает для каждого наблюдателя часть круга обзора (радиусом ``view_distance`` или из столбца ``visibility_distance`` для каждого наблюдателя, в метрах), не скрытую за стенами препятствий. Препятствия могут быть полигонами (с дырами) или линиями. Наблюдатели и препятствия перепроецируются в оценённую зону UTM. Стены препятствий обрезаются по кругу, каждый конец стены и каждое пересечение стен задают критическое направление, и один луч на каждый угловой интервал находит ближайшую стену. Поэтому граница точная: лучи с фиксированным шагом по углу не используются. Наблюдатели внутри препятствия получают пустой полигон."
+
+msgid "Isovist metrics"
+msgstr "Метрики изовист"
+
+msgid "An isovist is the visibility polygon of one observer. With ``isovist_metrics=True``, :func:`objectnat.get_visibility` describes every isovist with the measures below (Benedikt 1979; Turner et al. 2001; Batty 2001): how much the observer sees, what shape the visible area has and how much space is hidden behind corners. Lengths are in metres and areas in square metres; observers inside an obstacle get ``NaN``."
+msgstr "Изовиста — это полигон видимости одного наблюдателя. При ``isovist_metrics=True`` функция :func:`objectnat.get_visibility` описывает каждую изовисту показателями ниже (Benedikt 1979; Turner et al. 2001; Batty 2001): сколько видит наблюдатель, какую форму имеет видимая область и сколько пространства скрыто за углами. Длины — в метрах, площади — в квадратных метрах; наблюдатели внутри препятствия получают ``NaN``."
+
+msgid "The boundary of an isovist consists of three kinds of edges: the visible parts of walls, arcs of the **view limit** (the circle of radius ``view_distance``) and **occluding edges**. An occluding edge lies on a line of sight that passes a building corner. Beyond the corner the line of sight continues into space that the observer cannot see, so the edge separates the visible area from a hidden one."
+msgstr "Граница изовисты состоит из рёбер трёх видов: видимых частей стен, дуг **границы дальности обзора** (окружности радиусом ``view_distance``) и **рёбер окклюзии**. Ребро окклюзии лежит на луче зрения, проходящем мимо угла здания. За углом луч продолжается в пространство, которого наблюдатель не видит, поэтому ребро отделяет видимую область от скрытой."
+
+msgid "The examples in the table use a view distance R = 200 m and three simple places: an open field without obstacles, the middle of a straight street 20 m wide between continuous walls, and a closed square courtyard 40 m wide."
+msgstr "Примеры в таблице даны для дальности обзора R = 200 м и трёх простых мест: чистого поля без препятствий, середины прямой улицы шириной 20 м между сплошными стенами и закрытого квадратного двора 40 × 40 м."
+
+msgid "Columns"
+msgstr "Столбцы"
+
+msgid "What they measure"
+msgstr "Что измеряют"
+
+msgid "Examples"
+msgstr "Примеры"
+
+msgid "``area``, ``visible_share``"
+msgstr "``area``, ``visible_share``"
+
+msgid "How much the observer sees: the area of the isovist, and this area divided by the area of the view disc, π R²."
+msgstr "Сколько видит наблюдатель: площадь изовисты и её отношение к площади круга обзора π R²."
+
+msgid "Open field: ``visible_share`` = 1. Street: a strip of about 20 × 400 m, so ``area`` ≈ 8,000 m² and ``visible_share`` ≈ 0.06."
+msgstr "Поле: ``visible_share`` = 1. Улица: полоса примерно 20 × 400 м, поэтому ``area`` ≈ 8000 м², а ``visible_share`` ≈ 0,06."
+
+msgid "``perimeter``, ``compactness``"
+msgstr "``perimeter``, ``compactness``"
+
+msgid "The length of the isovist boundary, and 4πA/P², which compares the shape with a circle: 1 for a disc, close to 0 for a long narrow or spiky shape."
+msgstr "Длина границы изовисты и 4πA/P² — сравнение формы с кругом: 1 для круга, около 0 для длинной узкой или звездообразной формы."
+
+msgid "Open field: 1. Courtyard seen from inside: π/4 ≈ 0.79. Street: ≈ 0.14."
+msgstr "Поле: 1. Двор изнутри: π/4 ≈ 0,79. Улица: ≈ 0,14."
+
+msgid "``n_occlusions``, ``occlusivity``"
+msgstr "``n_occlusions``, ``occlusivity``"
+
+msgid "The number of occluding edges and their total length: how many corners the observer sees past, and how far the hidden space extends behind them."
+msgstr "Число рёбер окклюзии и их суммарная длина: мимо скольких углов смотрит наблюдатель и как далеко за ними тянется скрытое пространство."
+
+msgid "Open field, street and courtyard: 0, since nothing is hidden. One building in an open field: two edges, the sides of its shadow. Crossings of narrow passages between buildings: high values."
+msgstr "Поле, улица и двор: 0, ничего не скрыто. Одно здание в поле: два ребра, стороны его «тени». Пересечения узких проходов между зданиями: большие значения."
+
+msgid "``min_radial``, ``max_radial``"
+msgstr "``min_radial``, ``max_radial``"
+
+msgid "The distance from the observer to the nearest point of the boundary, usually the nearest wall, and the length of the longest line of sight."
+msgstr "Расстояние от наблюдателя до ближайшей точки границы, обычно до ближайшей стены, и длина самого дальнего луча зрения."
+
+msgid "Street: 10 m (the walls) and 200 m (along the street)."
+msgstr "Улица: 10 м (стены) и 200 м (вдоль улицы)."
+
+msgid "``mean_radial``, ``std_radial``, ``skew_radial``"
+msgstr "``mean_radial``, ``std_radial``, ``skew_radial``"
+
+msgid "The distance from the observer to the end of the view (a wall, an occluding edge or the view limit) over all directions: its mean, standard deviation and skewness. They are integrated exactly over each boundary edge."
+msgstr "Расстояние от наблюдателя до конца взгляда (стены, ребра окклюзии или границы дальности обзора) по всем направлениям: его среднее, стандартное отклонение и асимметрия. Они интегрируются точно по каждому ребру границы."
+
+msgid "Open field: mean 200 m, standard deviation 0. Street: mean ≈ 30 m and standard deviation ≈ 41 m; the skewness is positive, because a few long views along the street stand out among many short views to the walls."
+msgstr "Поле: среднее 200 м, стандартное отклонение 0. Улица: среднее ≈ 30 м, стандартное отклонение ≈ 41 м; асимметрия положительна, потому что немногие длинные взгляды вдоль улицы выделяются среди множества коротких взглядов в стены."
+
+msgid "``drift``"
+msgstr "``drift``"
+
+msgid "The distance from the observer to the centroid of the isovist: 0 when the visible area is balanced around the observer, large when most of it lies to one side."
+msgstr "Расстояние от наблюдателя до центроида изовисты: 0, когда видимая область уравновешена вокруг наблюдателя, и большое значение, когда она в основном лежит с одной стороны."
+
+msgid "Centre of the courtyard: 0. Next to the middle of one courtyard wall: 20 m."
+msgstr "Центр двора: 0. У середины одной из стен двора: 20 м."
+
+msgid "``open_share``"
+msgstr "``open_share``"
+
+msgid "The share of the boundary length that lies on the view limit, that is, on neither walls nor occluding edges."
+msgstr "Доля длины границы, лежащая на границе дальности обзора, то есть не на стенах и не на рёбрах окклюзии."
+
+msgid "Open field: 1. Courtyard: 0. Street: the two ends of the strip, 40 m of the 840 m boundary, ≈ 0.05."
+msgstr "Поле: 1. Двор: 0. Улица: два торца полосы, 40 м из 840 м границы, ≈ 0,05."
+
+msgid "The metrics add little time to the visibility calculation (about 0.8 s for 5,000 visibility polygons with 450,000 vertices in total)."
+msgstr "Метрики почти не увеличивают время расчёта видимости (около 0,8 с на 5000 полигонов видимости с 450 000 вершин в сумме)."
+
+msgid "Compute visibility polygons for one or many observer points."
+msgstr "Вычисляет полигоны видимости для одной или многих точек наблюдения."
+
+msgid "Each observer gets the exact area visible within its view distance: the view disc minus everything hidden behind obstacle walls. Points and obstacles are reprojected to a locally estimated projected CRS (typically UTM) for the calculation, and observers are processed in parallel by ObjectNat's Rust extension."
+msgstr "Каждый наблюдатель получает точную видимую область в пределах дальности обзора: круг обзора за вычетом всего, что скрыто за стенами препятствий. Для расчёта точки и препятствия перепроецируются в локально оценённую проецированную систему координат (обычно UTM), а наблюдатели обрабатываются параллельно в расширении ObjectNat на Rust."
+
+msgid "Parameters"
+msgstr "Параметры"
+
+msgid "GeoDataFrame with point geometries representing observer locations. Must have a valid CRS. Any additional attributes are preserved in the output."
+msgstr "GeoDataFrame с точечными геометриями мест наблюдения. Должен иметь корректную систему координат. Все дополнительные атрибуты сохраняются в результате."
+
+msgid "GeoDataFrame with obstacle geometries (Polygon, MultiPolygon, LineString, MultiLineString) in any CRS. If empty or ``None``, no occlusion is applied and visibility is limited only by the view distance."
+msgstr "GeoDataFrame с геометриями препятствий (Polygon, MultiPolygon, LineString, MultiLineString) в любой системе координат. Если он пуст или ``None``, препятствий нет и видимость ограничена только дальностью обзора."
+
+msgid "Global view distance for all points (in metres). Used when the ``\"visibility_distance\"`` column is not present in ``point_from``. If ``None`` and the column is also missing, a ``ValueError`` is raised."
+msgstr "Общая дальность обзора для всех точек (в метрах). Используется, если в ``point_from`` нет столбца ``\"visibility_distance\"``. Если ``None`` и столбца тоже нет, возникает ``ValueError``."
+
+msgid "Deprecated and ignored: the result is always exact."
+msgstr "Устарел и игнорируется: результат всегда точный."
+
+msgid "Deprecated and ignored."
+msgstr "Устарел и игнорируется."
+
+msgid "Deprecated and ignored: the calculation is always multi-threaded."
+msgstr "Устарел и игнорируется: расчёт всегда многопоточный."
+
+msgid "Maximum number of threads (``None`` uses all cores)."
+msgstr "Максимальное число потоков (``None`` — все ядра)."
+
+msgid "If ``True``, add isovist metric columns to the result, measured in metres in the local CRS: ``area``, ``perimeter``, ``compactness`` (4πA/P², 1 for the full disc), ``occlusivity`` (total length of the occluding edges), ``n_occlusions``, ``min_radial``, ``max_radial``, ``mean_radial``, ``std_radial``, ``skew_radial`` (moments of the distance to the boundary over all directions, integrated exactly), ``drift`` (distance from the observer to the centroid), ``visible_share`` (area / area of the view disc) and ``open_share`` (share of the boundary on the view limit). Observers inside an obstacle get NaN."
+msgstr "Если ``True``, добавляет к результату столбцы метрик изовист, измеренные в метрах в локальной системе координат: ``area``, ``perimeter``, ``compactness`` (4πA/P², 1 для полного круга), ``occlusivity`` (суммарная длина рёбер окклюзии), ``n_occlusions``, ``min_radial``, ``max_radial``, ``mean_radial``, ``std_radial``, ``skew_radial`` (моменты расстояния до границы по всем направлениям, интегрированные точно), ``drift`` (расстояние от наблюдателя до центроида), ``visible_share`` (площадь / площадь круга обзора) и ``open_share`` (доля границы на границе дальности обзора). Наблюдатели внутри препятствия получают NaN."
+
+msgid "Returns"
+msgstr "Возвращает"
+
+msgid "GeoDataFrame with the same index and attributes as ``point_from``, but with the geometry column replaced by visibility polygons. The result is returned in the original CRS of ``point_from``. Observers inside an obstacle get an empty polygon."
+msgstr "GeoDataFrame с тем же индексом и атрибутами, что ``point_from``, но со столбцом геометрии, заменённым полигонами видимости. Результат возвращается в исходной системе координат ``point_from``. Наблюдатели внутри препятствия получают пустой полигон."
+
+msgid "Return type"
+msgstr "Тип возвращаемого значения"
+
+msgid "Raises"
+msgstr "Исключения"
+
+msgid "If ``point_from`` is not a GeoDataFrame."
+msgstr "Если ``point_from`` не GeoDataFrame."
+
+msgid "If ``method`` is not ``\"accurate\"`` or ``\"simple\"``, if     ``point_from`` is empty, has no CRS, or if neither     ``view_distance`` nor the ``\"visibility_distance\"`` column is     provided."
+msgstr "Если ``method`` не ``\"accurate\"`` и не ``\"simple\"``, если     ``point_from`` пуст или не имеет системы координат, или если не задан ни     ``view_distance``, ни столбец ``\"visibility_distance\"``."
+
+msgid "Notes"
+msgstr "Примечания"
+
+msgid "If a column named ``\"visibility_distance\"`` is present in ``point_from``, its values are used as per-point view distances and the ``view_distance`` argument is ignored."
+msgstr "Если в ``point_from`` есть столбец ``\"visibility_distance\"``, его значения используются как дальность обзора каждой точки, а аргумент ``view_distance`` игнорируется."
+
+msgid "Visibility polygons of one observer and of three observers with different radii"
+msgstr "Полигоны видимости одного наблюдателя и трёх наблюдателей с разными радиусами"
+
+msgid "Left: visibility polygon of one observer within 800 m among the example buildings. Right: three observers with ``visibility_distance`` 300, 500 and 800 m."
+msgstr "Слева: полигон видимости одного наблюдателя в пределах 800 м среди зданий из примера. Справа: три наблюдателя с ``visibility_distance`` 300, 500 и 800 м."
+
+msgid "Isovist field"
+msgstr "Поле изовист"
+
+msgid ":func:`objectnat.get_isovist_grid` maps the metrics over an area. It places an observer at the centre of every ``cell_size`` cell of the area outside the obstacles, computes the exact isovist of each observer and its metrics, and returns the observers as points with the metric columns. Obstacles outside the area but within ``view_distance`` of it still block the view. Every value is exact for its observer; the grid only sets where the observers stand. :func:`objectnat.rasterize` turns any metric into a raster (see :doc:`rasters`), which shows for every place what an observer standing there would see. Time is proportional to the number of observers: the field below, 7,889 observers with a view distance of 200 m, takes 0.7 s."
+msgstr ":func:`objectnat.get_isovist_grid` строит карту метрик по территории. Функция ставит наблюдателя в центр каждой ячейки размером ``cell_size`` вне препятствий, вычисляет точную изовисту каждого наблюдателя и её метрики и возвращает наблюдателей как точки со столбцами метрик. Препятствия за пределами территории, но в пределах ``view_distance`` от неё, тоже закрывают обзор. Каждое значение точно для своего наблюдателя; сетка задаёт только то, где стоят наблюдатели. :func:`objectnat.rasterize` превращает любую метрику в растр (см. :doc:`rasters`), который показывает для каждого места, что увидел бы стоящий там наблюдатель. Время пропорционально числу наблюдателей: поле ниже, 7889 наблюдателей с дальностью обзора 200 м, рассчитывается за 0,7 с."
+
+msgid "The field has no edge effect: a value describes its own observer only, and buildings outside the area are taken into account. For observers placed in another way, for example along the streets, compute the same metrics with :func:`objectnat.get_visibility`:"
+msgstr "У поля нет краевого эффекта: значение описывает только своего наблюдателя, а здания за пределами территории учитываются. Для наблюдателей, расставленных иначе, например вдоль улиц, те же метрики вычисляет :func:`objectnat.get_visibility`:"
+
+msgid "Isovist metrics on a regular grid of observers covering the open ground of an area (an isovist field)."
+msgstr "Метрики изовист на регулярной сетке наблюдателей, покрывающей открытую территорию (поле изовист)."
+
+msgid "An observer is placed at the centre of every ``cell_size`` cell of ``area`` outside the obstacles, and its exact visibility polygon within ``view_distance`` is measured as with ``get_visibility(..., isovist_metrics=True)``. Obstacles outside the area but within ``view_distance`` of it still block the view. :func:`rasterize` turns any metric into a :class:`Raster`, which shows how openness, compactness or occlusion change across the area."
+msgstr "Наблюдатель ставится в центр каждой ячейки размером ``cell_size`` в ``area`` вне препятствий, и его точный полигон видимости в пределах ``view_distance`` измеряется так же, как в ``get_visibility(..., isovist_metrics=True)``. Препятствия за пределами территории, но в пределах ``view_distance`` от неё, тоже закрывают обзор. :func:`rasterize` превращает любую метрику в :class:`Raster`, который показывает, как меняются открытость, компактность или окклюзия по территории."
+
+msgid "Obstacle geometries (Polygon, MultiPolygon, LineString, MultiLineString) in any CRS; ``None`` or empty for open ground."
+msgstr "Геометрии препятствий (Polygon, MultiPolygon, LineString, MultiLineString) в любой системе координат; ``None`` или пустой набор для открытой местности."
+
+msgid "Area to cover. A shapely geometry is taken in the CRS of ``obstacles``."
+msgstr "Покрываемая территория. Геометрия shapely считается заданной в системе координат ``obstacles``."
+
+msgid "View distance of every observer in metres. Defaults to 200."
+msgstr "Дальность обзора каждого наблюдателя в метрах. По умолчанию 200."
+
+msgid "Observer spacing in metres. Time grows with ``(area / cell_size²) * view_distance``. Defaults to 5."
+msgstr "Шаг наблюдателей в метрах. Время растёт как ``(area / cell_size²) * view_distance``. По умолчанию 5."
+
+msgid "Number of threads (``None`` uses all cores)."
+msgstr "Число потоков (``None`` — все ядра)."
+
+msgid "One observer point per open cell, in the CRS of ``area`` (of ``obstacles`` for a shapely geometry), with the isovist metric columns of :func:`get_visibility`: ``area``, ``perimeter``, ``compactness``, ``occlusivity``, ``n_occlusions``, ``min_radial``, ``max_radial``, ``mean_radial``, ``std_radial``, ``skew_radial``, ``drift``, ``visible_share`` and ``open_share``. ``attrs`` record the grid for :func:`rasterize`."
+msgstr "Одна точка наблюдателя на открытую ячейку в системе координат ``area`` (``obstacles`` для геометрии shapely) со столбцами метрик изовист из :func:`get_visibility`: ``area``, ``perimeter``, ``compactness``, ``occlusivity``, ``n_occlusions``, ``min_radial``, ``max_radial``, ``mean_radial``, ``std_radial``, ``skew_radial``, ``drift``, ``visible_share`` и ``open_share``. ``attrs`` записывают сетку для :func:`rasterize`."
+
+msgid "If ``area`` has no CRS or is empty, or ``view_distance`` or ``cell_size`` is not positive."
+msgstr "Если у ``area`` нет системы координат или она пуста, либо ``view_distance`` или ``cell_size`` не положительны."
+
+msgid "Maps of four isovist metrics"
+msgstr "Карты четырёх метрик изовист"
+
+msgid "``get_isovist_grid(buildings, area, view_distance=200, cell_size=5)`` over a 500 × 500 m area (outlined) and :func:`objectnat.rasterize` of four metrics: the visible share of the 200 m disc, compactness 4πA/P², the total length of occluding edges and drift. Colour scales span the 2nd–98th percentiles. Most of the disc is in view in the open space in the south; compactness is high there and inside closed courtyards; occluding edges are longest where passages between buildings cross; drift is large next to walls that face open space."
+msgstr "``get_isovist_grid(buildings, area, view_distance=200, cell_size=5)`` на территории 500 × 500 м (обведена) и :func:`objectnat.rasterize` четырёх метрик: видимая доля круга радиусом 200 м, компактность 4πA/P², суммарная длина рёбер окклюзии и drift. Цветовые шкалы охватывают 2–98-й процентили. На открытом пространстве на юге видна бо́льшая часть круга; компактность высока там и внутри закрытых дворов; рёбра окклюзии длиннее всего на пересечениях проходов между зданиями; drift велик у стен, обращённых к открытому пространству."
+
+msgid "2.5D viewsheds"
+msgstr "Области видимости 2.5D"
+
+msgid ":func:`objectnat.get_viewshed` uses building heights and terrain. The eye of an observer is ``observer_height`` (default 1.6 m) above the terrain or, for an observer inside a building footprint, above the roof. The area within the view distance is divided into square cells of ``cell_size`` metres. A cell is visible when the straight line from the eye to the cell centre at ``target_height`` above the ground (0 m for the ground surface, about 1.6 m for people's faces) passes above every wall it crosses and above the terrain. Visible cells are merged into one (Multi)Polygon per observer. With ``include_roofs=True`` cells on flat roofs are targets too, at the roof height. Building heights and terrain are specified as for :func:`objectnat.get_insolation` (a height or storeys column; a terrain GeoDataFrame, GeoTIFF or array), and the line-of-sight test shares its Rust implementation with insolation."
+msgstr ":func:`objectnat.get_viewshed` учитывает высоты зданий и рельеф. Глаза наблюдателя находятся на ``observer_height`` (по умолчанию 1,6 м) над рельефом, а у наблюдателя внутри контура здания — над крышей. Территория в пределах дальности обзора делится на квадратные ячейки размером ``cell_size`` метров. Ячейка видна, если прямая от глаз до центра ячейки на высоте ``target_height`` над землёй (0 м для поверхности земли, около 1,6 м для лиц людей) проходит выше каждой пересекаемой стены и выше рельефа. Видимые ячейки объединяются в один (Multi)Polygon на наблюдателя. При ``include_roofs=True`` целями служат и ячейки на плоских крышах, на высоте крыши. Высоты зданий и рельеф задаются так же, как для :func:`objectnat.get_insolation` (столбец высоты или этажности; рельеф как GeoDataFrame, GeoTIFF или массив), а проверка луча зрения использует ту же реализацию на Rust, что и инсоляция."
+
+msgid "The output keeps the index and attributes of the observers and adds ``visible_area`` (m²) and ``visible_share``, the share of target cells within the view distance that are visible, the 2.5D counterpart of the isovist metric of the same name. ``visibility_distance`` and ``observer_height`` columns override the arguments per observer. Computation time grows with ``(view_distance / cell_size) ** 2`` per observer."
+msgstr "Результат сохраняет индекс и атрибуты наблюдателей и добавляет ``visible_area`` (м²) и ``visible_share`` — долю видимых целевых ячеек в пределах дальности обзора, аналог одноимённой метрики изовисты в 2.5D. Столбцы ``visibility_distance`` и ``observer_height`` заменяют аргументы для отдельных наблюдателей. Время расчёта растёт как ``(view_distance / cell_size) ** 2`` на наблюдателя."
+
+msgid "For an observer on flat ground whose eye is lower than all surrounding buildings, the viewshed coincides with the 2D visibility polygon up to the cell size. The two differ where buildings are lower than the line of sight: from a roof, from a hill, or when the target is above the ground (``target_height``)."
+msgstr "Для наблюдателя на ровной земле, глаза которого ниже всех окружающих зданий, область видимости совпадает с полигоном видимости 2D с точностью до размера ячейки. Они различаются там, где здания ниже луча зрения: с крыши, с холма или когда цель выше земли (``target_height``)."
+
+msgid "Compute 2.5D visibility: the ground (and optionally the roofs) each observer can see from its eye height, among buildings of known height and terrain."
+msgstr "Вычисляет видимость 2.5D: землю (и, при необходимости, крыши), которую каждый наблюдатель видит с высоты своих глаз среди зданий известной высоты и рельефа."
+
+msgid "Unlike :func:`get_visibility`, which treats every obstacle as infinitely high, here a low building or a hill hides only what lies below the line of sight: an observer sees over a garage onto the street behind it, from a hill over the roofs, from a tower far across the district. The area within ``view_distance`` is split into ``cell_size`` cells, and a cell is visible when the straight line from the eye to the cell centre (at ``target_height`` above the ground) passes above every building wall it crosses and above the terrain. Visible cells are merged into one polygon per observer. The eye is ``observer_height`` above the terrain; observers standing inside a building footprint are placed on its roof."
+msgstr "В отличие от :func:`get_visibility`, где каждое препятствие бесконечно высокое, здесь низкое здание или холм скрывает только то, что ниже луча зрения: наблюдатель видит через гараж улицу за ним, с холма — поверх крыш, с башни — далеко через весь район. Территория в пределах ``view_distance`` делится на ячейки размером ``cell_size``, и ячейка видна, если прямая от глаз до центра ячейки (на высоте ``target_height`` над землёй) проходит выше каждой пересекаемой стены здания и выше рельефа. Видимые ячейки объединяются в один полигон на наблюдателя. Глаза находятся на ``observer_height`` над рельефом; наблюдатели внутри контура здания ставятся на его крышу."
+
+msgid "Observer points in any CRS. Optional columns ``visibility_distance`` and ``observer_height`` override ``view_distance`` and ``observer_height`` per point; other attributes are kept."
+msgstr "Точки наблюдения в любой системе координат. Необязательные столбцы ``visibility_distance`` и ``observer_height`` заменяют ``view_distance`` и ``observer_height`` для отдельных точек; остальные атрибуты сохраняются."
+
+msgid "Building footprints with heights (see ``height_column``, ``storeys_column``); ``None`` for terrain only."
+msgstr "Контуры зданий с высотами (см. ``height_column``, ``storeys_column``); ``None``, если учитывается только рельеф."
+
+msgid "View distance in metres, unless ``point_from`` has ``visibility_distance``."
+msgstr "Дальность обзора в метрах, если в ``point_from`` нет ``visibility_distance``."
+
+msgid "Building heights, as in :func:`get_insolation`."
+msgstr "Высоты зданий, как в :func:`get_insolation`."
+
+msgid "Ground heights, as in :func:`get_insolation`; without terrain the ground is flat."
+msgstr "Высоты земли, как в :func:`get_insolation`; без рельефа земля ровная."
+
+msgid "Eye height above the terrain (or the roof) in metres. Defaults to 1.6."
+msgstr "Высота глаз над рельефом (или над крышей) в метрах. По умолчанию 1.6."
+
+msgid "Height above the ground of what is looked at, in metres: 0 for the ground itself, 1.6 to see people's faces, more for the upper part of objects. Defaults to 0."
+msgstr "Высота над землёй того, на что смотрят, в метрах: 0 для самой земли, 1.6, чтобы видеть лица людей, больше — для верхних частей объектов. По умолчанию 0."
+
+msgid "Cell size in metres; time grows with ``(view_distance / cell_size) ** 2``. Defaults to 2."
+msgstr "Размер ячейки в метрах; время растёт как ``(view_distance / cell_size) ** 2``. По умолчанию 2."
+
+msgid "Also return the parts of roofs that can be seen (flat roofs at the building height). Defaults to ``False``: building footprints are left out."
+msgstr "Возвращать также видимые части крыш (плоские крыши на высоте здания). По умолчанию ``False``: контуры зданий исключаются."
+
+msgid "Same index and attributes as ``point_from`` with the geometry replaced by the visible area (cells merged into polygons, an empty polygon when nothing is visible) in the CRS of ``point_from``, plus ``visible_area`` (m²) and ``visible_share`` (the share of the target cells within the view distance that are visible)."
+msgstr "Тот же индекс и атрибуты, что у ``point_from``, с геометрией, заменённой видимой областью (ячейки, объединённые в полигоны, или пустой полигон, если ничего не видно), в системе координат ``point_from``, а также ``visible_area`` (м²) и ``visible_share`` (доля видимых целевых ячеек в пределах дальности обзора)."
+
+msgid "If ``point_from`` is empty or has no CRS, or no view distance is given."
+msgstr "Если ``point_from`` пуст или не имеет системы координат либо не задана дальность обзора."
+
+msgid "2D visibility polygon, street-level viewshed and roof-level viewshed"
+msgstr "Полигон видимости 2D, область видимости с уровня улицы и с крыши"
+
+msgid "One observer on a street: 2D visibility polygon (left) and 2.5D viewshed at 1.6 m eye height (centre), both 2.8 ha within 300 m (dotted circle). Right: an observer on the roof edge of a 17-storey building, ``include_roofs=True``; the viewshed covers 9.6 ha of ground and roofs. Grey shades show building height; ``cell_size=2``."
+msgstr "Один наблюдатель на улице: полигон видимости 2D (слева) и область видимости 2.5D с глазами на высоте 1,6 м (в центре), обе по 2,8 га в пределах 300 м (пунктирная окружность). Справа: наблюдатель на краю крыши 17-этажного здания, ``include_roofs=True``; область видимости охватывает 9,6 га земли и крыш. Оттенки серого показывают высоту зданий; ``cell_size=2``."
+
+msgid "Visibility catchment"
+msgstr "Охват видимости"
+
+msgid ":func:`objectnat.get_visibility_catchment` answers the question *from how many places is this place seen?* It takes a set of observers, for example pedestrians every 15 m along the streets, and counts for every small piece of the area how many of them can see it:"
+msgstr ":func:`objectnat.get_visibility_catchment` отвечает на вопрос *из скольких мест видно это место?* Функция берёт набор наблюдателей, например пешеходов через каждые 15 м вдоль улиц, и для каждого небольшого участка территории считает, сколько из них его видят:"
+
+msgid "**Observers.** :func:`objectnat.get_observer_points` places them along the streets of a graph: it splits every street edge (on walk and intermodal graphs, every pedestrian edge) into pieces of about ``spacing`` metres and puts a point in the middle of each piece. Any points will do."
+msgstr "**Наблюдатели.** :func:`objectnat.get_observer_points` расставляет их вдоль улиц графа: делит каждое ребро улицы (на пешеходных и интермодальных графах — каждое пешеходное ребро) на отрезки длиной около ``spacing`` метров и ставит точку в середину каждого отрезка. Подойдут любые точки."
+
+msgid "**Grid.** The area within ``view_distance`` of the observers is divided into square cells of ``cell_size`` metres."
+msgstr "**Сетка.** Территория в пределах ``view_distance`` от наблюдателей делится на квадратные ячейки размером ``cell_size`` метров."
+
+msgid "**Counting.** For every observer the visibility polygon is computed as in :func:`objectnat.get_visibility`, and every cell whose centre lies inside it gets one more observer (or the observer's weight from ``weight_column``, for example pedestrian flow). The value of a cell is therefore the number of observers that see it. The polygons are only counted, not returned, which keeps memory low."
+msgstr "**Подсчёт.** Для каждого наблюдателя вычисляется полигон видимости, как в :func:`objectnat.get_visibility`, и каждая ячейка, центр которой лежит внутри него, получает ещё одного наблюдателя (или вес наблюдателя из ``weight_column``, например пешеходный поток). Поэтому значение ячейки — это число наблюдателей, которые её видят. Полигоны только подсчитываются и не возвращаются, что экономит память."
+
+msgid "**Result.** The cells that at least one observer sees are returned as points at the cell centres with their ``count`` (and ``weight``); cells inside buildings and cells nobody sees are left out. :func:`objectnat.rasterize` turns them back into the grid, a raster that shows the counts as a continuous colour scale."
+msgstr "**Результат.** Ячейки, которые видит хотя бы один наблюдатель, возвращаются точками в центрах ячеек с их ``count`` (и ``weight``); ячейки внутри зданий и ячейки, которые никто не видит, исключаются. :func:`objectnat.rasterize` возвращает их на сетку — получается растр, который показывает значения непрерывной цветовой шкалой."
+
+msgid "For example, with observers every 15 m and a view distance of 250 m, a square that several streets open onto is seen by a hundred observers or more, and a closed courtyard only by the few observers inside it."
+msgstr "Например, при наблюдателях через 15 м и дальности обзора 250 м площадь, на которую выходят несколько улиц, видят сто наблюдателей и больше, а закрытый двор — лишь несколько наблюдателей внутри него."
+
+msgid "**Place observers beyond the analysed area.** A cell near the edge of the area is also seen by observers outside it, up to ``view_distance`` away. If the observers stop at the boundary of the area, the counts near the boundary come out too low. Place observers over the area extended by ``view_distance`` and clip the result to the area."
+msgstr "**Расставляйте наблюдателей шире анализируемой территории.** Ячейку у края территории видят и наблюдатели за её пределами, на расстоянии до ``view_distance``. Если наблюдатели заканчиваются на границе территории, счёт у границы получается заниженным. Расставьте наблюдателей по территории, расширенной на ``view_distance``, и обрежьте результат по самой территории."
+
+msgid "Time and memory grow with the number of cells. Counts are in observers, so two areas or two scenarios with the same observer spacing can be drawn on one colour scale. Visibility is symmetric, so the value of a cell is also the number of observers visible from that cell."
+msgstr "Время и память растут с числом ячеек. Значения выражены в числе наблюдателей, поэтому две территории или два сценария с одинаковым шагом наблюдателей можно рисовать в одной цветовой шкале. Видимость симметрична, поэтому значение ячейки — это и число наблюдателей, видимых из этой ячейки."
+
+msgid ":func:`objectnat.get_viewshed_catchment` is the 2.5D counterpart: a cell counts an observer when the line of sight from the observer's eye to the cell target is clear, as in :func:`objectnat.get_viewshed`. Observers inside building footprints are left out. Building footprints are rasterized once, and the lines of sight of all observers are counted in the Rust extension. With ``include_roofs=True`` roof cells are counted too; roofs are seen from street level only where the terrain or ``observer_height`` lifts the eye above them."
+msgstr ":func:`objectnat.get_viewshed_catchment` — аналог в 2.5D: ячейка засчитывает наблюдателя, если луч зрения от его глаз до цели в ячейке свободен, как в :func:`objectnat.get_viewshed`. Наблюдатели внутри контуров зданий исключаются. Контуры зданий растеризуются один раз, а лучи зрения всех наблюдателей подсчитываются в расширении на Rust. При ``include_roofs=True`` подсчитываются и ячейки крыш; с уровня улицы крыши видны только там, где рельеф или ``observer_height`` поднимает глаза выше них."
+
+msgid "Count, for every place around the observers, how many of them see it (the visibility catchment)."
+msgstr "Подсчитывает для каждого места вокруг наблюдателей, сколько из них его видят (охват видимости)."
+
+msgid "The area within ``view_distance`` of the observers is split into square cells. A cell counts an observer when its centre lies inside the observer's exact visibility polygon (see :func:`get_visibility`); with ``weight_column`` it sums the observers' weights instead. With observers placed densely along streets (see :func:`get_observer_points`) the counts show where objects are seen from most often: the visual catchment of facades, squares and landmarks. :func:`rasterize` turns the result into a :class:`Raster`."
+msgstr "Территория в пределах ``view_distance`` от наблюдателей делится на квадратные ячейки. Ячейка засчитывает наблюдателя, если её центр лежит внутри его точного полигона видимости (см. :func:`get_visibility`); с ``weight_column`` она суммирует веса наблюдателей. Если наблюдатели густо расставлены вдоль улиц (см. :func:`get_observer_points`), значения показывают, откуда объекты видны чаще всего: визуальный охват фасадов, площадей и ориентиров. :func:`rasterize` превращает результат в :class:`Raster`."
+
+msgid "Observer points with a CRS."
+msgstr "Точки наблюдения с системой координат."
+
+msgid "Obstacle geometries (Polygon, MultiPolygon, LineString, MultiLineString) in any CRS. ``None`` or an empty frame means no occlusion."
+msgstr "Геометрии препятствий (Polygon, MultiPolygon, LineString, MultiLineString) в любой системе координат. ``None`` или пустой набор — препятствий нет."
+
+msgid "View distance of every observer, in metres. Used when ``observers`` has no ``\"visibility_distance\"`` column; one of the two is required."
+msgstr "Дальность обзора каждого наблюдателя в метрах. Используется, если у ``observers`` нет столбца ``\"visibility_distance\"``; нужно одно из двух."
+
+msgid "Cell side in metres. Halving it gives four times as many cells, and memory and time grow with them."
+msgstr "Сторона ячейки в метрах. Уменьшение вдвое даёт вчетверо больше ячеек, и с ними растут память и время."
+
+msgid "Column of non-negative observer weights (e.g. pedestrian flow). Cells then sum the weights of the observers that see them instead of counting them. Observers with zero or missing weight are ignored."
+msgstr "Столбец неотрицательных весов наблюдателей (например, пешеходного потока). Тогда ячейки суммируют веса видящих их наблюдателей вместо подсчёта. Наблюдатели с нулевым или отсутствующим весом игнорируются."
+
+msgid "The cells seen by at least one observer, as points at the cell centres in the CRS of ``observers``, with ``count`` (the number of observers that see the cell) and, with ``weight_column``, ``weight`` (the sum of their weights). Cells seen by nobody, including cells inside obstacles, are left out. ``attrs`` record the grid, so :func:`rasterize` rebuilds it exactly."
+msgstr "Ячейки, которые видит хотя бы один наблюдатель, в виде точек в центрах ячеек в системе координат ``observers`` со столбцом ``count`` (число наблюдателей, которые видят ячейку) и, при ``weight_column``, ``weight`` (сумма их весов). Ячейки, которые никто не видит, в том числе внутри препятствий, исключаются. ``attrs`` записывают сетку, поэтому :func:`rasterize` точно её восстанавливает."
+
+msgid "If ``observers`` is not a GeoDataFrame."
+msgstr "Если ``observers`` не GeoDataFrame."
+
+msgid "If ``observers`` is empty or has no CRS, if no view distance is given, if ``cell_size`` is     invalid, if ``weight_column`` is missing or contains negative values, or if the grid would exceed     200 million cells."
+msgstr "Если ``observers`` пуст или не имеет системы координат, если не задана дальность обзора, если ``cell_size``     некорректен, если ``weight_column`` отсутствует или содержит отрицательные значения либо если сетка превысила бы     200 миллионов ячеек."
+
+msgid "Visibility is symmetric, so the value of a cell is also the number of observers visible *from* it."
+msgstr "Видимость симметрична, поэтому значение ячейки — это и число наблюдателей, видимых *из* неё."
+
+msgid "Count, for every place around the observers, how many of them see it, over buildings of known height and terrain (the 2.5D visibility catchment)."
+msgstr "Подсчитывает для каждого места вокруг наблюдателей, сколько из них его видят, среди зданий известной высоты и рельефа (охват видимости 2.5D)."
+
+msgid "The 2.5D counterpart of :func:`get_visibility_catchment`: every cell around the observers gets the number of observers (or the sum of their weights) whose line of sight to the cell centre at ``target_height`` is clear, as in :func:`get_viewshed`. Observers stand on the ground with their eyes ``observer_height`` above the terrain; observers inside a building footprint are left out. With ``include_roofs`` roof cells are counted too, which shows the roofs and building tops seen from the streets."
+msgstr "Аналог :func:`get_visibility_catchment` в 2.5D: каждая ячейка вокруг наблюдателей получает число наблюдателей (или сумму их весов), луч зрения которых до центра ячейки на высоте ``target_height`` свободен, как в :func:`get_viewshed`. Наблюдатели стоят на земле, глаза на ``observer_height`` над рельефом; наблюдатели внутри контура здания исключаются. С ``include_roofs`` подсчитываются и ячейки крыш, что показывает крыши и верхние части зданий, видимые с улиц."
+
+msgid "Observer points with a CRS, e.g. from :func:`get_observer_points`. Optional columns ``visibility_distance`` and ``observer_height`` override ``view_distance`` and ``observer_height`` per point."
+msgstr "Точки наблюдения с системой координат, например из :func:`get_observer_points`. Необязательные столбцы ``visibility_distance`` и ``observer_height`` заменяют ``view_distance`` и ``observer_height`` для отдельных точек."
+
+msgid "Building footprints with heights; ``None`` for terrain only."
+msgstr "Контуры зданий с высотами; ``None``, если учитывается только рельеф."
+
+msgid "View distance in metres, unless ``observers`` has ``visibility_distance``."
+msgstr "Дальность обзора в метрах, если у ``observers`` нет ``visibility_distance``."
+
+msgid "Ground heights, as in :func:`get_insolation`."
+msgstr "Высоты земли, как в :func:`get_insolation`."
+
+msgid "Eye height above the terrain in metres. Defaults to 1.6."
+msgstr "Высота глаз над рельефом в метрах. По умолчанию 1.6."
+
+msgid "Height above the ground of what is looked at, in metres. Defaults to 0."
+msgstr "Высота над землёй того, на что смотрят, в метрах. По умолчанию 0."
+
+msgid "Cell side in metres. Defaults to 5."
+msgstr "Сторона ячейки в метрах. По умолчанию 5."
+
+msgid "Count roof cells too. Defaults to ``False``."
+msgstr "Подсчитывать и ячейки крыш. По умолчанию ``False``."
+
+msgid "Observer weights, as in :func:`get_visibility_catchment`."
+msgstr "Веса наблюдателей, как в :func:`get_visibility_catchment`."
+
+msgid "The cells seen by at least one observer, as points at the cell centres in the CRS of ``observers``, with ``count`` (and ``weight``), as in :func:`get_visibility_catchment`; :func:`rasterize` turns them into a :class:`Raster`."
+msgstr "Ячейки, которые видит хотя бы один наблюдатель, в виде точек в центрах ячеек в системе координат ``observers`` с ``count`` (и ``weight``), как в :func:`get_visibility_catchment`; :func:`rasterize` превращает их в :class:`Raster`."
+
+msgid "On empty observers, a missing view distance, bad weights or a grid larger than 30 million     cells."
+msgstr "При пустом наборе наблюдателей, отсутствии дальности обзора, некорректных весах либо сетке больше 30 миллионов     ячеек."
+
+msgid "Place observer points evenly along the streets of a graph."
+msgstr "Равномерно размещает точки наблюдения вдоль улиц графа."
+
+msgid "Each street segment (an edge, counted once for both directions) is split into pieces of about ``spacing`` metres and gets one point in the middle of every piece, so points never pile up at intersections. Walk and intermodal graphs use their pedestrian (``type == \"walk\"``) edges only."
+msgstr "Каждый отрезок улицы (ребро, учтённое один раз для обоих направлений) делится на части длиной около ``spacing`` метров, и в середину каждой части ставится одна точка, поэтому точки не скапливаются на перекрёстках. На пешеходных и интермодальных графах используются только пешеходные рёбра (``type == \"walk\"``)."
+
+msgid "Street graph from IduEdu."
+msgstr "Граф улиц из IduEdu."
+
+msgid "Target distance between neighbouring points in metres."
+msgstr "Желаемое расстояние между соседними точками в метрах."
+
+msgid "Points in the CRS of ``urban_graph``, ready for :func:`get_visibility_catchment`."
+msgstr "Точки в системе координат ``urban_graph``, готовые для :func:`get_visibility_catchment`."
+
+msgid "If ``spacing`` is not positive or the graph has no edge geometries."
+msgstr "Если ``spacing`` не положителен или у графа нет геометрии рёбер."
+
+msgid "2D visibility catchment and 2.5D viewshed catchment"
+msgstr "Охват видимости 2D и охват областей видимости 2.5D"
+
+msgid "Number of observers that see each cell: 1,805 observers on open ground within 12 m of buildings, placed over the shown area extended by the view distance, ``view_distance=250``, ``cell_size=4``, the counts rasterized with :func:`objectnat.rasterize` on one colour scale. Left: 2D. Right: 2.5D with ``target_height=10``, the number of observers that see a point 10 m above the ground. Such a point is seen over buildings lower than the line of sight, so more observers see it."
+msgstr "Число наблюдателей, которые видят каждую ячейку: 1805 наблюдателей на открытой территории не дальше 12 м от зданий, расставленных по показанной территории, расширенной на дальность обзора, ``view_distance=250``, ``cell_size=4``; значения растеризованы функцией :func:`objectnat.rasterize` в одной цветовой шкале. Слева: 2D. Справа: 2.5D с ``target_height=10`` — число наблюдателей, которые видят точку на высоте 10 м над землёй. Такую точку видно поверх зданий ниже луча зрения, поэтому её видит больше наблюдателей."
+
+msgid "Limitations"
+msgstr "Ограничения"
+
+msgid "2D visibility ignores heights: low walls, fences and garages block the view as tall buildings do."
+msgstr "Видимость 2D не учитывает высоты: низкие стены, заборы и гаражи закрывают обзор так же, как высокие здания."
+
+msgid "2.5D viewsheds use flat roofs and vertical walls; trees, street furniture and pitched roofs are not modelled. Results are discrete at ``cell_size``."
+msgstr "Области видимости 2.5D используют плоские крыши и вертикальные стены; деревья, уличная мебель и скатные крыши не моделируются. Результаты дискретны с шагом ``cell_size``."
+
+msgid "Neither model accounts for atmospheric conditions, lighting or the visual acuity of the observer; a cell is visible if the geometric line of sight is clear within the view distance."
+msgstr "Ни одна модель не учитывает состояние атмосферы, освещение и остроту зрения наблюдателя; ячейка видна, если геометрический луч зрения свободен в пределах дальности обзора."
+
+msgid "Example notebooks"
+msgstr "Примеры в ноутбуках"
+
+msgid ":doc:`examples/visibility` (2D visibility, isovist metrics, catchment) and :doc:`examples/viewshed` (2.5D viewsheds and viewshed catchment)."
+msgstr ":doc:`examples/visibility` (видимость 2D, метрики изовист, охват) и :doc:`examples/viewshed` (области видимости 2.5D и их охват)."
+

@@ -37,6 +37,8 @@ docs/_autoapi/
 docs/api/generated/
 docs/_autosummary/
 docs/_doctrees/
+# translation catalogues compiled by Sphinx at build time (the .po files are the source)
+docs/locale/**/*.mo
 docs/api/generated
 _build/
 _autosummary/
@@ -57,3 +59,11 @@ Thumbs.db
 # graphify knowledge graph (generated locally, not committed)
 /graphify-out/
 
+
+# Rust build artifacts (maturin puts the extension next to the sources on editable installs)
+/rust/target/
+/objectnat/_rust*.so
+/objectnat/_rust*.pyd
+
+# local benchmarks (not part of the repository)
+/benchmarks/

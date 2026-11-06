@@ -1,11 +1,17 @@
 import numpy as np
-from scipy.optimize import fsolve
 
 from objectnat import config
 
 from .noise_init_data import air_resist_ratio
 
 logger = config.logger
+
+MAX_DB_VALUE = 194  # the loudest undistorted sound in air at sea level, dB
+
+_TABLE = air_resist_ratio.sort_index().sort_index(axis=1)
+_FREQS = _TABLE.index.to_numpy(dtype=float)
+_TEMPS = _TABLE.columns.to_numpy(dtype=float)
+_VALUES = _TABLE.to_numpy(dtype=float)
 
 
 def get_air_resist_ratio(temp, freq, check_temp_freq=False):
@@ -48,70 +54,25 @@ def get_air_resist_ratio(temp, freq, check_temp_freq=False):
                 f" Recommended frequency range: {min(air_resist_ratio.index)} Hz to {max(air_resist_ratio.index)} Hz."
             )
 
-    def get_nearest_values(array, value):
-        sorted_array = sorted(array)
-        if value in sorted_array:
-            return [value]
-        if value > max(sorted_array):
-            return [sorted_array[-1]]
-        if value < min(sorted_array):
-            return [sorted_array[0]]
+    # bilinear interpolation, clamped to the table edges
+    by_temperature = [np.interp(freq, _FREQS, _VALUES[:, k]) for k in range(len(_TEMPS))]
+    return float(np.interp(temp, _TEMPS, by_temperature))
 
-        for i, val in enumerate(sorted_array):
-            if value < val:
-                return sorted_array[max(i - 1, 0)], sorted_array[i]
-        return sorted_array[-2], sorted_array[-1]
 
-    nearest_temp = get_nearest_values(air_resist_ratio.columns, temp)
-    nearest_freq = get_nearest_values(air_resist_ratio.index, freq)
-
-    if len(nearest_temp) == 1 and len(nearest_freq) == 1:
-        return air_resist_ratio.loc[nearest_freq[0], nearest_temp[0]]
-
-    if len(nearest_temp) == 2 and len(nearest_freq) == 2:
-        freq1, freq2 = nearest_freq
-        temp1, temp2 = nearest_temp
-
-        coef_temp1_freq1 = air_resist_ratio.loc[freq1, temp1]
-        coef_temp1_freq2 = air_resist_ratio.loc[freq2, temp1]
-        coef_temp2_freq1 = air_resist_ratio.loc[freq1, temp2]
-        coef_temp2_freq2 = air_resist_ratio.loc[freq2, temp2]
-
-        weight_temp1 = (temp2 - temp) / (temp2 - temp1)
-        weight_temp2 = (temp - temp1) / (temp2 - temp1)
-        weight_freq1 = (freq2 - freq) / (freq2 - freq1)
-        weight_freq2 = (freq - freq1) / (freq2 - freq1)
-
-        coef_freq1 = coef_temp1_freq1 * weight_temp1 + coef_temp2_freq1 * weight_temp2
-        coef_freq2 = coef_temp1_freq2 * weight_temp1 + coef_temp2_freq2 * weight_temp2
-
-        final_coef = coef_freq1 * weight_freq1 + coef_freq2 * weight_freq2
-
-        return final_coef
-
-    if len(nearest_temp) == 2 and len(nearest_freq) == 1:
-        temp1, temp2 = nearest_temp
-        freq1 = nearest_freq[0]
-
-        coef_temp1 = air_resist_ratio.loc[freq1, temp1]
-        coef_temp2 = air_resist_ratio.loc[freq1, temp2]
-
-        weight_temp1 = (temp2 - temp) / (temp2 - temp1)
-        weight_temp2 = (temp - temp1) / (temp2 - temp1)
-
-        return coef_temp1 * weight_temp1 + coef_temp2 * weight_temp2
-
-    if len(nearest_temp) == 1 and len(nearest_freq) == 2:
-        temp1 = nearest_temp[0]
-        freq1, freq2 = nearest_freq
-
-        coef_freq1 = air_resist_ratio.loc[freq1, temp1]
-        coef_freq2 = air_resist_ratio.loc[freq2, temp1]
-
-        weight_freq1 = (freq2 - freq) / (freq2 - freq1)
-        weight_freq2 = (freq - freq1) / (freq2 - freq1)
-
-        return coef_freq1 * weight_freq1 + coef_freq2 * weight_freq2
+def decay_distance(level_db: float, target_db: float, air_db_per_m: float, *, line: bool = False) -> float:
+    """
+    Distance in metres at which a source of ``level_db`` (at 1 m) falls to ``target_db``: the root of the point law
+    ``L - 20 lg r - k r`` or, with ``line=True``, of the line law ``L - 10 lg r - k r`` (``k`` in dB per metre).
+    """
+    spread = 10.0 if line else 20.0
+    lo, hi = -9.0, 7.0  # log10 of the distance: the level falls monotonically, so the root is in between
+    for _ in range(80):
+        mid = 0.5 * (lo + hi)
+        if level_db - spread * mid - air_db_per_m * 10**mid > target_db:
+            lo = mid
+        else:
+            hi = mid
+    return float(10**lo)
 
 
 def dist_to_target_db(
@@ -137,28 +98,44 @@ def dist_to_target_db(
             are within valid ranges.
 
     Returns:
-        float or str: If `return_desc` is `False`, the function returns the distance (in meters) over which the sound
+        float or str: If `return_desc` is `False`, the function returns the distance (in metres) over which the sound
         decays from `init_noise_db` to `target_noise_db`. If `return_desc` is `True`, a descriptive string is returned
         explaining the calculation and the conditions.
     """
 
-    def equation(r):
-        return l - l_ist + 20 * np.log10(r) + k * r
-
-    l_ist = init_noise_db
-    l = target_noise_db
     k = get_air_resist_ratio(air_temperature, geometric_mean_freq_hz, check_temp_freq)
-    initial_guess = 1
-    r_solution = fsolve(equation, initial_guess)
+    distance = decay_distance(init_noise_db, target_noise_db, k)
     if return_desc:
-        string = (
+        return (
             f"Noise level of {init_noise_db} dB "
             f"with a geometric mean frequency of {geometric_mean_freq_hz} Hz "
             f"at an air temperature of {air_temperature}°C decays to {target_noise_db} dB "
-            f"over a distance of {r_solution[0]} meters. Air resistance coefficient: {k}."
+            f"over a distance of {distance} metres. Air resistance coefficient: {k}."
         )
-        return string
-    return r_solution[0]
+    return distance
+
+
+def source_values(sources, column: str, default: float | None) -> np.ndarray:
+    """
+    Per-source ``source_noise_db`` or ``geometric_mean_freq_hz``: the column of ``sources`` when it exists,
+    otherwise ``default`` for every source. Levels above the physical limit in air are rejected.
+    """
+    if column in sources.columns:
+        if sources[column].isnull().any():
+            raise ValueError(f"Column '{column}' contains missing (NaN) values")
+        values = sources[column].to_numpy(dtype=float)
+    elif default is None:
+        raise ValueError(f"Either `{column}` must be provided or the sources must contain a '{column}' column.")
+    else:
+        values = np.full(len(sources), float(default))
+    if column == "source_noise_db" and (values > MAX_DB_VALUE).any():
+        raise ValueError(f"source_noise_db exceeds the physical limit of {MAX_DB_VALUE} dB in air.")
+    return values
+
+
+def vegetation_db_per_m(geometric_mean_freq_hz: float) -> float:
+    """Attenuation by foliage in dB per metre of vegetation crossed, growing with the cube root of the frequency."""
+    return 0.08 * geometric_mean_freq_hz ** (1 / 3) / 8
 
 
 def green_noise_reduce_db(geometric_mean_freq_hz, r_tree) -> float:
@@ -169,10 +146,10 @@ def green_noise_reduce_db(geometric_mean_freq_hz, r_tree) -> float:
 
     Args:
         geometric_mean_freq_hz (float): The geometric mean frequency of the sound (in Hz).
-        r_tree (float): The thickness or density of the vegetation (in meters).
+        r_tree (float): The thickness or density of the vegetation (in metres).
 
     Returns:
         float: The noise reduction (in dB) achieved by the vegetation. This value indicates how much quieter the sound
         will be after passing through or interacting with the vegetation of the specified thickness.
     """
-    return round(0.08 * r_tree * ((geometric_mean_freq_hz ** (1 / 3)) / 8), 1)
+    return round(vegetation_db_per_m(geometric_mean_freq_hz) * r_tree, 1)

@@ -1,0 +1,169 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "ObjectNat"
+msgstr "ObjectNat"
+
+msgid "Object-level network and spatial analysis for cities"
+msgstr "Пространственный и сетевой анализ городских объектов"
+
+msgid "**ObjectNat** is an open-source Python library for spatial analysis of urban objects: buildings, services, street observers and noise sources. It is developed by the IDU team at ITMO University."
+msgstr "**ObjectNat** — библиотека Python с открытым исходным кодом для пространственного анализа городских объектов: зданий, сервисов, наблюдателей на улицах и источников шума. Её разрабатывает команда IDU Университета ИТМО."
+
+msgid "|badge-black| |badge-pypi| |badge-ci| |badge-cov| |badge-license| |badge-github|"
+msgstr "|badge-black| |badge-pypi| |badge-ci| |badge-cov| |badge-license| |badge-github|"
+
+msgid "Code style: black"
+msgstr "Стиль кода: black"
+
+msgid "PyPI version"
+msgstr "Версия на PyPI"
+
+msgid "Tests and coverage"
+msgstr "Тесты и покрытие"
+
+msgid "Coverage"
+msgstr "Покрытие тестами"
+
+msgid "License"
+msgstr "Лицензия"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "ObjectNat works with GeoPandas data and with street graphs (``iduedu.UrbanGraph``) built by `IduEdu <https://github.com/IDUclub/IduEdu>`__ from OpenStreetMap and GTFS. Every method page describes what is computed, the algorithm, the parameters and outputs with units, an example figure and the limitations."
+msgstr "ObjectNat работает с данными GeoPandas и с графами улиц (``iduedu.UrbanGraph``), которые строит `IduEdu <https://github.com/IDUclub/IduEdu>`__ по данным OpenStreetMap и GTFS. Страница каждого метода описывает, что вычисляется, алгоритм, параметры и результаты с единицами измерения, пример рисунка и ограничения."
+
+msgid "Method"
+msgstr "Метод"
+
+msgid "Result"
+msgstr "Результат"
+
+msgid "Functions"
+msgstr "Функции"
+
+msgid ":doc:`methods/isochrones`"
+msgstr ":doc:`methods/isochrones`"
+
+msgid "Area reachable from origins within a time (min) or distance (m) budget on a graph"
+msgstr "Территория, достижимая из точек отправления по графу в пределах бюджета времени (мин) или расстояния (м)"
+
+msgid ":func:`~objectnat.get_graph_isochrones`, :func:`~objectnat.get_stepped_graph_isochrones`"
+msgstr ":func:`~objectnat.get_graph_isochrones`, :func:`~objectnat.get_stepped_graph_isochrones`"
+
+msgid ":doc:`methods/coverage`"
+msgstr ":doc:`methods/coverage`"
+
+msgid "Non-overlapping zones served by each service within a budget"
+msgstr "Неперекрывающиеся зоны, которые обслуживает каждый сервис в пределах бюджета"
+
+msgid ":func:`~objectnat.get_graph_coverage`, :func:`~objectnat.get_stepped_graph_coverage`, :func:`~objectnat.get_radius_coverage`"
+msgstr ":func:`~objectnat.get_graph_coverage`, :func:`~objectnat.get_stepped_graph_coverage`, :func:`~objectnat.get_radius_coverage`"
+
+msgid ":doc:`methods/provision`"
+msgstr ":doc:`methods/provision`"
+
+msgid "Allocation of building demand to services of limited capacity within a cost threshold"
+msgstr "Распределение спроса зданий между сервисами ограниченной вместимости в пределах порога стоимости"
+
+msgid ":func:`~objectnat.get_service_provision` and helpers"
+msgstr ":func:`~objectnat.get_service_provision` и вспомогательные функции"
+
+msgid ":doc:`methods/visibility`"
+msgstr ":doc:`methods/visibility`"
+
+msgid "Visibility polygons and isovist metrics (2D), viewsheds over building heights and terrain (2.5D), catchment zones of many observers"
+msgstr "Полигоны видимости и метрики изовист (2D), области видимости с учётом высот зданий и рельефа (2.5D), зоны охвата для множества наблюдателей"
+
+msgid ":func:`~objectnat.get_visibility`, :func:`~objectnat.get_isovist_grid`, :func:`~objectnat.get_viewshed`, :func:`~objectnat.get_visibility_catchment`, :func:`~objectnat.get_viewshed_catchment`"
+msgstr ":func:`~objectnat.get_visibility`, :func:`~objectnat.get_isovist_grid`, :func:`~objectnat.get_viewshed`, :func:`~objectnat.get_visibility_catchment`, :func:`~objectnat.get_viewshed_catchment`"
+
+msgid ":doc:`methods/noise`"
+msgstr ":doc:`methods/noise`"
+
+msgid "Sound levels (dB) around point, line and polygon sources among obstacles and vegetation"
+msgstr "Уровни звука (дБ) вокруг точечных, линейных и площадных источников среди препятствий и растительности"
+
+msgid ":func:`~objectnat.simulate_noise_grid`, :func:`~objectnat.simulate_noise`, :func:`~objectnat.calculate_simplified_noise_frame`"
+msgstr ":func:`~objectnat.simulate_noise_grid`, :func:`~objectnat.simulate_noise`, :func:`~objectnat.calculate_simplified_noise_frame`"
+
+msgid ":doc:`methods/insolation`"
+msgstr ":doc:`methods/insolation`"
+
+msgid "Direct sun hours on the ground and on facades per floor, for a day or a period"
+msgstr "Часы прямого солнца на земле и на фасадах по этажам, за день или за период"
+
+msgid ":func:`~objectnat.get_insolation`, :func:`~objectnat.get_facade_insolation`"
+msgstr ":func:`~objectnat.get_insolation`, :func:`~objectnat.get_facade_insolation`"
+
+msgid ":doc:`methods/rasters`"
+msgstr ":doc:`methods/rasters`"
+
+msgid "Grid results as rasters: matplotlib plots, GeoTIFF files, folium web-map overlays"
+msgstr "Результаты на сетке в виде растров: рисунки matplotlib, файлы GeoTIFF, слои веб-карт folium"
+
+msgid ":func:`~objectnat.rasterize`, :class:`~objectnat.Raster`"
+msgstr ":func:`~objectnat.rasterize`, :class:`~objectnat.Raster`"
+
+msgid "The computationally intensive parts (exact visibility, 2.5D lines of sight, insolation, receiver-grid noise and provision allocation) run in parallel threads in a compiled Rust extension, ``objectnat._rust``; graph searches use IduEdu's Numba-accelerated Dijkstra routines. :doc:`methods/examples/index` contains an executable notebook for every method."
+msgstr "Ресурсоёмкие части (точная видимость, лучи зрения 2.5D, инсоляция, шум на сетке приёмников и распределение в модели обеспеченности) выполняются в параллельных потоках в скомпилированном расширении на Rust, ``objectnat._rust``; поиск по графу использует ускоренные Numba процедуры Дейкстры из IduEdu. В разделе :doc:`methods/examples/index` для каждого метода есть исполняемый ноутбук."
+
+msgid "Installation"
+msgstr "Установка"
+
+msgid "ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.1 or newer within the 2.x series. Wheels contain the compiled extension, so ``pip`` needs no compiler; building from a source checkout requires a Rust toolchain (`rustup <https://rustup.rs>`__). Reading GeoTIFF terrain for insolation and viewsheds requires the optional ``rasterio`` package."
+msgstr "ObjectNat поддерживает Python 3.11–3.14 в Linux, macOS и Windows и устанавливает IduEdu версии 2.4.1 или новее в пределах серии 2.x. Колёса (wheels) содержат скомпилированное расширение, поэтому ``pip`` не нужен компилятор; сборка из исходного кода требует инструментов Rust (`rustup <https://rustup.rs>`__). Для чтения рельефа из GeoTIFF в инсоляции и областях видимости нужен необязательный пакет ``rasterio``."
+
+msgid "Quickstart"
+msgstr "Быстрый старт"
+
+msgid "Graph-based methods take an ``iduedu.UrbanGraph``. IduEdu can download a Geofabrik extract, cut the territory out of it and build the graph from the local file instead of the Overpass API (cutting requires ``pip install \"iduedu[pbf]\"``):"
+msgstr "Методы на графах принимают ``iduedu.UrbanGraph``. IduEdu может скачать выгрузку Geofabrik, вырезать из неё территорию и построить граф по локальному файлу вместо запросов к Overpass API (для вырезания нужен ``pip install \"iduedu[pbf]\"``):"
+
+msgid "Without the ``with`` block the same calls query the Overpass API."
+msgstr "Без блока ``with`` те же вызовы обращаются к Overpass API."
+
+msgid "Methods without a graph take GeoDataFrames directly, for example sun hours among buildings with a storeys column:"
+msgstr "Методы без графа принимают GeoDataFrame напрямую, например часы солнца среди зданий со столбцом этажности:"
+
+msgid "Configuration"
+msgstr "Настройка"
+
+msgid "Contributing, contacts and citation"
+msgstr "Участие, контакты и цитирование"
+
+msgid "Issues and pull requests are welcome on `GitHub <https://github.com/IDUclub/ObjectNat>`__; the workflow is described in ``CONTRIBUTING.md``."
+msgstr "Задачи (issues) и пул-реквесты принимаются на `GitHub <https://github.com/IDUclub/ObjectNat>`__; порядок работы описан в ``CONTRIBUTING.md``."
+
+msgid "`NCCR <https://actcognitive.org/>`_, National Center for Cognitive Research"
+msgstr "`NCCR <https://actcognitive.org/>`_, Национальный центр когнитивных разработок"
+
+msgid "`IDU <https://idu.itmo.ru/>`_, Institute of Design and Urban Studies"
+msgstr "`IDU <https://idu.itmo.ru/>`_, Институт дизайна и урбанистики"
+
+msgid "`Natalya Chichkova <https://t.me/nancy_nat>`_, project manager"
+msgstr "`Наталья Чичкова <https://t.me/nancy_nat>`_, руководитель проекта"
+
+msgid "`Danila Oleynikov (Donny) <https://t.me/ddonny_dd>`_, lead software engineer"
+msgstr "`Данила Олейников (Donny) <https://t.me/ddonny_dd>`_, ведущий разработчик"
+
+msgid "ObjectNat is distributed under the BSD 3-Clause license (``LICENSE.txt``). To cite it, use the metadata in `CITATION.cff <https://github.com/IDUclub/ObjectNat/blob/master/CITATION.cff>`__ (on GitHub, **Cite this repository** exports it as APA or BibTeX). Publications describing ObjectNat will be listed here."
+msgstr "ObjectNat распространяется по лицензии BSD 3-Clause (``LICENSE.txt``). Для цитирования используйте метаданные из `CITATION.cff <https://github.com/IDUclub/ObjectNat/blob/master/CITATION.cff>`__ (на GitHub кнопка **Cite this repository** экспортирует их в формате APA или BibTeX). Публикации об ObjectNat будут перечислены здесь."
+

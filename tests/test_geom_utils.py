@@ -8,12 +8,9 @@ import pytest
 from shapely import LineString, MultiPolygon, Point, Polygon, box
 
 from objectnat.methods.utils.geom_utils import (
-    combine_geometry,
     distribute_points_on_linestrings,
     distribute_points_on_polygons,
-    explode_linestring,
     get_point_from_a_thorough_b,
-    point_side_of_line,
     polygons_to_multilinestring,
     remove_inner_geom,
 )
@@ -50,26 +47,6 @@ def test_polygons_to_multilinestring_rejects_non_polygon():
 
 
 # --------------------------------------------------------------------------- #
-# explode_linestring
-# --------------------------------------------------------------------------- #
-def test_explode_linestring_segments():
-    line = LineString([(0, 0), (1, 0), (2, 0)])
-    segments = explode_linestring(line)
-    assert len(segments) == 2
-    assert all(seg.geom_type == "LineString" for seg in segments)
-    assert all(seg.length == pytest.approx(1.0) for seg in segments)
-
-
-# --------------------------------------------------------------------------- #
-# point_side_of_line
-# --------------------------------------------------------------------------- #
-def test_point_side_of_line_left_and_right():
-    line = LineString([(0, 0), (1, 0)])  # pointing east
-    assert point_side_of_line(line, Point(0.5, 1)) == 1  # left / above
-    assert point_side_of_line(line, Point(0.5, -1)) == -1  # right / below
-
-
-# --------------------------------------------------------------------------- #
 # get_point_from_a_thorough_b
 # --------------------------------------------------------------------------- #
 def test_get_point_from_a_thorough_b_along_axes():
@@ -103,24 +80,6 @@ def test_remove_inner_geom_multipolygon():
 def test_remove_inner_geom_non_polygon_returns_empty():
     result = remove_inner_geom(LineString([(0, 0), (1, 1)]))
     assert result.is_empty
-
-
-# --------------------------------------------------------------------------- #
-# combine_geometry
-# --------------------------------------------------------------------------- #
-def test_combine_geometry_splits_overlap():
-    gdf = gpd.GeoDataFrame(
-        {"val": [1, 2]},
-        geometry=[box(0, 0, 2, 2), box(1, 1, 3, 3)],
-        crs=3857,
-    )
-    result = combine_geometry(gdf)
-    assert isinstance(result, gpd.GeoDataFrame)
-    assert result.crs == gdf.crs
-    assert not result.empty
-    # Overlapping inputs split into distinct enclosures; attributes aggregate into lists.
-    assert "val" in result.columns
-    assert result["val"].apply(lambda v: isinstance(v, list)).all()
 
 
 # --------------------------------------------------------------------------- #

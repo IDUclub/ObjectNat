@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/IDUclub/ObjectNat/discussions
+    about: Ask how to use ObjectNat or discuss an idea before opening an issue.
+  - name: Documentation
+    url: https://iduclub.github.io/ObjectNat/
+    about: API reference and example notebooks.
+  - name: Security vulnerability
+    url: https://github.com/IDUclub/ObjectNat/security/advisories/new
+    about: Report it privately, not as a public issue (see SECURITY.md).

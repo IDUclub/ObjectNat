@@ -1,0 +1,229 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Rasters"
+msgstr "Растры"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "Several methods compute values on a regular grid of square cells and return the grid as points:"
+msgstr "Несколько методов вычисляют значения на регулярной сетке квадратных ячеек и возвращают сетку в виде точек:"
+
+msgid "Function"
+msgstr "Функция"
+
+msgid "Points returned with"
+msgstr "Точки возвращаются при"
+
+msgid "Columns and the value of a cell"
+msgstr "Столбцы и значение в ячейке"
+
+msgid ":func:`objectnat.get_insolation`"
+msgstr ":func:`objectnat.get_insolation`"
+
+msgid "always"
+msgstr "всегда"
+
+msgid "``sun_hours``, ``min_sun_hours``, ``max_continuous_hours``: direct sun at the receiver, hours per day"
+msgstr "``sun_hours``, ``min_sun_hours``, ``max_continuous_hours``: прямое солнце в приёмнике, часов в сутки"
+
+msgid ":func:`objectnat.simulate_noise_grid`"
+msgstr ":func:`objectnat.simulate_noise_grid`"
+
+msgid "``output=\"receivers\"`` or ``\"both\"``"
+msgstr "``output=\"receivers\"`` или ``\"both\"``"
+
+msgid "``noise_level``: sound level at the receiver, dB"
+msgstr "``noise_level``: уровень звука в приёмнике, дБ"
+
+msgid ":func:`objectnat.get_visibility_catchment`, :func:`objectnat.get_viewshed_catchment`"
+msgstr ":func:`objectnat.get_visibility_catchment`, :func:`objectnat.get_viewshed_catchment`"
+
+msgid "``count``: the number of observers that see the cell (``weight``: the sum of their weights)"
+msgstr "``count``: число наблюдателей, которые видят ячейку (``weight``: сумма их весов)"
+
+msgid ":func:`objectnat.get_isovist_grid`"
+msgstr ":func:`objectnat.get_isovist_grid`"
+
+msgid "isovist metrics of an observer standing in the cell: ``visible_share`` (share of the view disc), ``compactness``, ``occlusivity`` (m), ``drift`` (m), ..."
+msgstr "метрики изовисты наблюдателя, стоящего в ячейке: ``visible_share`` (доля круга обзора), ``compactness``, ``occlusivity`` (м), ``drift`` (м), ..."
+
+msgid "For noise, ``output=\"receivers\"`` skips the level bands, which is faster when only the values are needed."
+msgstr "Для шума ``output=\"receivers\"`` не строит полосы уровней, это быстрее, когда нужны только значения."
+
+msgid ":func:`objectnat.rasterize` turns one column of such points into a :class:`objectnat.Raster`: a 2-D array with an affine transform and a CRS. A raster shows a continuous quantity cell by cell, without the class bounds of the zone polygons, and it can be drawn with matplotlib, written to a GeoTIFF file or shown on a folium web map."
+msgstr ":func:`objectnat.rasterize` превращает один столбец таких точек в :class:`objectnat.Raster`: двумерный массив с аффинным преобразованием и системой координат. Растр показывает непрерывную величину по ячейкам, без границ классов полигонов зон, и его можно нарисовать в matplotlib, записать в файл GeoTIFF или показать на веб-карте folium."
+
+msgid "Method"
+msgstr "Метод"
+
+msgid "The grid methods record their grid in the ``attrs`` of the returned points: the local metric CRS of the calculation (a UTM zone), the cell size and the position of one cell centre. :func:`objectnat.rasterize` reprojects the points to that CRS, assigns every point to its cell and fills cells without a point (buildings, cells below ``target_noise_db``, cells seen by nobody) with ``NaN``. The raster reproduces the calculation grid exactly, in whatever CRS the points were returned, and also after rows were filtered. Points without the record, for example read from a file, require ``cell_size``; they are then placed in their own projected CRS or in an estimated UTM zone."
+msgstr "Методы на сетке записывают свою сетку в ``attrs`` возвращаемых точек: локальную метрическую систему координат расчёта (зону UTM), размер ячейки и положение центра одной ячейки. :func:`objectnat.rasterize` перепроецирует точки в эту систему координат, относит каждую точку к её ячейке и заполняет ячейки без точек (здания, ячейки ниже ``target_noise_db``, ячейки, которые никто не видит) значением ``NaN``. Растр точно воспроизводит расчётную сетку, в какой бы системе координат ни были возвращены точки, в том числе после фильтрации строк. Точкам без такой записи, например прочитанным из файла, нужен ``cell_size``; тогда они размещаются в собственной проекции или в оценённой зоне UTM."
+
+msgid ":class:`objectnat.Raster` is the tuple ``(values, transform, crs)``. ``values`` has the northern row first; ``transform`` contains the affine coefficients ``(a, b, c, d, e, f)`` in the order of rasterio and GDAL. It is also the format of ``terrain`` arguments, so a raster can be passed back as terrain."
+msgstr ":class:`objectnat.Raster` — кортеж ``(values, transform, crs)``. В ``values`` первой идёт северная строка; ``transform`` содержит аффинные коэффициенты ``(a, b, c, d, e, f)`` в порядке rasterio и GDAL. В том же формате задаются аргументы ``terrain``, поэтому растр можно передать обратно как рельеф."
+
+msgid "``plot(ax, **imshow_kwargs)`` draws it with ``imshow`` in the raster CRS. Other layers on the same axes must be reprojected to ``raster.crs``."
+msgstr "``plot(ax, **imshow_kwargs)`` рисует растр через ``imshow`` в его системе координат. Другие слои на тех же осях нужно перепроецировать в ``raster.crs``."
+
+msgid "``to_geotiff(path)`` writes a float32 GeoTIFF (requires ``rasterio``)."
+msgstr "``to_geotiff(path)`` записывает GeoTIFF float32 (нужен ``rasterio``)."
+
+msgid "``to_folium(cmap=..., vmin=..., vmax=..., opacity=...)`` returns a ``folium.raster_layers.ImageOverlay``. Web maps draw images in Web Mercator, so the grid is resampled to a Mercator grid with about the same number of cells (nearest cell) and coloured with a matplotlib colormap; cells without a value are transparent. The overlay can be added to any folium map, including the maps of ``GeoDataFrame.explore()`` (requires ``folium`` and ``matplotlib``)."
+msgstr "``to_folium(cmap=..., vmin=..., vmax=..., opacity=...)`` возвращает ``folium.raster_layers.ImageOverlay``. Веб-карты рисуют изображения в проекции Web Mercator, поэтому сетка пересчитывается на сетку Меркатора примерно с тем же числом ячеек (по ближайшей ячейке) и раскрашивается палитрой matplotlib; ячейки без значения прозрачны. Слой можно добавить на любую карту folium, в том числе на карты ``GeoDataFrame.explore()`` (нужны ``folium`` и ``matplotlib``)."
+
+msgid "``explore(m=None, cmap=..., vmin=..., vmax=..., name=...)`` does the same on a new map (or on ``m``) and adds a colour bar, like ``GeoDataFrame.explore()``."
+msgstr "``explore(m=None, cmap=..., vmin=..., vmax=..., name=...)`` делает то же на новой карте (или на ``m``) и добавляет цветовую шкалу, как ``GeoDataFrame.explore()``."
+
+msgid "Turn grid points with values into a :class:`Raster`, one cell per point."
+msgstr "Превращает точки сетки со значениями в :class:`Raster`, по одной ячейке на точку."
+
+msgid "Grid points are what the grid methods return: receivers of :func:`get_insolation` and of :func:`simulate_noise_grid` (``output=\"receivers\"`` or ``\"both\"``), the cells of :func:`get_visibility_catchment` and :func:`get_viewshed_catchment` and the points of :func:`get_isovist_grid`. Their ``attrs`` record the grid (CRS, cell size, position), so the raster reproduces it exactly in the local metric CRS of the calculation, whatever CRS the points were returned in, and also after filtering rows."
+msgstr "Точки сетки — это то, что возвращают методы на сетке: приёмники :func:`get_insolation` и :func:`simulate_noise_grid` (``output=\"receivers\"`` или ``\"both\"``), ячейки :func:`get_visibility_catchment` и :func:`get_viewshed_catchment` и точки :func:`get_isovist_grid`. Их ``attrs`` записывают сетку (систему координат, размер ячейки, положение), поэтому растр точно воспроизводит её в локальной метрической системе координат расчёта, в какой бы системе координат ни были возвращены точки, в том числе после фильтрации строк."
+
+msgid "Points without that record (for example, read from a file) require ``cell_size``; they are then placed in their own CRS if it is projected, or in an estimated UTM zone, with the first point as a cell centre."
+msgstr "Точкам без такой записи (например, прочитанным из файла) нужен ``cell_size``; тогда они размещаются в собственной системе координат, если она проецированная, или в оценённой зоне UTM, а центром ячейки служит первая точка."
+
+msgid "Parameters"
+msgstr "Параметры"
+
+msgid "Point GeoDataFrame on a regular grid."
+msgstr "GeoDataFrame точек на регулярной сетке."
+
+msgid "Numeric (or boolean) column to put into the cells."
+msgstr "Числовой (или логический) столбец, значения которого записываются в ячейки."
+
+msgid "Cell side in metres, for points without grid ``attrs``."
+msgstr "Сторона ячейки в метрах, для точек без ``attrs`` сетки."
+
+msgid "Return type"
+msgstr "Тип возвращаемого значения"
+
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~objectnat.methods.utils.raster.Raster\\``"
+msgstr ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~objectnat.methods.utils.raster.Raster\\``"
+
+msgid "Returns"
+msgstr "Возвращает"
+
+msgid ":class:`Raster` covering the points; cells without a point are ``NaN``."
+msgstr ":class:`Raster`, покрывающий точки; ячейки без точки — ``NaN``."
+
+msgid "Examples"
+msgstr "Примеры"
+
+msgid "Values on a north-up grid of square cells, as returned by :func:`rasterize`."
+msgstr "Значения на ориентированной на север сетке квадратных ячеек, как их возвращает :func:`rasterize`."
+
+msgid "It is the tuple ``(values, transform, crs)`` that ``terrain`` arguments accept, so it can be passed back as terrain, written with rasterio, or drawn with matplotlib."
+msgstr "Это кортеж ``(values, transform, crs)``, который принимают аргументы ``terrain``, поэтому его можно передать обратно как рельеф, записать через rasterio или нарисовать в matplotlib."
+
+msgid "``(rows, cols)`` float array; row 0 is the northern edge, ``NaN`` marks cells without a value."
+msgstr "Массив float ``(rows, cols)``; строка 0 — северный край, ``NaN`` отмечает ячейки без значения."
+
+msgid "Affine coefficients ``(a, b, c, d, e, f)`` as in rasterio and GDAL: the upper-left corner of cell ``(row, col)`` is ``x = c + a * col``, ``y = f + e * row`` (``b = d = 0``, ``e = -a``)."
+msgstr "Аффинные коэффициенты ``(a, b, c, d, e, f)``, как в rasterio и GDAL: верхний левый угол ячейки ``(row, col)`` — ``x = c + a * col``, ``y = f + e * row`` (``b = d = 0``, ``e = -a``)."
+
+msgid "Projected CRS of the grid (metres)."
+msgstr "Проецированная система координат сетки (метры)."
+
+msgid "Cell side in metres."
+msgstr "Сторона ячейки в метрах."
+
+msgid "``(minx, miny, maxx, maxy)`` of the grid."
+msgstr "``(minx, miny, maxx, maxy)`` сетки."
+
+msgid "``(left, right, bottom, top)``, the ``extent`` argument of ``matplotlib.pyplot.imshow``."
+msgstr "``(left, right, bottom, top)``, аргумент ``extent`` функции ``matplotlib.pyplot.imshow``."
+
+msgid "Draw the raster with ``ax.imshow`` in the CRS of the grid (cells without a value stay transparent)."
+msgstr "Рисует растр через ``ax.imshow`` в системе координат сетки (ячейки без значения остаются прозрачными)."
+
+msgid "Keyword arguments go to ``imshow`` (``cmap``, ``vmin``, ``vmax``, ``alpha``, ...). Layers drawn on the same axes must be in :attr:`crs`, e.g. ``buildings.to_crs(raster.crs).plot(ax=ax)``. Requires matplotlib."
+msgstr "Именованные аргументы передаются в ``imshow`` (``cmap``, ``vmin``, ``vmax``, ``alpha``, ...). Слои на тех же осях должны быть в :attr:`crs`, например ``buildings.to_crs(raster.crs).plot(ax=ax)``. Нужен matplotlib."
+
+msgid "The ``AxesImage``, e.g. for ``fig.colorbar``."
+msgstr "``AxesImage``, например для ``fig.colorbar``."
+
+msgid "Write a single-band float32 GeoTIFF; cells without a value get ``nodata``. Requires rasterio."
+msgstr "Записывает однополосный GeoTIFF float32; ячейки без значения получают ``nodata``. Нужен rasterio."
+
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:obj\\:\\`None\\``"
+msgstr ":sphinx_autodoc_typehints_type:`\\:py\\:obj\\:\\`None\\``"
+
+msgid "Colour the raster and return it as a ``folium.raster_layers.ImageOverlay`` for a web map."
+msgstr "Раскрашивает растр и возвращает его как ``folium.raster_layers.ImageOverlay`` для веб-карты."
+
+msgid "Web maps show images in Web Mercator, so the grid is resampled (nearest cell) to a Mercator grid with about the same number of cells before colouring; the overlay then lines up with the base map. Add it with ``.add_to(m)``, e.g. to a map from ``GeoDataFrame.explore()``. Requires folium and matplotlib."
+msgstr "Веб-карты показывают изображения в проекции Web Mercator, поэтому перед раскраской сетка пересчитывается (по ближайшей ячейке) на сетку Меркатора примерно с тем же числом ячеек; после этого слой совпадает с подложкой. Добавьте его через ``.add_to(m)``, например на карту из ``GeoDataFrame.explore()``. Нужны folium и matplotlib."
+
+msgid "Matplotlib colormap or its name."
+msgstr "Палитра matplotlib или её имя."
+
+msgid "Colour scale limits (default: minimum and maximum of the values)."
+msgstr "Пределы цветовой шкалы (по умолчанию минимум и максимум значений)."
+
+msgid "Opacity of the overlay, 0-1. Cells without a value are transparent."
+msgstr "Непрозрачность слоя, 0-1. Ячейки без значения прозрачны."
+
+msgid "Layer name in ``folium.LayerControl``."
+msgstr "Имя слоя в ``folium.LayerControl``."
+
+msgid "Passed to ``ImageOverlay``."
+msgstr "Передаются в ``ImageOverlay``."
+
+msgid "Show the raster on an interactive folium map, like ``GeoDataFrame.explore()``."
+msgstr "Показывает растр на интерактивной карте folium, как ``GeoDataFrame.explore()``."
+
+msgid "Existing ``folium.Map`` to add the layer to, e.g. ``buildings.explore()``; a new map centred on the raster when ``None``."
+msgstr "Существующая ``folium.Map``, на которую добавляется слой, например ``buildings.explore()``; если ``None`` — новая карта с центром на растре."
+
+msgid "As in :meth:`to_folium`."
+msgstr "Как в :meth:`to_folium`."
+
+msgid "Add a colour bar."
+msgstr "Добавить цветовую шкалу."
+
+msgid "Colour bar caption (default ``name``)."
+msgstr "Подпись цветовой шкалы (по умолчанию ``name``)."
+
+msgid "Base map of a new map: a name or URL as in ``folium.Map``, or a ``folium.TileLayer``. Defaults to a light grey map (Esri World Light Gray Canvas), whose tiles end at zoom 16 and are stretched beyond."
+msgstr "Подложка новой карты: название или URL, как в ``folium.Map``, либо ``folium.TileLayer``. По умолчанию светло-серая карта (Esri World Light Gray Canvas), тайлы которой заканчиваются на масштабе 16 и дальше растягиваются."
+
+msgid "Passed to ``folium.Map`` when a new map is created."
+msgstr "Передаются в ``folium.Map`` при создании новой карты."
+
+msgid "The ``folium.Map``. Requires folium and matplotlib."
+msgstr "``folium.Map``. Нужны folium и matplotlib."
+
+msgid "Limitations"
+msgstr "Ограничения"
+
+msgid "A raster has the resolution of the calculation grid; finer rasters require a smaller ``grid_step`` or ``cell_size`` in the calculation itself."
+msgstr "Разрешение растра равно разрешению расчётной сетки; для более подробного растра нужен меньший ``grid_step`` или ``cell_size`` в самом расчёте."
+
+msgid "``to_folium`` embeds the image in the map as a PNG, so very large rasters produce large HTML files; for large areas, write a GeoTIFF and serve it as tiles."
+msgstr "``to_folium`` встраивает изображение в карту как PNG, поэтому очень большие растры дают большие HTML-файлы; для больших территорий запишите GeoTIFF и публикуйте его тайлами."
+
+msgid "Points without grid ``attrs`` must lie on a regular grid of the given ``cell_size``."
+msgstr "Точки без ``attrs`` сетки должны лежать на регулярной сетке с заданным ``cell_size``."
+
+msgid "Example notebooks"
+msgstr "Примеры в ноутбуках"
+
+msgid ":doc:`examples/insolation` (sun hours as rasters and on a web map), :doc:`examples/noise` (receiver levels), :doc:`examples/visibility` (isovist field, 2D catchment raster) and :doc:`examples/viewshed` (2.5D catchment raster)."
+msgstr ":doc:`examples/insolation` (часы солнца в виде растров и на веб-карте), :doc:`examples/noise` (уровни в приёмниках), :doc:`examples/visibility` (поле изовист, растр охвата 2D) и :doc:`examples/viewshed` (растр охвата 2.5D)."
+

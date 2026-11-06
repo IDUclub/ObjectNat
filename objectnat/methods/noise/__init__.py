@@ -1,3 +1,4 @@
+from .noise_grid import simulate_noise_grid
 from .noise_simulation import simulate_noise
 from .noise_reduce import dist_to_target_db, get_air_resist_ratio, green_noise_reduce_db
 from .noise_simulation_simplified import calculate_simplified_noise_frame

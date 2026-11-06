@@ -1,19 +1,75 @@
+import os
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Iterable, Literal
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from iduedu import UrbanGraph, dijkstra_path_length_parallel, multi_source_dijkstra_path_length
+import shapely
+from iduedu import UrbanGraph, dijkstra_parallel, single_source_dijkstra
 
 from objectnat.methods.accessibility._utils import (
     SteppedGeometryType,
-    build_radius_clip_geometry,
     build_separated_dist_polygons,
-    build_stepped_accessibility_geometry,
-    build_ways_clip_geometry,
+    check_buffer_args,
     edge_speed_m_per_min,
+    finish_ways_clip_geometry,
+    node_points,
+    radius_buffers,
     select_geometry_nodes,
+    stepped_accessibility,
+    ways_road_buffers,
 )
+
+
+def _reachable_per_origin(
+    urban_graph: UrbanGraph,
+    *,
+    origin_nodes,
+    gdf_origins,
+    graph_node_column: str,
+    weight_type: str,
+    cutoff: float,
+    max_workers: int | None,
+):
+    """
+    Origins resolved to graph nodes, and for each origin the costs of the nodes it reaches.
+
+    Uses one single-source search per origin: IduEdu's batch call returns an origins x nodes sparse frame whose
+    rows take longer to read back than the searches themselves. Falls back to the batch call if IduEdu's node
+    resolution helper is not available.
+    """
+    try:
+        from iduedu.graph.graph_inputs import (  # pylint: disable=import-outside-toplevel
+            resolve_graph_nodes_input,
+        )
+    except ImportError:  # pragma: no cover - older/newer IduEdu layouts
+        path_lengths = dijkstra_parallel(
+            urban_graph,
+            source_nodes=origin_nodes,
+            gdf_sources=gdf_origins,
+            graph_node_column=graph_node_column,
+            weight=weight_type,
+            cutoff=cutoff,
+            max_workers=max_workers,
+            output="distances",
+        )
+        rows = ((index, row[row < np.inf]) for index, row in path_lengths.iterrows())
+        return path_lengths.attrs["source_nodes"], rows
+
+    origin_nodes_s = resolve_graph_nodes_input(
+        urban_graph=urban_graph,
+        nodes=origin_nodes,
+        gdf=gdf_origins,
+        graph_node_column=graph_node_column,
+        nodes_name="origin_nodes",
+        gdf_name="gdf_origins",
+    )
+    rows = (
+        (index, single_source_dijkstra(urban_graph, node, weight=weight_type, cutoff=cutoff, output="distances"))
+        for index, node in origin_nodes_s.items()
+    )
+    return origin_nodes_s, rows
 
 
 def get_graph_isochrones(
@@ -28,6 +84,7 @@ def get_graph_isochrones(
     zone: gpd.GeoDataFrame | gpd.GeoSeries | None = None,
     buffer_factor: float = 0.7,
     road_buffer_size: float = 5.0,
+    off_network_distance: float | None = 150.0,
     max_workers: int | None = None,
 ) -> gpd.GeoDataFrame:
     """
@@ -49,7 +106,7 @@ def get_graph_isochrones(
             City graph with node and edge tables.
 
         weight_value_cutoff (float):
-            Maximum travel time (minutes) or distance (meters) defining the
+            Maximum travel time (minutes) or distance (metres) defining the
             isochrone extent.
 
         gdf_origins (gpd.GeoDataFrame, optional):
@@ -67,15 +124,17 @@ def get_graph_isochrones(
             Type of edge weight used for path calculation:
 
             - ``"time_min"``: time-based accessibility in minutes
-            - ``"length_meter"``: distance-based accessibility in meters
+            - ``"length_meter"``: distance-based accessibility in metres
 
         geometry_type:
             Method used to build each isochrone:
 
-            - ``"radius"``: union of residual-radius buffers around reachable nodes
+            - ``"radius"``: union of buffers around the reachable nodes by their remaining budget as a
+              distance, at most ``off_network_distance``
             - ``"ways"``: buffered reachable road geometry (walk edges only on
               intermodal/walk graphs)
-            - ``"separate"``: a single merged buffer-based isochrone
+            - ``"separate"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes,
+              merged into one polygon
 
         zone (gpd.GeoDataFrame | gpd.GeoSeries, optional):
             Boundary polygon to clip the resulting isochrones.
@@ -84,7 +143,13 @@ def get_graph_isochrones(
             Buffer multiplier used by ``geometry_type="separate"`` (default 0.7).
 
         road_buffer_size:
-            Edge buffer for ``geometry_type="ways"``, in meters (default 5.0).
+            Edge buffer for ``geometry_type="ways"``, in metres (default 5.0).
+
+        off_network_distance (float | None, optional):
+            For ``geometry_type="radius"``: how far from the network, in metres, a place may lie and still count
+            as reached. Every reachable node is buffered by its remaining budget converted to a distance, but by
+            no more than this, so the area follows the network instead of growing into a straight-line circle
+            around the start. ``None`` buffers by the whole remaining budget. Defaults to 150.
 
         max_workers (int, optional):
             Number of parallel Numba threads. Defaults to the Numba runtime.
@@ -101,17 +166,14 @@ def get_graph_isochrones(
         - Origins with no reachable nodes are dropped from the result.
         - On walk and intermodal graphs the geometry is built from nodes reachable on
           foot; transit route nodes, whose distance includes the wait to board, only
-          carry the search.
+          take part in the search.
     """
 
     if geometry_type not in {"radius", "ways", "separate"}:
         raise ValueError(f"Unsupported geometry_type={geometry_type!r}")
     if weight_value_cutoff < 0:
         raise ValueError(f"weight_value_cutoff must be >= 0, got {weight_value_cutoff}")
-    if buffer_factor <= 0:
-        raise ValueError(f"buffer_factor must be > 0, got {buffer_factor}")
-    if road_buffer_size <= 0:
-        raise ValueError(f"road_buffer_size must be > 0, got {road_buffer_size}")
+    check_buffer_args(buffer_factor, road_buffer_size, off_network_distance)
     original_crs = gdf_origins.crs if gdf_origins is not None else urban_graph.nodes_gdf.crs
     local_crs = urban_graph.nodes_gdf.crs
 
@@ -119,67 +181,75 @@ def get_graph_isochrones(
     if geometry_type == "ways":
         calculation_cutoff += 100.0 if weight_type == "length_meter" else 1.0
 
-    path_lengths = dijkstra_path_length_parallel(
+    origin_nodes_s, reachable_per_origin = _reachable_per_origin(
         urban_graph,
-        source_nodes=origin_nodes,
-        gdf_sources=gdf_origins,
+        origin_nodes=origin_nodes,
+        gdf_origins=gdf_origins,
         graph_node_column=graph_node_column,
-        weight=weight_type,
+        weight_type=weight_type,
         cutoff=calculation_cutoff,
         max_workers=max_workers,
     )
-    origin_nodes_s = path_lengths.attrs["source_nodes"]
 
     speed_m_per_min = edge_speed_m_per_min(urban_graph) if weight_type == "time_min" else None
     zone_geom = zone.to_crs(local_crs).union_all() if zone is not None else None
+    source_nodes = origin_nodes_s.to_numpy()
+
+    # 1. per origin, with pandas (sequential): reachable nodes and the polygons to merge
+    prepared = []
+    for row_i, (source_index, distances) in enumerate(reachable_per_origin):
+        distances = distances[np.isfinite(distances.to_numpy(dtype=float))]
+        if distances.empty:
+            continue
+        reachable = pd.DataFrame(
+            {"dist": distances.to_numpy(dtype=float)}, index=pd.Index(distances.index, name="node")
+        )
+        reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, node_points(urban_graph, reachable))
+        parts = []
+        if geometry_type in ("radius", "ways"):
+            parts.append(
+                radius_buffers(
+                    reachable_graph_nodes_gdf,
+                    weight_value=float(weight_value_cutoff),
+                    weight_type=weight_type,
+                    speed_m_per_min=speed_m_per_min,
+                    # "ways" clips whole streets with these buffers, so they keep the full budget
+                    max_distance=off_network_distance if geometry_type == "radius" else None,
+                )
+            )
+        if geometry_type == "ways":
+            parts.append(ways_road_buffers(urban_graph, reachable_graph_nodes_gdf, float(road_buffer_size)))
+        if geometry_type == "separate":
+            parts.append(
+                build_separated_dist_polygons(
+                    reachable_graph_nodes_gdf,
+                    weight_value=float(weight_value_cutoff),
+                    weight_type=weight_type,
+                    step=float(weight_value_cutoff) if weight_value_cutoff > 0 else 1.0,
+                    speed_m_per_min=speed_m_per_min,
+                    buffer_ratio=float(buffer_factor),
+                ).geometry.values
+            )
+        prepared.append((source_index, source_nodes[row_i], reachable_graph_nodes_gdf, parts))
+
+    # 2. the unions, the costly part, in threads (shapely releases the GIL; no shared pandas objects)
+    with ThreadPoolExecutor(max_workers=max_workers or os.cpu_count()) as pool:
+        merged = list(pool.map(lambda item: [shapely.union_all(p) for p in item[3]], prepared))
+
+    # 3. finishing touches (sequential)
     geometries = []
     result_index = []
     result_source_nodes = []
-    source_nodes = origin_nodes_s.to_numpy()
-    for row_i, (source_index, distances) in enumerate(path_lengths.iterrows()):
-        distances = pd.Series(distances.to_numpy(dtype=float), index=distances.index)
-        reachable_nodes = pd.DataFrame(
-            {"dist": distances.loc[distances < np.inf].astype(float)},
-            index=pd.Index(distances.index[distances < np.inf], name="node"),
-        )
-        if reachable_nodes.empty:
-            continue
-
-        reachable_graph_nodes_gdf = urban_graph.nodes_gdf.loc[pd.Index(reachable_nodes.index), ["geometry"]].join(
-            reachable_nodes, how="left"
-        )
-        reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, reachable_graph_nodes_gdf)
-        if geometry_type == "radius":
-            geom = build_radius_clip_geometry(
-                reachable_graph_nodes_gdf,
-                weight_value=float(weight_value_cutoff),
-                weight_type=weight_type,
-                speed_m_per_min=speed_m_per_min,
-            )
-        elif geometry_type == "ways":
-            geom = build_ways_clip_geometry(
-                urban_graph,
-                reachable_graph_nodes_gdf,
-                weight_value=float(weight_value_cutoff),
-                weight_type=weight_type,
-                speed_m_per_min=speed_m_per_min,
-                road_buffer_size=float(road_buffer_size),
-            )
+    for (source_index, source_node, reachable_graph_nodes_gdf, _), unions in zip(prepared, merged):
+        if geometry_type == "ways":
+            geom = finish_ways_clip_geometry(unions[0], unions[1], reachable_graph_nodes_gdf, local_crs)
         else:
-            geom = build_separated_dist_polygons(
-                reachable_graph_nodes_gdf,
-                weight_value=float(weight_value_cutoff),
-                weight_type=weight_type,
-                step=float(weight_value_cutoff) if weight_value_cutoff > 0 else 1.0,
-                speed_m_per_min=speed_m_per_min,
-                buffer_ratio=float(buffer_factor),
-            ).union_all()
-
+            geom = unions[0]
         if zone_geom is not None:
             geom = geom.intersection(zone_geom)
         geometries.append(geom)
         result_index.append(source_index)
-        result_source_nodes.append(source_nodes[row_i])
+        result_source_nodes.append(source_node)
 
     result = gpd.GeoDataFrame(
         {"source_node": result_source_nodes},
@@ -204,6 +274,7 @@ def get_stepped_graph_isochrones(
     step: float | None = None,
     buffer_factor: float = 0.7,
     road_buffer_size: float = 5.0,
+    off_network_distance: float | None = 150.0,
 ) -> gpd.GeoDataFrame:
     """
     Calculate stepped accessibility isochrones from origin objects over an urban
@@ -238,13 +309,13 @@ def get_stepped_graph_isochrones(
             Type of edge weight used for path calculation:
 
             - ``"time_min"``: time-based accessibility in minutes
-            - ``"length_meter"``: distance-based accessibility in meters
+            - ``"length_meter"``: distance-based accessibility in metres
 
         geometry_type:
             Method used to build each step's geometry:
 
             - ``None``: Voronoi cells around graph nodes
-            - ``"radius"``: Voronoi cells clipped to residual-radius buffers
+            - ``"radius"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``)
             - ``"ways"``: Voronoi cells clipped to buffered road geometry
               (walk edges only on intermodal/walk graphs)
             - ``"separate"``: independent circular buffers per step
@@ -258,13 +329,19 @@ def get_stepped_graph_isochrones(
 
         step (float, optional):
             Width of each step, in units of ``weight_type``. Defaults to
-            100 meters for ``length_meter`` and 1 minute for ``time_min``.
+            100 metres for ``length_meter`` and 1 minute for ``time_min``.
 
         buffer_factor:
-            Residual-radius multiplier for geometry construction (default 0.7).
+            Buffer multiplier used by ``geometry_type="separate"`` (default 0.7).
 
         road_buffer_size:
-            Edge buffer for ``geometry_type="ways"``, in meters (default 5.0).
+            Edge buffer for ``geometry_type="ways"``, in metres (default 5.0).
+
+        off_network_distance (float | None, optional):
+            For ``geometry_type="radius"``: how far from the network, in metres, a place may lie and still count
+            as reached. Every reachable node is buffered by its remaining budget converted to a distance, but by
+            no more than this, so the area follows the network instead of growing into a straight-line circle
+            around the start. ``None`` buffers by the whole remaining budget. Defaults to 150.
 
     Returns:
         gpd.GeoDataFrame:
@@ -282,48 +359,18 @@ def get_stepped_graph_isochrones(
         - An empty ``GeoDataFrame`` is returned when nothing is reachable.
     """
 
-    if geometry_type is not None and geometry_type not in {"radius", "ways", "separate"}:
-        raise ValueError(f"Unsupported geometry_type={geometry_type!r}")
-    if step is None:
-        step = 100.0 if weight_type == "length_meter" else 1.0
-    if step <= 0:
-        raise ValueError(f"step must be > 0, got {step}")
-    if buffer_factor <= 0:
-        raise ValueError(f"buffer_factor must be > 0, got {buffer_factor}")
-    if road_buffer_size <= 0:
-        raise ValueError(f"road_buffer_size must be > 0, got {road_buffer_size}")
-
-    original_crs = gdf_origins.crs if gdf_origins is not None else urban_graph.nodes_gdf.crs
-    local_crs = urban_graph.nodes_gdf.crs
-
-    distances = multi_source_dijkstra_path_length(
+    return stepped_accessibility(
         urban_graph,
         source_nodes=origin_nodes,
         gdf_sources=gdf_origins,
         graph_node_column=graph_node_column,
-        weight=weight_type,
-        cutoff=weight_value_cutoff,
+        weight_type=weight_type,
+        weight_value_cutoff=weight_value_cutoff,
+        step=step,
+        geometry_type=geometry_type,
+        zone=zone,
+        buffer_factor=buffer_factor,
+        road_buffer_size=road_buffer_size,
+        off_network_distance=off_network_distance,
         reverse=False,
     )
-    distances = distances.sparse.to_dense()
-    reachable_nodes = pd.DataFrame(
-        {"dist": distances.loc[distances < np.inf].astype(float)},
-        index=pd.Index(distances.index[distances < np.inf], name="node"),
-    )
-    if reachable_nodes.empty:
-        return gpd.GeoDataFrame()
-
-    weight_value = float(reachable_nodes["dist"].max()) if weight_value_cutoff is None else float(weight_value_cutoff)
-    result = build_stepped_accessibility_geometry(
-        urban_graph,
-        urban_graph.nodes_gdf.loc[pd.Index(reachable_nodes.index), ["geometry"]].join(reachable_nodes, how="left"),
-        geometry_type=geometry_type,
-        weight_value=weight_value,
-        weight_type=weight_type,
-        step=float(step),
-        local_crs=local_crs,
-        zone=zone,
-        buffer_factor=float(buffer_factor),
-        road_buffer_size=float(road_buffer_size),
-    )
-    return result.to_crs(original_crs)

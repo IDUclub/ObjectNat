@@ -8,8 +8,8 @@ COVERAGE_XML ?= coverage.xml
 COVERAGE_HTML ?= htmlcov
 
 .PHONY: help install install-dev lock update lint format format-check test \
-        coverage coverage-xml coverage-html docs clean build publish \
-        version version-next changelog
+        coverage coverage-xml coverage-html docs docs-i18n docs-i18n-check clean build publish \
+        version version-next changelog rust-check
 
 help:
 	@echo "Available targets:"
@@ -18,13 +18,16 @@ help:
 	@echo "  lock              - refresh uv.lock"
 	@echo "  update            - upgrade locked dependencies"
 	@echo "  lint              - run pylint on package code"
+	@echo "  rust-check        - cargo fmt --check, clippy and unit tests for rust/"
 	@echo "  format            - format code with isort + black"
 	@echo "  format-check      - check code formatting with isort + black"
 	@echo "  test              - run test suite"
 	@echo "  coverage          - run tests with terminal coverage report"
 	@echo "  coverage-xml      - run tests and write coverage.xml for CI"
 	@echo "  coverage-html     - run tests and write HTML coverage report"
-	@echo "  docs              - build documentation"
+	@echo "  docs              - build the English and Russian documentation (docs/_build/html, .../html/ru)"
+	@echo "  docs-i18n         - add new and changed text to the Russian catalogues (docs/locale/ru)"
+	@echo "  docs-i18n-check   - fail while anything in the documentation is left untranslated"
 	@echo "  build             - build wheel and sdist with uv"
 	@echo "  publish           - publish package with uv"
 	@echo "  version           - print the current version (from $(PACKAGE)/_version.py)"
@@ -45,6 +48,9 @@ update:
 
 lint:
 	$(UV_RUN) python -m pylint $(PACKAGE)
+
+rust-check:
+	cd rust && cargo fmt --check && cargo clippy --release --all-targets -- -D warnings && cargo test --release
 
 format:
 	$(UV_RUN) python -m isort $(FORMAT_PATHS)
@@ -76,6 +82,13 @@ coverage-html:
 
 docs:
 	$(UV_RUN) sphinx-build -b html docs docs/_build/html
+	$(UV_RUN) sphinx-build -b html -D language=ru -d docs/_build/doctrees-ru docs docs/_build/html/ru
+
+docs-i18n:
+	$(UV_RUN) python docs/i18n.py update
+
+docs-i18n-check:
+	$(UV_RUN) python docs/i18n.py check
 
 clean:
 	rm -rf ./dist ./build ./*.egg-info ./$(COVERAGE_HTML) ./.coverage ./.coverage.* ./$(COVERAGE_XML)

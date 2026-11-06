@@ -4,7 +4,9 @@ import pandas as pd
 from scipy import sparse
 
 from objectnat import config
+from objectnat._rust import provision_allocate  # pylint: disable=no-name-in-module
 
+from ._matrix import _distance_entries, _is_sparse_matrix, _lookup_distances, _min_distances
 from .provision_exceptions import CapacityKeyError, CapacityValueError, DemandKeyError, DemandValueError
 from .provision_result import ProvisionResult, _validate_provision_result
 
@@ -76,11 +78,11 @@ def _empty_flow(building_index: pd.Index, service_index: pd.Index) -> pd.DataFra
 def _flow_from_records(
     building_index: pd.Index,
     service_index: pd.Index,
-    rows: list[int],
-    columns: list[int],
-    values: list[int],
+    rows: np.ndarray,
+    columns: np.ndarray,
+    values: np.ndarray,
 ) -> pd.DataFrame:
-    if not values:
+    if len(values) == 0:
         return _empty_flow(building_index, service_index)
 
     flow_sparse = sparse.coo_matrix((values, (rows, columns)), shape=(len(building_index), len(service_index)))
@@ -88,90 +90,6 @@ def _flow_from_records(
     return pd.DataFrame.sparse.from_spmatrix(flow_sparse, index=building_index, columns=service_index).astype(
         pd.SparseDtype("int", 0)
     )
-
-
-def _append_flow_records(
-    flow: pd.DataFrame,
-    building_positions: pd.Series,
-    service_positions: pd.Series,
-    rows: list[int],
-    columns: list[int],
-    values: list[int],
-) -> None:
-    if flow.empty:
-        return
-
-    flow_values = flow.to_numpy(dtype=int, copy=False)
-    row_idx, col_idx = np.nonzero(flow_values)
-    if len(row_idx) == 0:
-        return
-
-    building_labels = flow.index.to_numpy()[row_idx]
-    service_labels = flow.columns.to_numpy()[col_idx]
-    rows.extend(building_positions.loc[building_labels].to_numpy(dtype=int).tolist())
-    columns.extend(service_positions.loc[service_labels].to_numpy(dtype=int).tolist())
-    values.extend(flow_values[row_idx, col_idx].astype(int).tolist())
-
-
-def _calculate_flows_for_service(
-    service_distances: pd.Series, capacity: int, best_houses: float, seed: int
-) -> pd.Series:
-    if capacity <= 0:
-        return pd.Series(dtype=int)
-
-    distances = service_distances.replace([np.inf, -np.inf], np.nan).dropna()
-    if distances.empty:
-        return pd.Series(dtype=int)
-
-    probabilities = 1 / distances / distances
-    probabilities_sum = probabilities.sum()
-    if probabilities_sum == 0 or not np.isfinite(probabilities_sum):
-        return pd.Series(dtype=int)
-
-    probabilities = probabilities / probabilities_sum
-    threshold = probabilities.quantile(best_houses)
-    probabilities = probabilities[probabilities >= threshold]
-    probabilities = probabilities / probabilities.sum()
-    if probabilities.empty or probabilities.sum() == 0:
-        return pd.Series(dtype=int)
-
-    rng = np.random.default_rng(seed=seed)
-    result = pd.Series(0, probabilities.index)
-    choice = np.unique(rng.choice(probabilities.index, int(capacity), p=probabilities.values), return_counts=True)
-    return result.add(pd.Series(choice[1], choice[0]), fill_value=0)
-
-
-def _balance_flows_to_demand(building_flows: pd.Series, demand: int, seed: int) -> pd.Series:
-    flows = building_flows[building_flows > 0]
-    # Nothing to redistribute: with no positive flow or no remaining demand the
-    # positive flows are returned unchanged (callers already dropped buildings
-    # whose demand is exhausted, so demand <= 0 does not occur in the main loop).
-    if flows.sum() <= 0 or demand <= 0:
-        return flows
-
-    probabilities = flows / flows.sum()
-    rng = np.random.default_rng(seed=seed)
-    result = pd.Series(0, probabilities.index)
-    choice = np.unique(rng.choice(probabilities.index, int(demand), p=probabilities.values), return_counts=True)
-    choice = result.add(pd.Series(choice[1], choice[0]), fill_value=0)
-    flows = flows.sort_index()
-    choice = choice.sort_index()
-    return pd.Series(data=np.minimum(flows.values, choice.values), index=flows.index)
-
-
-def _drop_inactive_matrix_rows_columns(
-    matrix: pd.DataFrame,
-    demand_left: pd.Series,
-    capacity_left: pd.Series,
-) -> pd.DataFrame:
-    matrix = matrix.drop(
-        index=demand_left[demand_left <= 0].index,
-        columns=capacity_left[capacity_left <= 0].index,
-        errors="ignore",
-    )
-    matrix = matrix.loc[~np.isinf(matrix).all(axis=1)]
-    matrix = matrix.loc[:, ~np.isinf(matrix).all(axis=0)]
-    return matrix
 
 
 def _summarize_flow(
@@ -195,7 +113,7 @@ def _summarize_flow(
 
     if flow_coo.nnz > 0:
         flow_values = flow_coo.data.astype(float)
-        distance_values = distance_matrix.to_numpy(dtype=float)[flow_coo.row, flow_coo.col]
+        distance_values = _lookup_distances(distance_matrix, flow_coo.row, flow_coo.col)
         within_mask = distance_values <= threshold
         without_mask = ~within_mask
 
@@ -224,7 +142,6 @@ def _summarize_flow(
 
     avg_dist[supplied_total == 0] = np.nan
     provision_value[demand_values == 0] = np.nan
-    min_dist = distance_matrix.replace([np.inf, -np.inf], np.nan).min(axis=1)
 
     demand_rows = pd.DataFrame(
         {
@@ -232,7 +149,7 @@ def _summarize_flow(
             "demand_left": (demand_values - supplied_total).astype(int),
             "supplied_demands_within": supplied_within.astype(int),
             "supplied_demands_without": supplied_without.astype(int),
-            "min_dist": min_dist,
+            "min_dist": _min_distances(distance_matrix),
             "avg_dist": np.round(avg_dist, 2),
             "provision_value": np.round(provision_value, 2),
         },
@@ -261,7 +178,7 @@ def calculate_provision(
     services_capacity_column: str = "capacity",
     seed: int = 0,
 ) -> ProvisionResult:
-    """Calculate service provision with the gravity-probabilistic model."""
+    """Calculate service provision with the gravity-probabilistic model (allocation runs in Rust)."""
     _validate_inputs(
         buildings=buildings,
         services=services,
@@ -273,69 +190,31 @@ def calculate_provision(
 
     building_index = buildings.index
     service_index = services.index
-    distance_matrix = distance_matrix.loc[building_index, service_index].copy().astype(float)
-    allocation_matrix = distance_matrix.where(distance_matrix <= threshold * 3, np.inf).fillna(np.inf) + 1
+    if not (distance_matrix.index.equals(building_index) and distance_matrix.columns.equals(service_index)):
+        distance_matrix = distance_matrix.loc[building_index, service_index]
+    if not _is_sparse_matrix(distance_matrix) and not (distance_matrix.dtypes == np.float64).all():
+        distance_matrix = distance_matrix.astype(float)
 
     demand = buildings[buildings_demand_column].astype(int)
     capacity = services[services_capacity_column].astype(int)
-    demand_left = demand.copy()
-    capacity_left = capacity.copy()
 
-    flow_rows: list[int] = []
-    flow_columns: list[int] = []
-    flow_values: list[int] = []
-    building_positions = pd.Series(np.arange(len(building_index)), index=building_index)
-    service_positions = pd.Series(np.arange(len(service_index)), index=service_index)
+    # only pairs within 3 * threshold can ever be allocated
+    rows, cols, costs = _distance_entries(distance_matrix, max_cost=3 * float(threshold))
+    logger.debug(
+        f"Calculating provision from {len(services)} services to {len(buildings)} buildings "
+        f"over {len(costs)} reachable pairs."
+    )
+    flow_rows, flow_cols, flow_values = provision_allocate(
+        rows,
+        cols,
+        costs,
+        demand.to_numpy(dtype=np.int64),
+        capacity.to_numpy(dtype=np.int64),
+        float(threshold),
+        seed=int(seed) & 0xFFFFFFFFFFFFFFFF,
+    )
 
-    working_matrix = _drop_inactive_matrix_rows_columns(allocation_matrix, demand_left, capacity_left)
-    selection_range = (threshold + 1) / 2
-    best_houses = 0.9
-
-    logger.debug(f"Calculating provision from {len(services)} services to {len(buildings)} buildings.")
-    while len(working_matrix.index) > 0 and len(working_matrix.columns) > 0:
-        objects_n = sum(working_matrix.shape)
-        logger.debug(
-            f"Matrix shape: {working_matrix.shape}, "
-            f"Total objects: {objects_n}, "
-            f"Selection range: {selection_range}, "
-            f"Best houses: {best_houses}"
-        )
-
-        service_flows = working_matrix.apply(
-            lambda service: _calculate_flows_for_service(
-                service[service <= selection_range],
-                capacity_left.loc[service.name],
-                best_houses,
-                seed,
-            ),
-            axis=0,
-        )
-        service_flows = service_flows.reindex(
-            index=working_matrix.index, columns=working_matrix.columns, fill_value=0
-        ).fillna(0)
-        temp_flow = service_flows.apply(
-            lambda building: _balance_flows_to_demand(building, demand_left.loc[building.name], seed),
-            axis=1,
-        )
-        temp_flow = temp_flow.reindex(index=working_matrix.index, columns=working_matrix.columns, fill_value=0)
-        temp_flow = temp_flow.fillna(0).astype(int)
-
-        _append_flow_records(temp_flow, building_positions, service_positions, flow_rows, flow_columns, flow_values)
-
-        used_demand = temp_flow.sum(axis=1).astype(int)
-        used_capacity = temp_flow.sum(axis=0).astype(int)
-        demand_left.loc[used_demand.index] -= used_demand
-        capacity_left.loc[used_capacity.index] -= used_capacity
-
-        working_matrix = _drop_inactive_matrix_rows_columns(working_matrix, demand_left, capacity_left)
-        selection_range *= 1.5
-        if best_houses <= 0.1:
-            best_houses = 0
-        else:
-            objects_n_new = sum(working_matrix.shape)
-            best_houses = objects_n_new / (objects_n / best_houses)
-
-    flow = _flow_from_records(building_index, service_index, flow_rows, flow_columns, flow_values)
+    flow = _flow_from_records(building_index, service_index, flow_rows, flow_cols, flow_values)
     demand_rows, capacity_rows = _summarize_flow(flow, demand, capacity, distance_matrix, threshold)
     logger.debug("Done calculating provision.")
     return ProvisionResult(
@@ -357,7 +236,7 @@ def recalculate_provision(provision_result: ProvisionResult, new_max_dist: float
     if flow_coo.nnz == 0:
         return provision_result
 
-    distance_values = provision_result.distance_matrix.to_numpy(dtype=float)[flow_coo.row, flow_coo.col]
+    distance_values = _lookup_distances(provision_result.distance_matrix, flow_coo.row, flow_coo.col)
     keep_mask = distance_values <= new_max_dist
     if keep_mask.all():
         logger.warning("To clip distance exceeds max links distance, returning full provision")

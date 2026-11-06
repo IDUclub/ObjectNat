@@ -1,28 +1,28 @@
 import concurrent.futures
 import math
-import time
 from collections import deque
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
+import shapely
 from shapely import GEOSException
 from shapely.geometry import GeometryCollection, MultiPolygon, Point, Polygon
 from shapely.ops import polygonize, unary_union
 from tqdm import tqdm
 
 from objectnat import config
-from objectnat.methods.noise.noise_reduce import dist_to_target_db, green_noise_reduce_db
+from objectnat.methods.noise.noise_reduce import dist_to_target_db, green_noise_reduce_db, source_values
 from objectnat.methods.noise.noise_simulation_simplified import _eval_donuts_gdf
 from objectnat.methods.utils.geom_utils import (
+    clip_polygons,
     gdf_to_circle_zones_from_point,
     get_point_from_a_thorough_b,
+    overlay_by_value,
     polygons_to_multilinestring,
 )
-from objectnat.methods.visibility.visibility_analysis import _visibility_accurate, dist_to_furthest_point
+from objectnat.methods.visibility.visibility_analysis import dist_to_furthest_point, visibility_polygon
 
-logger = config.logger
-
-MAX_DB_VALUE = 194
 ANGLE_EPS = 1e-9
 SOURCE_VERTEX_EPS = 1e-7
 
@@ -78,13 +78,14 @@ def simulate_noise(
         dead_area_r (float, optional): A debugging parameter that defines the radius of the "dead zone" for reflections.
             Points within this area will not generate reflections. This is useful to prevent the algorithm from getting
             stuck in corners or along building walls.
-        source_position_buffer_r (float, optional): Radius in meters to cut from a containing obstacle or tree around
+        source_position_buffer_r (float, optional): Radius in metres to cut from a containing obstacle or tree around
             the initial source point. Default is 0, which keeps source geometries unchanged.
         use_parallel (bool, optional): Whether to use ProcessPool for task distribution or not. Default is True.
 
     Returns:
-        gpd.GeoDataFrame: A GeoDataFrame containing the noise simulation results, including noise levels and geometries
-            of the affected areas. Each point's simulation results will be merged into a single GeoDataFrame.
+        gpd.GeoDataFrame:
+            Noise levels (``noise_level``, dB) with the geometries of the areas they cover; the results of all
+            source points are merged into one GeoDataFrame.
     """
     # Obstacles args
     absorb_ratio_column = kwargs.get("absorb_ratio_column", None)
@@ -110,48 +111,12 @@ def simulate_noise(
     if source_position_buffer_r < 0:
         raise ValueError("source_position_buffer_r must be non-negative.")
 
-    # Validate optional columns or default values
-    use_column_db = False
-    if "source_noise_db" in source_points.columns:
-        if (source_points["source_noise_db"] > MAX_DB_VALUE).any():
-            raise ValueError(
-                f"One or more values in 'source_noise_db' column exceed the physical limit of {MAX_DB_VALUE} dB."
-            )
-        if source_points["source_noise_db"].isnull().any():
-            raise ValueError("Column 'source_noise_db' contains missing (NaN) values")
-        use_column_db = True
-
-    use_column_freq = False
-    if "geometric_mean_freq_hz" in source_points.columns:
-        if source_points["geometric_mean_freq_hz"].isnull().any():
-            raise ValueError("Column 'geometric_mean_freq_hz' contains missing (NaN) values")
-        use_column_freq = True
-
-    if not use_column_db:
-        if source_noise_db is None:
-            raise ValueError(
-                "Either `source_noise_db` must be provided or the `source_points` must contain a 'source_noise_db' column."
-            )
-        if source_noise_db > MAX_DB_VALUE:
-            raise ValueError(
-                f"source_noise_db ({source_noise_db} dB) exceeds the physical limit of {MAX_DB_VALUE} dB in air."
-            )
-
-    if not use_column_freq:
-        if geometric_mean_freq_hz is None:
-            raise ValueError(
-                "Either `geometric_mean_freq_hz` must be provided or the `source_points` must contain a 'geometric_mean_freq_hz' column."
-            )
-    if not use_column_db and not use_column_freq and len(source_points) > 1:
-        logger.warning(
-            "`source_noise_db` and `geometric_mean_freq_hz` will be used for all points. Per-point simulation parameters not found."
-        )
+    levels = source_values(source_points, "source_noise_db", source_noise_db)
+    freqs = source_values(source_points, "geometric_mean_freq_hz", geometric_mean_freq_hz)
 
     original_crs = source_points.crs
     source_points = source_points.copy()
-
-    source_points = source_points.copy()
-    if len(obstacles) > 0:
+    if obstacles is not None and len(obstacles) > 0:
         obstacles = obstacles.copy()
         local_crs = obstacles.estimate_utm_crs()
         obstacles.to_crs(local_crs, inplace=True)
@@ -160,8 +125,10 @@ def simulate_noise(
     else:
         local_crs = source_points.estimate_utm_crs()
         source_points.to_crs(local_crs, inplace=True)
-        source_points.reset_index(drop=True)
+        source_points = source_points.reset_index(drop=True)
         source_points.geometry = source_points.centroid
+        # Fresh empty frame in the local CRS: never touches the caller's object, and tasks read their CRS from it.
+        obstacles = gpd.GeoDataFrame(geometry=[], crs=local_crs)
 
     # Simplifying trees
     if trees is not None:
@@ -171,7 +138,7 @@ def simulate_noise(
     else:
         trees = gpd.GeoDataFrame()
 
-    if absorb_ratio_column is None:
+    if absorb_ratio_column is None or obstacles.empty:
         obstacles["absorb_ratio"] = standart_absorb_ratio
     else:
         obstacles["absorb_ratio"] = obstacles[absorb_ratio_column].fillna(standart_absorb_ratio)
@@ -180,10 +147,7 @@ def simulate_noise(
     # creating initial task and simulating for each point
     task_queue = deque()
     dead_area_dict = {}
-    for ind, row in source_points.iterrows():
-        source_point = row.geometry
-        local_db = row["source_noise_db"] if use_column_db else source_noise_db
-        local_freq = row["geometric_mean_freq_hz"] if use_column_freq else geometric_mean_freq_hz
+    for ind, source_point, local_db, local_freq in zip(source_points.index, source_points.geometry, levels, freqs):
 
         # calculating layer dist and db values
         dist_db = [(0, local_db)]
@@ -216,19 +180,7 @@ def simulate_noise(
     )
 
     noise_gdf = gpd.GeoDataFrame(pd.concat(noise_gdf, ignore_index=True), crs=local_crs)
-    polygons = gpd.GeoDataFrame(
-        geometry=list(polygonize(noise_gdf.geometry.apply(polygons_to_multilinestring).union_all())), crs=local_crs
-    )
-    polygons_points = polygons.copy()
-    polygons_points.geometry = polygons.representative_point()
-    sim_result = polygons_points.sjoin(noise_gdf, predicate="within").reset_index()
-    sim_result = sim_result.groupby("index").agg({"noise_level": "max"})
-    sim_result["geometry"] = polygons
-    sim_result = (
-        gpd.GeoDataFrame(sim_result, geometry="geometry", crs=local_crs).dissolve(by="noise_level").reset_index()
-    )
-
-    return sim_result.to_crs(original_crs)
+    return overlay_by_value(noise_gdf, "noise_level", how="max").to_crs(original_crs)
 
 
 def _iter_polygonal_geometries(geometry):
@@ -374,9 +326,93 @@ def _append_layered_reduce_polygons(
         prev_buffer = cur_buffer
 
 
+def _pairs_sorted(tree_geoms: np.ndarray, query_geoms: np.ndarray, predicate: str) -> tuple[np.ndarray, np.ndarray]:
+    """``(query, tree)`` position pairs ordered like ``GeoDataFrame.sjoin`` (by query, then tree position)."""
+    if len(tree_geoms) == 0 or len(query_geoms) == 0:
+        return np.empty(0, dtype=np.int64), np.empty(0, dtype=np.int64)
+    left, right = shapely.STRtree(tree_geoms).query(query_geoms, predicate=predicate)
+    order = np.lexsort((right, left))
+    return left[order], right[order]
+
+
+def _reflection_candidates(points, obstacles, obstacles_union, vis_poly, point_from, max_dist):
+    """
+    Visibility-polygon vertices that touch an obstacle and can seed a reflection, with the absorption
+    ratio of the first obstacle they touch and their distance from the current source.
+    Returns ``None`` when the geometry operations fail.
+    """
+    buffers = shapely.buffer(points, 1, quad_segs=1)
+    left, right = _pairs_sorted(obstacles.geometry.values, buffers, "intersects")
+    first = np.r_[True, left[1:] != left[:-1]] if len(left) else np.empty(0, dtype=bool)
+    left, right = left[first], right[first]
+    absorb = obstacles["absorb_ratio"].to_numpy(dtype=float)[right]
+    has_ratio = ~np.isnan(absorb)
+    left, absorb = left[has_ratio], absorb[has_ratio]
+    nearby_poly = point_from.buffer(1.1, quad_segs=2)
+    try:
+        free = shapely.difference(
+            shapely.difference(shapely.difference(buffers[left], vis_poly), obstacles_union), nearby_poly
+        )
+    except GEOSException:
+        return None
+    keep = ~shapely.is_empty(free) & (shapely.area(free) >= 0.01)
+    left, absorb = left[keep], absorb[keep]
+    dist = shapely.distance(points[left], point_from)
+    near = dist < max_dist - 5
+    return {"point": points[left][near], "absorb_ratio": absorb[near], "dist": dist[near]}
+
+
+def _join_noise_levels(candidates: dict, noise_from_point: gpd.GeoDataFrame, crs) -> gpd.GeoDataFrame:
+    """Left join of candidate points with the noise pieces they touch (one row per touched piece)."""
+    points = candidates["point"]
+    left, right = _pairs_sorted(noise_from_point.geometry.values, points, "intersects")
+    unmatched = np.setdiff1d(np.arange(len(points)), left)
+    rows = np.r_[left, unmatched]
+    matched = np.r_[np.ones(len(left), dtype=bool), np.zeros(len(unmatched), dtype=bool)]
+    order = np.argsort(rows, kind="stable")
+    rows, matched = rows[order], matched[order]
+    pieces = np.r_[right, np.zeros(len(unmatched), dtype=np.int64)][order]
+    level = np.full(len(rows), np.nan)
+    reduce = np.full(len(rows), np.nan)
+    level[matched] = noise_from_point["noise_level"].to_numpy(dtype=float)[pieces[matched]]
+    reduce[matched] = noise_from_point["reduce"].to_numpy(dtype=float)[pieces[matched]]
+    return gpd.GeoDataFrame(
+        {
+            "absorb_ratio": candidates["absorb_ratio"][rows],
+            "dist": candidates["dist"][rows],
+            "noise_level": level,
+            "reduce": reduce,
+        },
+        geometry=points[rows],
+        crs=crs,
+    )
+
+
+def _rows_intersecting(gdf: gpd.GeoDataFrame, geometry) -> gpd.GeoDataFrame:
+    """Rows of ``gdf`` intersecting ``geometry``, in their original order (spatial-index lookup)."""
+    positions = np.sort(gdf.sindex.query(geometry, predicate="intersects"))
+    return gdf.iloc[positions]
+
+
+def _cut_notch(obstacles: gpd.GeoDataFrame, notch) -> gpd.GeoDataFrame:
+    """Obstacles with ``notch`` cut out (only the rows it touches are recomputed)."""
+    positions = obstacles.sindex.query(notch, predicate="intersects")
+    if len(positions) == 0:
+        return obstacles
+    obstacles = obstacles.copy()
+    column = obstacles.geometry.name
+    rows = obstacles.index[positions]
+    obstacles.loc[rows, column] = obstacles.loc[rows, column].difference(notch)
+    return obstacles
+
+
 def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple] | None]:
     # Unpacking task
-    point_from, obstacles, trees_orig, passed_dist, deep, dist_db = task
+    point_from, obstacles, trees_orig, passed_dist, deep, dist_db = task[:6]
+    if len(task) > 6 and task[6] is not None:
+        # reflection tasks carry the notch to cut around their point; it is applied here, lazily,
+        # because most candidate reflections are dropped by the dead-area filter before they run
+        obstacles = _cut_notch(obstacles, task[6])
 
     def donuts_dist_values(dist_db, passed_dist, max_view_dist):
         new_dist_db = dist_db + [(passed_dist, None), (max_view_dist + passed_dist, None)]
@@ -402,14 +438,14 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
     local_crs = obstacles.crs
     dist = round(max_dist - passed_dist, 1)
 
-    obstacles = obstacles[obstacles.intersects(point_from.buffer(dist, quad_segs=8))]
+    obstacles = _rows_intersecting(obstacles, point_from.buffer(dist, quad_segs=8))
 
     if len(obstacles) == 0:
         obstacles_union = Polygon()
     else:
         obstacles_union = obstacles.union_all()
 
-    vis_poly = _visibility_accurate(point_from, obstacles, dist)
+    vis_poly = visibility_polygon(point_from, obstacles, dist)
     max_view_dist = dist_to_furthest_point(point_from, vis_poly)
     donuts_dist_values = donuts_dist_values(dist_db, passed_dist, max_view_dist)
 
@@ -418,16 +454,15 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
     # Trees noise reduce
     reduce_polygons = []
     if len(trees_orig) > 0:
-        trees_orig = trees_orig[trees_orig.intersects(point_from.buffer(dist, quad_segs=8))]
+        trees_orig = _rows_intersecting(trees_orig, point_from.buffer(dist, quad_segs=8))
         if len(trees_orig) > 0:
             try:
-                trees = gdf_to_circle_zones_from_point(trees_orig, point_from, dist, resolution=tree_res)
-                trees = trees.clip(vis_poly, keep_geom_type=True).explode(index_parts=False)
+                tree_zones = gdf_to_circle_zones_from_point(trees_orig, point_from, dist, resolution=tree_res)
+                tree_geoms, _ = clip_polygons(tree_zones.geometry.values, vis_poly)
             except TypeError:
-                trees = gpd.GeoDataFrame()
+                tree_geoms = []
 
-            for _, row in trees.iterrows():
-                tree_geom = row.geometry
+            for tree_geom in tree_geoms:
                 if tree_geom.area < 1:
                     continue
                 dist_to_centroid = tree_geom.centroid.distance(point_from)
@@ -459,28 +494,23 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
             + noise_from_point.geometry.apply(polygons_to_multilinestring).tolist()
         )
 
-        cutted_polygons = gpd.GeoDataFrame(geometry=list(polygonize(unary_union(all_lines))), crs=local_crs)
-
-        cutted_polygons_points = cutted_polygons.copy()
-        cutted_polygons_points.geometry = cutted_polygons.representative_point()
-
-        joined = (
-            cutted_polygons_points.sjoin(noise_from_point, predicate="within", how="left")
-            .drop(columns="index_right")
-            .sjoin(reduce_polygons, predicate="within", how="left")
-            .drop(columns="index_right")
+        cut_polygons = np.asarray(list(polygonize(unary_union(all_lines))), dtype=object)
+        cut_points = shapely.point_on_surface(cut_polygons)
+        # level of the donut each piece lies in (donut parts never overlap: at most one)
+        level = np.full(len(cut_polygons), np.nan)
+        piece, donut = shapely.STRtree(noise_from_point.geometry.values).query(cut_points, predicate="within")
+        level[piece] = noise_from_point["noise_level"].to_numpy(dtype=float)[donut]
+        # total vegetation reduction of the layers covering each piece
+        piece, layer = shapely.STRtree(reduce_polygons.geometry.values).query(cut_points, predicate="within")
+        reduce = np.bincount(
+            piece, weights=reduce_polygons["reduce"].to_numpy(dtype=float)[layer], minlength=len(cut_polygons)
         )
-        joined.geometry = cutted_polygons.geometry
-        joined = (
-            joined.reset_index().groupby("index").agg({"geometry": "first", "reduce": "sum", "noise_level": "first"})
+        has_level = ~np.isnan(level)
+        noise_from_point = gpd.GeoDataFrame(
+            {"reduce": reduce[has_level], "noise_level": level[has_level] - reduce[has_level]},
+            geometry=cut_polygons[has_level],
+            crs=local_crs,
         )
-        joined = gpd.GeoDataFrame(joined, geometry="geometry", crs=local_crs)
-        noise_from_point = joined.copy()
-
-        noise_from_point = noise_from_point.dropna(subset=["noise_level"])
-
-        noise_from_point["reduce"] = noise_from_point["reduce"].fillna(0)
-        noise_from_point["noise_level"] = noise_from_point["noise_level"] - noise_from_point["reduce"]
     else:
         noise_from_point["reduce"] = 0
     noise_from_point = noise_from_point[noise_from_point.geom_type.isin(allowed_geom_types)]
@@ -493,34 +523,26 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
         vis_poly_points = [Point(coords) for coords in vis_poly.exterior.coords]
     else:
         vis_poly_points = [Point(coords) for geom in vis_poly.geoms for coords in geom.exterior.coords]
-    vis_poly_points = gpd.GeoDataFrame(geometry=vis_poly_points, crs=local_crs)
-
-    # Generating reflection points
-    vis_poly_points["point"] = vis_poly_points["geometry"].copy()
-    vis_poly_points.geometry = vis_poly_points.geometry.buffer(1, resolution=1)
-    vis_poly_points = vis_poly_points.sjoin(obstacles, predicate="intersects").drop(columns="index_right")
-    vis_poly_points = vis_poly_points[~vis_poly_points.index.duplicated(keep="first")]
-    vis_poly_points.dropna(subset=["absorb_ratio"], inplace=True)
-    nearby_poly = point_from.buffer(1.1, quad_segs=2)
-    try:
-        vis_poly_points.geometry = (
-            vis_poly_points.difference(vis_poly).difference(obstacles_union).difference(nearby_poly)
-        )
-    except GEOSException:
+    vis_poly_points = _reflection_candidates(
+        np.asarray(vis_poly_points, dtype=object), obstacles, obstacles_union, vis_poly, point_from, max_dist
+    )
+    if vis_poly_points is None:
         return noise_from_point, None
-    vis_poly_points = vis_poly_points[~vis_poly_points.is_empty]
-    vis_poly_points = vis_poly_points[vis_poly_points.area >= 0.01]
-    vis_poly_points["geometry"] = vis_poly_points["point"]
-    vis_poly_points["dist"] = vis_poly_points.distance(point_from)
-    vis_poly_points = vis_poly_points[vis_poly_points["dist"] < max_dist - 5]
-    vis_poly_points = vis_poly_points.sjoin(noise_from_point, predicate="intersects", how="left")
+    vis_poly_points = _join_noise_levels(vis_poly_points, noise_from_point, local_crs)
 
     if len(vis_poly_points) == 0:
         return noise_from_point, None
 
     new_obs = pd.concat([obstacles, gpd.GeoDataFrame(geometry=[vis_poly], crs=local_crs)], ignore_index=True)
 
-    # Creating new reflection tasks
+    # Creating new reflection tasks. Candidates are put in a canonical order (distance, then
+    # coordinates) instead of the polygon's vertex order, which depends on how the visibility
+    # polygon was built; the dead-area filter downstream is order-sensitive.
+    vis_poly_points["_x"] = vis_poly_points.geometry.x
+    vis_poly_points["_y"] = vis_poly_points.geometry.y
+    vis_poly_points = vis_poly_points.sort_values(
+        ["dist", "_x", "_y", "reduce", "noise_level"], kind="mergesort", na_position="last"
+    )
     new_tasks = []
     for _, loc in vis_poly_points.iterrows():
         if not isinstance(loc.geometry, Point):
@@ -531,12 +553,11 @@ def _noise_from_point_task(task, **kwargs) -> tuple[gpd.GeoDataFrame, list[tuple
             db_change = loc["reduce"]
             dist_change = loc["absorb_ratio"] * dist_last
             new_dist_db = [(dist - dist_change, db - db_change) for dist, db in dist_db]
-            task_obs = new_obs.copy()
-            task_obs.geometry = task_obs.difference(loc.geometry.buffer(1, quad_segs=1))
+            notch = loc.geometry.buffer(1, quad_segs=1)
             new_tasks.append(
                 (
                     _noise_from_point_task,
-                    (loc.geometry, task_obs, trees_orig, new_passed_dist, deep + 1, new_dist_db),
+                    (loc.geometry, new_obs, trees_orig, new_passed_dist, deep + 1, new_dist_db, notch),
                     kwargs,
                 )
             )
@@ -548,22 +569,22 @@ def _recursive_simulation_queue(task_queue: deque, dead_area_dict: dict, dead_ar
     results = []
     total_tasks = len(task_queue)
 
-    with tqdm(total=total_tasks, desc="Simulating noise") as pbar:
+    with tqdm(total=total_tasks, desc="Simulating noise", disable=not config.enable_tqdm_bar) as pbar:
         if use_parallel:
-            executor_class = concurrent.futures.ProcessPoolExecutor()
+            executor_class = concurrent.futures.ProcessPoolExecutor
         else:
-            executor_class = concurrent.futures.ThreadPoolExecutor()
-        with executor_class as executor:
-            max_workers = executor._max_workers  # pylint: disable=protected-access
-            future_to_task = {}
-            while True:
-                while task_queue and len(future_to_task) < max_workers:
-                    func, task, kwargs = task_queue.popleft()
-                    future = executor.submit(func, task, **kwargs)
-                    future_to_task[future] = kwargs["simulation_ind"]
-                done, _ = concurrent.futures.wait(future_to_task.keys(), return_when=concurrent.futures.FIRST_COMPLETED)
-                for future in done:
-                    simulation_ind = future_to_task.pop(future)
+            executor_class = concurrent.futures.ThreadPoolExecutor
+        with executor_class() as executor:
+            # Tasks run in waves (one reflection generation at a time) and results are consumed in
+            # submission order, not completion order. The dead-area filter below therefore sees the
+            # same sequence on every run and on every machine, whatever the worker timing; this is
+            # exactly the order a single worker would process the queue in.
+            while task_queue:
+                wave = list(task_queue)
+                task_queue.clear()
+                futures = [executor.submit(func, task, **kwargs) for func, task, kwargs in wave]
+                for (_, _, kwargs), future in zip(wave, futures):
+                    simulation_ind = kwargs["simulation_ind"]
                     result, new_tasks = future.result()
                     if new_tasks:
                         new_tasks_n = 0
@@ -581,7 +602,4 @@ def _recursive_simulation_queue(task_queue: deque, dead_area_dict: dict, dead_ar
                         pbar.refresh()
                     results.append(result)
                     pbar.update(1)
-                time.sleep(0.01)
-                if not future_to_task and not task_queue:
-                    break
     return results

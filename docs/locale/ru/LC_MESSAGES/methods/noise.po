@@ -1,0 +1,358 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Noise Simulation"
+msgstr "Моделирование шума"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "The noise functions estimate sound levels around **sources** among **obstacles** (buildings, walls) and vegetation and return them as polygons of level bands (``noise_level``, dB). The three functions differ in the propagation model and in computation time:"
+msgstr "Функции шума оценивают уровни звука вокруг **источников** среди **препятствий** (зданий, стен) и растительности и возвращают их полигонами полос уровня (``noise_level``, дБ). Три функции различаются моделью распространения и временем расчёта:"
+
+msgid "Function"
+msgstr "Функция"
+
+msgid "Sources"
+msgstr "Источники"
+
+msgid "Model"
+msgstr "Модель"
+
+msgid ":func:`objectnat.simulate_noise_grid`"
+msgstr ":func:`objectnat.simulate_noise_grid`"
+
+msgid "points, lines, polygons"
+msgstr "точки, линии, полигоны"
+
+msgid "Levels on a regular grid of **receivers**: direct path, first-order reflections and diffraction around building corners, energy summation (Rust)"
+msgstr "Уровни на регулярной сетке **приёмников**: прямой путь, отражения первого порядка и дифракция у углов зданий, энергетическое суммирование (Rust)"
+
+msgid ":func:`objectnat.simulate_noise`"
+msgstr ":func:`objectnat.simulate_noise`"
+
+msgid "points"
+msgstr "точки"
+
+msgid "Wave-front propagation by decay layers with multiple reflections and obstacle absorption"
+msgstr "Распространение волнового фронта по слоям затухания с многократными отражениями и поглощением препятствиями"
+
+msgid ":func:`objectnat.calculate_simplified_noise_frame`"
+msgstr ":func:`objectnat.calculate_simplified_noise_frame`"
+
+msgid "Visibility masks and distance decay, without reflections or absorption"
+msgstr "Маски видимости и затухание с расстоянием, без отражений и поглощения"
+
+msgid "All three take the source level ``source_noise_db`` (dB at 1 m from the source) and the characteristic frequency ``geometric_mean_freq_hz`` (Hz) either as arguments or as per-source columns, and the air temperature (°C), which sets the air absorption."
+msgstr "Все три функции принимают уровень источника ``source_noise_db`` (дБ на расстоянии 1 м от источника) и характерную частоту ``geometric_mean_freq_hz`` (Гц) либо как аргументы, либо как столбцы для каждого источника, а также температуру воздуха (°C), от которой зависит поглощение в воздухе."
+
+msgid "Receiver-grid simulation"
+msgstr "Расчёт на сетке приёмников"
+
+msgid "Method"
+msgstr "Метод"
+
+msgid ":func:`objectnat.simulate_noise_grid` computes the level at every receiver of a regular grid (``grid_step`` metres). Receivers inside obstacles are skipped. For each source and receiver it sums, as energies,"
+msgstr ":func:`objectnat.simulate_noise_grid` вычисляет уровень в каждом приёмнике регулярной сетки (шаг ``grid_step`` метров). Приёмники внутри препятствий пропускаются. Для каждой пары источника и приёмника функция энергетически суммирует"
+
+msgid "the **direct path**, when no obstacle blocks the line between source and receiver;"
+msgstr "**прямой путь**, если линию между источником и приёмником не перекрывает ни одно препятствие;"
+
+msgid "**first-order reflections** from obstacle walls within ``reflection_max_dist`` metres of the source (default 50 m), found with the image-source method; each reflection loses ``-10 lg(1 - a)`` dB, where ``a`` is the absorption ratio of the wall (``absorb_ratio_column`` or ``standard_absorb_ratio``, default 0.05);"
+msgstr "**отражения первого порядка** от стен препятствий не дальше ``reflection_max_dist`` метров от источника (по умолчанию 50 м), найденные методом мнимых источников; каждое отражение теряет ``-10 lg(1 - a)`` дБ, где ``a`` — коэффициент поглощения стены (``absorb_ratio_column`` или ``standard_absorb_ratio``, по умолчанию 0.05);"
+
+msgid "**diffraction around vertical edges** (``diffraction=True``): a corner that the source sees at the edge of an obstacle acts as a secondary source for the receivers that are hidden from the source but seen from the corner. Sound also travels along the shadowed side of the obstacle's convex hull to the next corner and bends around it; this path reaches the receivers right behind a building."
+msgstr "**дифракцию на вертикальных рёбрах** (``diffraction=True``): угол, который источник видит на краю препятствия, служит вторичным источником для приёмников, скрытых от источника, но видимых из угла. Звук также проходит вдоль затенённой стороны выпуклой оболочки препятствия до следующего угла и огибает его; этот путь доходит до приёмников сразу за зданием."
+
+msgid "A diffracted path has the geometric spreading and air absorption of the direct distance ``d`` and, in addition, the barrier attenuation of ISO 9613-2 without the ground term, ``10 lg(3 + 40 C3 δ / λ)``. Here ``δ`` is the path difference, how much longer the path through the corners is than ``d``, and ``λ = c / f`` is the wavelength at the characteristic frequency (``c = 331.3 + 0.606 T`` m/s, ``T`` in °C). Around one corner ``C3 = 1``, which is Maekawa's formula ``10 lg(3 + 20 N)`` with the Fresnel number ``N = 2 δ / λ``; around two corners ``e`` metres apart ``C3 = (1 + (5 λ / e)²) / (1/3 + (5 λ / e)²)``. The attenuation is 4.8 dB at the shadow boundary and at most 20 dB around one corner and 25 dB around two. Corners are the convex vertices of the merged obstacle outlines simplified by 0.5 m (buildings that touch form one outline) and the ends of wall lines."
+msgstr "Дифрагированный путь имеет геометрическое расхождение и поглощение в воздухе прямого расстояния ``d`` и, кроме того, затухание на экране по ISO 9613-2 без учёта земли, ``10 lg(3 + 40 C3 δ / λ)``. Здесь ``δ`` — разность хода, то есть насколько путь через углы длиннее ``d``, а ``λ = c / f`` — длина волны на характерной частоте (``c = 331.3 + 0.606 T`` м/с, ``T`` в °C). Для одного угла ``C3 = 1``, что даёт формулу Маэкавы ``10 lg(3 + 20 N)`` с числом Френеля ``N = 2 δ / λ``; для двух углов на расстоянии ``e`` метров ``C3 = (1 + (5 λ / e)²) / (1/3 + (5 λ / e)²)``. Затухание равно 4,8 дБ на границе тени и не превышает 20 дБ для одного угла и 25 дБ для двух. Углы — выпуклые вершины объединённых контуров препятствий, упрощённых на 0,5 м (соприкасающиеся здания образуют один контур), и концы линий стен."
+
+msgid "Every path of length ``r`` (m) loses ``20 lg r`` dB to geometric spreading and ``k r`` dB to air absorption, with ``k`` derived from the temperature and the frequency; a path through vegetation (``trees``) also loses a frequency-dependent rate per metre of foliage crossed. Line sources (roads, railways) and polygon outlines (industrial sites, noisy buildings) are sampled every ``source_spacing`` metres (default 5 m); each sample gets ``source_noise_db - 10 lg(π / s)`` so that a long line follows the line-source law ``L - 10 lg d - k d`` (3 dB less per doubling of distance). Because energies add, two equal sources give +3 dB."
+msgstr "Каждый путь длиной ``r`` (м) теряет ``20 lg r`` дБ на геометрическое расхождение и ``k r`` дБ на поглощение в воздухе, где ``k`` зависит от температуры и частоты; путь через растительность (``trees``) дополнительно теряет зависящую от частоты величину на каждый метр пересечённой листвы. Линейные источники (дороги, железные дороги) и контуры полигонов (промышленные площадки, шумные здания) разбиваются на точки с шагом ``source_spacing`` метров (по умолчанию 5 м); каждая точка получает ``source_noise_db - 10 lg(π / s)``, чтобы длинная линия следовала закону линейного источника ``L - 10 lg d - k d`` (на 3 дБ меньше при удвоении расстояния). Так как энергии складываются, два одинаковых источника дают +3 дБ."
+
+msgid "Levels below ``target_noise_db`` are dropped, and the rest are grouped into bands of ``db_sim_step`` dB. ``noise_level`` is the upper bound of the band, as in :func:`objectnat.simulate_noise`. With ``output=\"receivers\"`` the function returns the receiver points with their exact levels instead of the bands; with ``output=\"both\"`` it returns both."
+msgstr "Уровни ниже ``target_noise_db`` отбрасываются, остальные группируются в полосы по ``db_sim_step`` дБ. ``noise_level`` — верхняя граница полосы, как в :func:`objectnat.simulate_noise`. При ``output=\"receivers\"`` функция возвращает точки приёмников с точными уровнями вместо полос; при ``output=\"both\"`` — и то, и другое."
+
+msgid "Computation time is proportional to the number of receivers times the number of point sources and line samples within reach. For large road networks use a coarser ``grid_step`` or ``source_spacing``, or :func:`objectnat.calculate_simplified_noise_frame` for a first estimate."
+msgstr "Время расчёта пропорционально числу приёмников, умноженному на число точечных источников и точек линий в пределах досягаемости. Для больших дорожных сетей используйте более крупный ``grid_step`` или ``source_spacing`` либо :func:`objectnat.calculate_simplified_noise_frame` для первой оценки."
+
+msgid "Simulate noise from point, line and polygon sources on a regular grid of receivers."
+msgstr "Моделирует шум от точечных, линейных и площадных источников на регулярной сетке приёмников."
+
+msgid "An alternative to :func:`simulate_noise` built on the receiver-grid approach used by engineering noise models. Every receiver collects sound energy from every source along:"
+msgstr "Альтернатива :func:`simulate_noise`, основанная на подходе с сеткой приёмников, который используют инженерные модели шума. Каждый приёмник собирает звуковую энергию от каждого источника по путям:"
+
+msgid "the direct path, when no obstacle blocks it;"
+msgstr "прямой путь, если его не перекрывает препятствие;"
+
+msgid "first-order reflections from obstacle walls (image-source method), when ``reflections`` is True;"
+msgstr "отражения первого порядка от стен препятствий (метод мнимых источников), если ``reflections`` равно True;"
+
+msgid "diffraction around one or two corners of an obstacle (vertical building edges) into its shadow, when ``diffraction`` is True."
+msgstr "дифракция вокруг одного или двух углов препятствия (вертикальных рёбер зданий) в его тень, если ``diffraction`` равно True."
+
+msgid "Each path loses ``20 lg r`` (geometric spreading, ``r`` in metres), air absorption ``k r`` (``k`` from temperature and frequency, as in :func:`simulate_noise`), a reflection loss ``-10 lg(1 - a)`` per reflection (``a`` = absorption ratio of the wall) and, through vegetation, the foliage rate of :func:`simulate_noise` times the length crossed. A diffracted path has the level at the direct distance minus the barrier attenuation of ISO 9613-2 without the ground term, ``10 lg(3 + 40 C3 δ / λ)``: ``δ`` is how much longer the path through the corners is, ``λ`` the wavelength, ``C3 = 1`` around one corner (Maekawa's formula) and ``(1 + (5 λ / e)²) / (1/3 + (5 λ / e)²)`` around two corners ``e`` metres apart. The attenuation is at most 20 dB around one corner and 25 dB around two. Paths and sources add up as energies, so two equal sources give +3 dB. Receivers inside obstacles are skipped. The levels are then grouped into bands of ``db_sim_step`` dB and returned as polygons, like :func:`simulate_noise`."
+msgstr "Каждый путь теряет ``20 lg r`` (геометрическое расхождение, ``r`` в метрах), поглощение в воздухе ``k r`` (``k`` по температуре и частоте, как в :func:`simulate_noise`), потерю при отражении ``-10 lg(1 - a)`` на каждое отражение (``a`` — коэффициент поглощения стены) и, при прохождении через растительность, удельное ослабление листвой из :func:`simulate_noise`, умноженное на пересечённую длину. Уровень дифрагированного пути равен уровню на прямом расстоянии минус затухание на экране по ISO 9613-2 без учёта земли, ``10 lg(3 + 40 C3 δ / λ)``: ``δ`` — насколько путь через углы длиннее, ``λ`` — длина волны, ``C3 = 1`` для одного угла (формула Маэкавы) и ``(1 + (5 λ / e)²) / (1/3 + (5 λ / e)²)`` для двух углов на расстоянии ``e`` метров. Затухание не превышает 20 дБ для одного угла и 25 дБ для двух. Пути и источники складываются энергетически, поэтому два одинаковых источника дают +3 дБ. Приёмники внутри препятствий пропускаются. Затем уровни группируются в полосы по ``db_sim_step`` дБ и возвращаются полигонами, как в :func:`simulate_noise`."
+
+msgid "The computation runs in parallel in ObjectNat's Rust extension."
+msgstr "Расчёт выполняется параллельно в расширении ObjectNat на Rust."
+
+msgid "Parameters"
+msgstr "Параметры"
+
+msgid "Noise sources. Points are point sources. Lines (roads, railways) are line sources, sampled every ``source_spacing`` metres. Polygons (industrial sites, noisy buildings) radiate from their outline as line sources. Optional columns ``source_noise_db`` (level at 1 m from the point or line, dB) and ``geometric_mean_freq_hz`` override the arguments of the same name per source."
+msgstr "Источники шума. Точки — точечные источники. Линии (дороги, железные дороги) — линейные источники, разбитые на точки с шагом ``source_spacing`` метров. Полигоны (промышленные площадки, шумные здания) излучают по контуру как линейные источники. Необязательные столбцы ``source_noise_db`` (уровень в 1 м от точки или линии, дБ) и ``geometric_mean_freq_hz`` заменяют одноимённые аргументы для отдельных источников."
+
+msgid "Buildings, walls and other obstacles (polygons or lines). ``None`` or empty for free field."
+msgstr "Здания, стены и другие препятствия (полигоны или линии). ``None`` или пустой набор — свободное поле."
+
+msgid "Level at 1 m for sources without a ``source_noise_db`` column, dB."
+msgstr "Уровень в 1 м для источников без столбца ``source_noise_db``, дБ."
+
+msgid "Characteristic frequency for sources without a ``geometric_mean_freq_hz`` column, Hz."
+msgstr "Характерная частота для источников без столбца ``geometric_mean_freq_hz``, Гц."
+
+msgid "Column of ``obstacles`` with the sound absorption ratio of each obstacle (0-1)."
+msgstr "Столбец ``obstacles`` с коэффициентом звукопоглощения каждого препятствия (0-1)."
+
+msgid "Absorption ratio for obstacles without a value. Default 0.05 (concrete)."
+msgstr "Коэффициент поглощения для препятствий без значения. По умолчанию 0.05 (бетон)."
+
+msgid "Vegetation polygons; sound crossing them is attenuated."
+msgstr "Полигоны растительности; звук, проходящий через них, ослабевает."
+
+msgid "Air temperature, °C."
+msgstr "Температура воздуха, °C."
+
+msgid "Lowest level to report, dB. Sources reach as far as their own level drops to it."
+msgstr "Наименьший учитываемый уровень, дБ. Источники действуют до расстояния, на котором их уровень падает до него."
+
+msgid "Width of the output level bands, dB."
+msgstr "Ширина выходных полос уровня, дБ."
+
+msgid "Include first-order reflections from obstacle walls."
+msgstr "Учитывать отражения первого порядка от стен препятствий."
+
+msgid "Only walls closer than this to a source reflect it, metres (default 50, as the maximum reflection distance of engineering models). Larger values are slower."
+msgstr "Отражают источник только стены ближе этого расстояния к нему, метры (по умолчанию 50, как максимальное расстояние отражения в инженерных моделях). Большие значения медленнее."
+
+msgid "Bend sound around the corners of obstacles: a receiver hidden from a source but seen from a corner that the source sees at the edge of an obstacle gets the diffracted sound, and along the shadowed side of the obstacle's convex hull the sound also bends around the next corner. Corners are the convex vertices of the merged outlines simplified by 0.5 m, and the ends of lines."
+msgstr "Огибание звуком углов препятствий: приёмник, скрытый от источника, но видимый из угла, который источник видит на краю препятствия, получает дифрагированный звук, а вдоль затенённой стороны выпуклой оболочки препятствия звук огибает и следующий угол. Углы — выпуклые вершины объединённых контуров, упрощённых на 0,5 м, и концы линий."
+
+msgid "Receiver spacing in metres; smaller is finer and slower."
+msgstr "Шаг приёмников в метрах; меньший шаг подробнее и медленнее."
+
+msgid "Spacing of the point samples along line and polygon sources, metres (default 5). Each sample gets ``source_noise_db - 10 lg(pi / s)``, so that a long line follows the line-source law ``source_noise_db - 10 lg d - k d`` (3 dB per doubling of distance). Closer to the line than about ``source_spacing`` the individual samples show."
+msgstr "Шаг точек вдоль линейных и площадных источников, метры (по умолчанию 5). Каждая точка получает ``source_noise_db - 10 lg(pi / s)``, чтобы длинная линия следовала закону линейного источника ``source_noise_db - 10 lg d - k d`` (3 дБ на удвоение расстояния). Ближе к линии, чем примерно ``source_spacing``, видны отдельные точки."
+
+msgid "Radius in metres cut out of an obstacle or tree that contains a source, as in :func:`simulate_noise`."
+msgstr "Радиус в метрах, вырезаемый из препятствия или дерева, внутри которого находится источник, как в :func:`simulate_noise`."
+
+msgid "``\"zones\"`` (default) for the level bands, ``\"receivers\"`` for the receiver points with their exact levels only (no band polygons are built), ``\"both\"`` for the tuple ``(bands, receivers)``."
+msgstr "``\"zones\"`` (по умолчанию) — полосы уровня, ``\"receivers\"`` — только точки приёмников с точными уровнями (полигоны полос не строятся), ``\"both\"`` — кортеж ``(bands, receivers)``."
+
+msgid "Maximum number of threads (``None`` uses all cores)."
+msgstr "Максимальное число потоков (``None`` — все ядра)."
+
+msgid "Return type"
+msgstr "Тип возвращаемого значения"
+
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\` \\| \\:py\\:class\\:\\`tuple\\`\\\\ \\\\\\[\\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\`\\, \\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\`\\]`"
+msgstr ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\` \\| \\:py\\:class\\:\\`tuple\\`\\\\ \\\\\\[\\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\`\\, \\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\`\\]`"
+
+msgid "Returns"
+msgstr "Возвращает"
+
+msgid "GeoDataFrame with columns ``noise_level`` (upper bound of each ``db_sim_step`` band, dB, like :func:`simulate_noise`) and ``geometry`` (one polygon per band), in the CRS of ``source_points``. With ``output=\"receivers\"`` the receivers, with ``output=\"both\"`` a tuple ``(bands, receivers)``. The receivers have the exact ``noise_level`` of every receiver that hears at least ``target_noise_db``; their ``attrs`` record the grid, so :func:`rasterize` turns ``noise_level`` into a :class:`Raster`."
+msgstr "GeoDataFrame со столбцами ``noise_level`` (верхняя граница каждой полосы ``db_sim_step``, дБ, как в :func:`simulate_noise`) и ``geometry`` (по одному полигону на полосу) в системе координат ``source_points``. При ``output=\"receivers\"`` — приёмники, при ``output=\"both\"`` — кортеж ``(bands, receivers)``. Приёмники содержат точный ``noise_level`` каждого приёмника, где уровень не ниже ``target_noise_db``; их ``attrs`` записывают сетку, поэтому :func:`rasterize` превращает ``noise_level`` в :class:`Raster`."
+
+msgid "Notes"
+msgstr "Примечания"
+
+msgid "Not modelled: ground effect, diffraction over roofs (obstacle heights are not used), paths around three or more corners and reflections of higher order. Places that sound reaches only around three or more corners (inner courtyards, the second row of buildings) get reflected sound only."
+msgstr "Не моделируются: влияние земли, дифракция через крыши (высоты препятствий не используются), пути вокруг трёх и более углов и отражения высших порядков. Места, куда звук попадает только вокруг трёх и более углов (внутренние дворы, второй ряд зданий), получают только отражённый звук."
+
+msgid "Each band covers ``db_sim_step`` dB; the receivers (``output=\"receivers\"``) have the exact level, and :func:`objectnat.rasterize` turns them into a continuous map (see :doc:`rasters`)."
+msgstr "Каждая полоса охватывает ``db_sim_step`` дБ; приёмники (``output=\"receivers\"``) содержат точный уровень, а :func:`objectnat.rasterize` превращает их в непрерывную карту (см. :doc:`rasters`)."
+
+msgid "**Reading the result.** The model is energetic: it returns the time-averaged sound level, the quantity that noise maps and norms use, rather than the instantaneous sound pressure. Phase, wave fronts and interference are therefore not computed, and the level falls smoothly with distance. The direct sound and the reflections travel along straight rays, so they pass through the gaps between buildings as straight beams; a first-order reflection is the field of a mirror image of the source behind the wall, limited to the rays that pass through the wall. Where the direct sound already arrives, a reflection with a 5 % absorption ratio adds at most 3 dB. Diffraction fills the shadows. At the shadow boundary the level drops by 4.8 dB, and it falls further as the detour grows; the 20 dB limit is reached at a detour of 2.4 wavelengths, 0.4 m at 2 kHz and 1.7 m at 500 Hz. Shadows are therefore deeper at high frequencies than at low ones. Right behind a building the sound bends around two corners and arrives up to 25 dB below the free-field level; places that sound reaches only around three or more corners (inner courtyards, the second row behind a building) receive reflected sound only."
+msgstr "**Как читать результат.** Модель энергетическая: она возвращает усреднённый по времени уровень звука, то есть величину, которую используют шумовые карты и нормативы, а не мгновенное звуковое давление. Поэтому фаза, волновые фронты и интерференция не вычисляются, и уровень плавно убывает с расстоянием. Прямой звук и отражения распространяются по прямым лучам, поэтому проходят в просветы между зданиями прямыми пучками; отражение первого порядка — это поле мнимого источника за стеной, ограниченное лучами, которые проходят через стену. Там, куда уже приходит прямой звук, отражение с коэффициентом поглощения 5 % добавляет не больше 3 дБ. Дифракция заполняет тени. На границе тени уровень падает на 4,8 дБ и убывает дальше по мере роста обхода; предел 20 дБ достигается при обходе 2,4 длины волны, то есть 0,4 м на 2 кГц и 1,7 м на 500 Гц. Поэтому на высоких частотах тени глубже, чем на низких. Сразу за зданием звук огибает два угла и приходит с уровнем до 25 дБ ниже уровня в свободном поле; места, куда звук попадает только вокруг трёх и более углов (внутренние дворы, второй ряд за зданием), получают только отражённый звук."
+
+msgid "Continuous receiver levels and the levels added by reflections and by diffraction"
+msgstr "Непрерывные уровни в приёмниках и прибавка от отражений и от дифракции"
+
+msgid ":func:`objectnat.simulate_noise_grid` for a road (line source, 80 dB at 1 m, 1 kHz) and two point sources (95 dB at 2 kHz, 85 dB at 500 Hz) among the example buildings and vegetation, ``grid_step=2``, receivers rasterized with :func:`objectnat.rasterize`. ``target_noise_db=30`` shows the sound that reaches the shadows. Left: continuous levels with all paths. Centre and right: the level added by reflections (``reflections=False`` for comparison) and by diffraction (``diffraction=False``); cells reached only by these paths are compared with ``target_noise_db``. Diffraction fills the shadows beside the beams and behind the buildings next to the point sources."
+msgstr ":func:`objectnat.simulate_noise_grid` для дороги (линейный источник, 80 дБ в 1 м, 1 кГц) и двух точечных источников (95 дБ на 2 кГц, 85 дБ на 500 Гц) среди зданий и растительности из примера, ``grid_step=2``, приёмники растеризованы функцией :func:`objectnat.rasterize`. ``target_noise_db=30`` показывает звук, который доходит до теней. Слева: непрерывные уровни по всем путям. В центре и справа: прибавка уровня от отражений (для сравнения ``reflections=False``) и от дифракции (``diffraction=False``); ячейки, куда звук доходит только по этим путям, сравниваются с ``target_noise_db``. Дифракция заполняет тени рядом с пучками и за зданиями возле точечных источников."
+
+msgid "Wave-front simulation"
+msgstr "Моделирование волнового фронта"
+
+msgid ":func:`objectnat.simulate_noise` models propagation from point sources in decay layers of ``db_sim_step`` dB. A layer is the area within the distance at which the level drops by one step, limited by the visibility polygon of the source. Obstacle boundaries reached by the sound become secondary sources of reflected sound, up to ``reflection_n`` reflections (default 3), with a level reduced by the absorption ratio of the obstacle (``absorb_ratio_column``, ``standart_absorb_ratio``); no reflections start within ``dead_area_r`` metres of the previous source. Vegetation (``trees``, rasterized with ``tree_resolution``) reduces the level in the shadow sector behind tree polygons by a frequency-dependent amount that grows with the depth of foliage crossed. The simulation stops at ``target_noise_db``. For a source inside an obstacle or tree polygon, ``source_position_buffer_r`` cuts a hole of that radius around the source; ``use_parallel`` distributes the work over processes."
+msgstr ":func:`objectnat.simulate_noise` моделирует распространение от точечных источников слоями затухания по ``db_sim_step`` дБ. Слой — это территория в пределах расстояния, на котором уровень падает на один шаг, ограниченная полигоном видимости источника. Границы препятствий, до которых доходит звук, становятся вторичными источниками отражённого звука, до ``reflection_n`` отражений (по умолчанию 3), с уровнем, уменьшенным на коэффициент поглощения препятствия (``absorb_ratio_column``, ``standart_absorb_ratio``); отражения не начинаются ближе ``dead_area_r`` метров к предыдущему источнику. Растительность (``trees``, растеризуется с ``tree_resolution``) снижает уровень в секторе тени за полигонами деревьев на зависящую от частоты величину, которая растёт с толщиной пересечённой листвы. Моделирование останавливается на ``target_noise_db``. Для источника внутри препятствия или полигона деревьев ``source_position_buffer_r`` вырезает вокруг источника отверстие такого радиуса; ``use_parallel`` распределяет работу по процессам."
+
+msgid "Simulates noise propagation from a set of source points considering obstacles, trees, and environmental factors."
+msgstr "Моделирует распространение шума от набора точечных источников с учётом препятствий, деревьев и условий среды."
+
+msgid "A GeoDataFrame with one or more point geometries representing noise sources. Optionally, it can include 'source_noise_db' and 'geometric_mean_freq_hz' columns for per-point simulation."
+msgstr "GeoDataFrame с одной или несколькими точечными геометриями источников шума. Может содержать столбцы 'source_noise_db' и 'geometric_mean_freq_hz' для расчёта по каждой точке."
+
+msgid "A GeoDataFrame representing obstacles in the environment. If a column with sound absorption coefficients is present, its name should be provided in the `absorb_ratio_column` argument. Missing values will be filled with the `standart_absorb_ratio`."
+msgstr "GeoDataFrame препятствий. Если в нём есть столбец с коэффициентами звукопоглощения, его имя нужно передать в аргументе `absorb_ratio_column`. Отсутствующие значения заполняются `standart_absorb_ratio`."
+
+msgid "Default noise level (dB) to use if not specified per-point. Decibels are logarithmic units used to measure sound intensity. A value of 20 dB represents a barely audible whisper, while 140 dB is comparable to the noise of jet engines."
+msgstr "Уровень шума по умолчанию (дБ) для точек без собственного значения. Децибелы — логарифмические единицы интенсивности звука. 20 дБ соответствуют едва слышному шёпоту, а 140 дБ сравнимы с шумом реактивных двигателей."
+
+msgid "Default frequency (Hz) to use if not specified per-point. This parameter influences the sound wave's propagation and scattering in the presence of trees. Lower frequencies travel longer distances than higher frequencies. It's recommended to use values between 63 Hz and 8000 Hz; values outside this range will be clamped to the nearest boundary for the sound absorption coefficient calculation."
+msgstr "Частота по умолчанию (Гц) для точек без собственного значения. Этот параметр влияет на распространение и рассеяние звука среди деревьев. Низкие частоты распространяются дальше высоких. Рекомендуются значения от 63 до 8000 Гц; значения вне этого диапазона приводятся к ближайшей границе при расчёте коэффициента поглощения."
+
+msgid "Keyword Arguments"
+msgstr "Именованные аргументы"
+
+msgid "The name of the column in the `obstacles` GeoDataFrame that contains the sound absorption coefficients for each obstacle. Default is None. If not specified, all obstacles will have the `standart_absorb_ratio`."
+msgstr "Имя столбца в GeoDataFrame `obstacles` с коэффициентами звукопоглощения препятствий. По умолчанию None. Если не задано, все препятствия получают `standart_absorb_ratio`."
+
+msgid "The default sound absorption coefficient to use for obstacles without specified values in the `absorb_ratio_column`. Default is 0.05, which is a typical value for concrete walls."
+msgstr "Коэффициент звукопоглощения по умолчанию для препятствий без значения в `absorb_ratio_column`. По умолчанию 0.05 — типичное значение для бетонных стен."
+
+msgid "A GeoDataFrame containing trees or dense vegetation along the sound wave's path. Trees will scatter and absorb sound waves."
+msgstr "GeoDataFrame с деревьями или густой растительностью на пути звука. Деревья рассеивают и поглощают звук."
+
+msgid "A resolution parameter for simulating tree interactions with sound waves. Recommended values are between 2 and 16, with higher values providing more accurate simulation results."
+msgstr "Параметр разрешения для моделирования взаимодействия звука с деревьями. Рекомендуются значения от 2 до 16; большие значения дают более точный результат."
+
+msgid "The air temperature in degrees Celsius. The recommended range is from 0 to 30 degrees Celsius, as temperatures outside this range will be clipped. Temperature affects the sound propagation in the air."
+msgstr "Температура воздуха в градусах Цельсия. Рекомендуемый диапазон — от 0 до 30 градусов, значения вне его обрезаются. Температура влияет на распространение звука в воздухе."
+
+msgid "The target noise level (in dB) for the simulation. Default is 40 dB. Lower values may not be relevant for further analysis, as they are near the threshold of human hearing."
+msgstr "Целевой уровень шума (дБ) для моделирования. По умолчанию 40 дБ. Меньшие значения могут быть неважны для дальнейшего анализа, так как близки к порогу слышимости."
+
+msgid "The step size in decibels for the noise simulation. Default is 1. For more precise analysis, this can be adjusted. If the difference between `source_noise_db` and `target_noise_db` is not divisible by the step size, the function will raise an error."
+msgstr "Шаг моделирования в децибелах. По умолчанию 1. Для более точного анализа его можно изменить. Если разность между `source_noise_db` и `target_noise_db` не делится на шаг, функция выдаёт ошибку."
+
+msgid "The maximum number of reflections (bounces) to simulate for each sound wave. Recommended values are between 1 and 3. Larger values will result in longer simulation times."
+msgstr "Максимальное число отражений для каждой звуковой волны. Рекомендуются значения от 1 до 3. Большие значения увеличивают время моделирования."
+
+msgid "A debugging parameter that defines the radius of the \"dead zone\" for reflections. Points within this area will not generate reflections. This is useful to prevent the algorithm from getting stuck in corners or along building walls."
+msgstr "Отладочный параметр — радиус «мёртвой зоны» для отражений. Точки в этой зоне не порождают отражений. Это не даёт алгоритму застревать в углах и вдоль стен зданий."
+
+msgid "Radius in metres to cut from a containing obstacle or tree around the initial source point. Default is 0, which keeps source geometries unchanged."
+msgstr "Радиус в метрах, вырезаемый вокруг исходной точки источника из содержащего её препятствия или дерева. По умолчанию 0: геометрии источников не меняются."
+
+msgid "Whether to use ProcessPool for task distribution or not. Default is True."
+msgstr "Использовать ли ProcessPool для распределения задач. По умолчанию True."
+
+msgid "Noise levels (``noise_level``, dB) with the geometries of the areas they cover; the results of all source points are merged into one GeoDataFrame."
+msgstr "Уровни шума (``noise_level``, дБ) с геометрией охватываемых ими территорий; результаты всех точечных источников объединены в один GeoDataFrame."
+
+msgid "Level bands of the wave-front simulation for two point sources"
+msgstr "Полосы уровней моделирования волнового фронта для двух точечных источников"
+
+msgid ":func:`objectnat.simulate_noise` for the two point sources of the :func:`objectnat.simulate_noise_grid` example (95 dB at 2 kHz, 85 dB at 500 Hz) among the example buildings and vegetation, ``reflection_n=2``, ``target_noise_db=40``, ``db_sim_step=5``."
+msgstr ":func:`objectnat.simulate_noise` для двух точечных источников из примера :func:`objectnat.simulate_noise_grid` (95 дБ на 2 кГц, 85 дБ на 500 Гц) среди зданий и растительности примера, ``reflection_n=2``, ``target_noise_db=40``, ``db_sim_step=5``."
+
+msgid "Simplified noise frame"
+msgstr "Упрощённый шумовой каркас"
+
+msgid ":func:`objectnat.calculate_simplified_noise_frame` builds an envelope of possible exposure without a propagation simulation. Lines and polygons are sampled into points (``linestring_point_radius``, ``polygon_point_radius``), the visibility polygon of every sample masks the area that the sound reaches directly, and the level decreases with distance according to the source level, frequency and temperature. The frame of every source is the maximum over its samples, and the result is the maximum over sources. Obstacles act only as line-of-sight masks: absorption, reflections and vegetation are not modelled."
+msgstr ":func:`objectnat.calculate_simplified_noise_frame` строит огибающую возможного воздействия без моделирования распространения. Линии и полигоны разбиваются на точки (``linestring_point_radius``, ``polygon_point_radius``), полигон видимости каждой точки ограничивает территорию, куда звук доходит напрямую, а уровень убывает с расстоянием в зависимости от уровня источника, частоты и температуры. Каркас каждого источника — максимум по его точкам, а результат — максимум по источникам. Препятствия служат только масками прямой видимости: поглощение, отражения и растительность не моделируются."
+
+msgid "Calculates a simplified environmental noise frame using static noise source geometries without simulating full sound wave propagation or reflections."
+msgstr "Рассчитывает упрощённый шумовой каркас по статичным геометриям источников, без полного моделирования распространения звуковых волн и отражений."
+
+msgid "This function provides a fast approximation of noise dispersion from a variety of source geometries, including points (e.g., traffic noise measurement points), lines (e.g., roads or railways), and polygons (e.g., industrial zones or buildings). Instead of simulating detailed wave interactions and reflections, it constructs an envelope of potential noise exposure from the visibility polygons of points sampled on the sources and a distance decay that depends on the source level, frequency and temperature."
+msgstr "Функция даёт быструю оценку распространения шума от источников разной геометрии: точек (например, точек измерения транспортного шума), линий (дорог, железных дорог) и полигонов (промышленных зон, зданий). Вместо подробного моделирования волн и отражений она строит огибающую возможного шумового воздействия по полигонам видимости точек, расставленных на источниках, и затуханию с расстоянием, которое зависит от уровня источника, частоты и температуры."
+
+msgid "A GeoDataFrame containing geometries of noise sources (Point, LineString, or Polygon). Each feature must have the following two columns:  - 'source_noise_db': Sound level at 1 m from the source, in decibels (dB). - 'geometric_mean_freq_hz': Characteristic sound frequency (Hz) used to model distance-based attenuation.  Values in 'source_noise_db' must not exceed the physical maximum of 194 dB. Missing or NaN values in required fields will raise an error."
+msgstr "A GeoDataFrame containing geometries of noise sources (Point, LineString, or Polygon). Each feature must have the following two columns:  - 'source_noise_db': Sound level at 1 m from the source, in decibels (dB). - 'geometric_mean_freq_hz': Characteristic sound frequency (Hz) used to model distance-based attenuation.  Values in 'source_noise_db' must not exceed the physical maximum of 194 dB. Missing or NaN values in required fields will raise an error."
+
+msgid "A GeoDataFrame containing geometries of noise sources (Point, LineString, or Polygon). Each feature must have the following two columns:"
+msgstr "GeoDataFrame с геометриями источников шума (Point, LineString или Polygon). У каждого объекта должны быть два столбца:"
+
+msgid "'source_noise_db': Sound level at 1 m from the source, in decibels (dB)."
+msgstr "'source_noise_db': уровень звука в 1 м от источника, в децибелах (дБ)."
+
+msgid "'geometric_mean_freq_hz': Characteristic sound frequency (Hz) used to model distance-based attenuation."
+msgstr "'geometric_mean_freq_hz': характерная частота звука (Гц) для моделирования затухания с расстоянием."
+
+msgid "Values in 'source_noise_db' must not exceed the physical maximum of 194 dB. Missing or NaN values in required fields will raise an error."
+msgstr "Значения 'source_noise_db' не должны превышать физический максимум 194 дБ. Отсутствующие значения или NaN в обязательных полях вызывают ошибку."
+
+msgid "A GeoDataFrame representing physical obstructions in the environment (e.g., buildings, walls). These are used to build visibility masks that affect where sound can propagate. Geometry will be simplified for performance using a default tolerance of 1 unit."
+msgstr "GeoDataFrame физических препятствий (например, зданий, стен). По ним строятся маски видимости, которые определяют, куда может распространяться звук. Для скорости геометрия упрощается с допуском 1 единица."
+
+msgid "The ambient air temperature in degrees Celsius. This value influences the attenuation model of sound in the atmosphere. Temperatures significantly outside the typical 0–30°C range may lead to inaccurate results."
+msgstr "Температура окружающего воздуха в градусах Цельсия. Она влияет на модель затухания звука в атмосфере. Температуры заметно вне обычного диапазона 0–30 °C могут дать неточный результат."
+
+msgid "The minimum sound level threshold (in dB) to be modelled. Any value below this threshold is considered insignificant and will be excluded from the resulting noise frame. Default is 40 dB."
+msgstr "Минимальный моделируемый уровень звука (дБ). Значения ниже этого порога считаются несущественными и исключаются из результата. По умолчанию 40 дБ."
+
+msgid "The simulation step size (in dB) used to discretize sound levels into spatial layers. Default is 5. Smaller values produce more detailed output but increase computation time."
+msgstr "Шаг моделирования (дБ), с которым уровни звука разбиваются на пространственные слои. По умолчанию 5. Меньшие значения дают более подробный результат, но увеличивают время расчёта."
+
+msgid "The spacing radius (in metres) used when converting LineString geometries into distributed point sources for simulation. Default is 15. Reducing this value improves detail along long lines."
+msgstr "Шаг (в метрах) при разбиении геометрий LineString на точечные источники. По умолчанию 15. Меньшее значение подробнее передаёт длинные линии."
+
+msgid "The point spacing (in metres) for distributing sources within Polygon geometries. Default is 5. Points are sampled across the polygon’s surface and perimeter to represent the full sound-emitting area."
+msgstr "Шаг точек (в метрах) при размещении источников внутри геометрий Polygon. По умолчанию 5. Точки ставятся по площади и по контуру полигона, чтобы представить всю излучающую поверхность."
+
+msgid "Deprecated and ignored: visibility for all sample points is always computed in parallel threads by the Rust extension."
+msgstr "Устарел и игнорируется: видимость для всех точек всегда вычисляется в параллельных потоках расширением на Rust."
+
+msgid "Maximum number of threads for the visibility computation. None uses all cores."
+msgstr "Максимальное число потоков для расчёта видимости. None — все ядра."
+
+msgid "A GeoDataFrame representing simplified noise distribution areas. The output geometries are polygons where each polygon is associated with the maximum sound level (in dB) present in that area, as derived from overlapping source zones. The resulting data is dissolved by noise level and returned in the original coordinate reference system (CRS) of the input sources."
+msgstr "GeoDataFrame с территориями упрощённого распределения шума. Выходные геометрии — полигоны, каждому из которых соответствует максимальный уровень звука (дБ) на этой территории по перекрывающимся зонам источников. Данные объединяются по уровню шума и возвращаются в исходной системе координат входных источников."
+
+msgid "The function does not model reflections or diffraction. It uses straight-line visibility (line-of-sight) and a layered distance-decay approach for rapid estimation."
+msgstr "Функция не моделирует отражения и дифракцию. Для быстрой оценки она использует видимость по прямой (линии прямой видимости) и послойное затухание с расстоянием."
+
+msgid "Obstacles are used for visibility masking only, not as reflectors or absorbers."
+msgstr "Препятствия используются только как маски видимости, но не как отражатели или поглотители."
+
+msgid "Output resolution and accuracy depend heavily on the geometry type and point distribution settings."
+msgstr "Разрешение и точность результата сильно зависят от типа геометрии и настроек размещения точек."
+
+msgid "Results are useful for quick noise mapping or for generating initial noise envelopes prior to more detailed simulations."
+msgstr "Результаты подходят для быстрого картирования шума или для первичных огибающих перед более подробным моделированием."
+
+msgid "Simplified noise frame for a street and two point sources"
+msgstr "Упрощённый шумовой каркас для улицы и двух точечных источников"
+
+msgid ":func:`objectnat.calculate_simplified_noise_frame` for the street (line source, 80 dB at 1 m) and the two point sources of the same example, ``target_noise_db=40``, ``db_sim_step=5``. Without reflections and diffraction only the places in the line of sight of a source are reached."
+msgstr ":func:`objectnat.calculate_simplified_noise_frame` для улицы (линейный источник, 80 дБ на расстоянии 1 м) и двух точечных источников того же примера, ``target_noise_db=40``, ``db_sim_step=5``. Без отражений и дифракции звук доходит только до мест в прямой видимости источника."
+
+msgid "Limitations"
+msgstr "Ограничения"
+
+msgid "None of the models includes ground effect or meteorological refraction. :func:`objectnat.simulate_noise_grid` includes reflections of the first order and diffraction around one or two vertical edges in plan. It does not use building heights, so diffraction over roofs is not modelled, and places that sound reaches only around three or more corners receive reflections only, which can underestimate their level. :func:`objectnat.simulate_noise` and :func:`objectnat.calculate_simplified_noise_frame` include no diffraction."
+msgstr "Ни одна модель не учитывает влияние земли и метеорологическую рефракцию. :func:`objectnat.simulate_noise_grid` учитывает отражения первого порядка и дифракцию на одном или двух вертикальных рёбрах в плане. Высоты зданий в ней не используются, поэтому дифракция через крыши не моделируется, а места, куда звук попадает только вокруг трёх и более углов, получают только отражения, и их уровень может быть занижен. :func:`objectnat.simulate_noise` и :func:`objectnat.calculate_simplified_noise_frame` дифракцию не учитывают."
+
+msgid "Each source is described by one level and one characteristic frequency; spectra are not modelled, and the results are not equivalent to standardized calculation methods such as ISO 9613-2 or CNOSSOS-EU."
+msgstr "Каждый источник описан одним уровнем и одной характерной частотой; спектры не моделируются, и результаты не эквивалентны стандартизованным методам расчёта, таким как ISO 9613-2 или CNOSSOS-EU."
+
+msgid ":func:`objectnat.simulate_noise` and :func:`objectnat.calculate_simplified_noise_frame` combine sources by the band maximum; :func:`objectnat.simulate_noise_grid` sums energies."
+msgstr ":func:`objectnat.simulate_noise` и :func:`objectnat.calculate_simplified_noise_frame` объединяют источники по максимуму полосы; :func:`objectnat.simulate_noise_grid` суммирует энергии."
+
+msgid "Background on the wave-front model is given on the `project wiki <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__; the API reference on this page describes the current behaviour."
+msgstr "Описание волновой модели есть в `вики проекта <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__; справочник API на этой странице описывает текущее поведение."
+
+msgid "Example notebook"
+msgstr "Пример в ноутбуке"
+
+msgid ":doc:`examples/noise`"
+msgstr ":doc:`examples/noise`"
+

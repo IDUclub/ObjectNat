@@ -1,17 +1,17 @@
 # simplified version
 import geopandas as gpd
+import numpy as np
 import pandas as pd
-from shapely.ops import polygonize, unary_union
+from shapely.ops import unary_union
 
-from objectnat.methods.noise.noise_reduce import dist_to_target_db
+from objectnat.methods.noise.noise_reduce import dist_to_target_db, source_values
 from objectnat.methods.utils.geom_utils import (
+    clip_polygons,
     distribute_points_on_linestrings,
     distribute_points_on_polygons,
-    polygons_to_multilinestring,
+    overlay_by_value,
 )
 from objectnat.methods.visibility.visibility_analysis import get_visibility
-
-MAX_DB_VALUE = 194
 
 
 def calculate_simplified_noise_frame(
@@ -33,15 +33,15 @@ def calculate_simplified_noise_frame(
     This function provides a fast approximation of noise dispersion from a variety of source geometries, including
     points (e.g., traffic noise measurement points), lines (e.g., roads or railways), and polygons (e.g., industrial
     zones or buildings). Instead of simulating detailed wave interactions and reflections, it constructs an
-    envelope of potential noise exposure by buffering the source geometry and applying simplified decay formulas
-    based on sound power, frequency and temperature.
+    envelope of potential noise exposure from the visibility polygons of points sampled on the sources and a
+    distance decay that depends on the source level, frequency and temperature.
 
     Args:
         noise_sources (gpd.GeoDataFrame):
             A GeoDataFrame containing geometries of noise sources (Point, LineString,
             or Polygon). Each feature must have the following two columns:
 
-            - 'source_noise_db': Initial sound level at the source, in decibels (dB).
+            - 'source_noise_db': Sound level at 1 m from the source, in decibels (dB).
             - 'geometric_mean_freq_hz': Characteristic sound frequency (Hz) used to model distance-based attenuation.
 
             Values in 'source_noise_db' must not exceed the physical maximum of 194 dB. Missing or NaN values in
@@ -49,7 +49,7 @@ def calculate_simplified_noise_frame(
 
         obstacles (gpd.GeoDataFrame):
             A GeoDataFrame representing physical obstructions in the environment
-            (e.g., buildings, walls, terrain). These are used to build visibility masks that affect where sound can
+            (e.g., buildings, walls). These are used to build visibility masks that affect where sound can
             propagate. Geometry will be simplified for performance using a default tolerance of 1 unit.
 
         air_temperature (float):
@@ -58,7 +58,7 @@ def calculate_simplified_noise_frame(
             range may lead to inaccurate results.
 
         target_noise_db (float, default=40):
-            The minimum sound level threshold (in dB) to be modeled. Any value below
+            The minimum sound level threshold (in dB) to be modelled. Any value below
             this threshold is considered insignificant and will be excluded from the resulting noise frame.
             Default is 40 dB.
 
@@ -67,21 +67,21 @@ def calculate_simplified_noise_frame(
             spatial layers. Default is 5. Smaller values produce more detailed output but increase computation time.
 
         linestring_point_radius (float,  default=15):
-            The spacing radius (in meters) used when converting LineString
+            The spacing radius (in metres) used when converting LineString
             geometries into distributed point sources for simulation. Default is 15. Reducing this value improves
             detail along long lines.
 
         polygon_point_radius (float,  default=5):
-            The point spacing (in meters) for distributing sources within Polygon geometries.
+            The point spacing (in metres) for distributing sources within Polygon geometries.
             Default is 5. Points are sampled across the polygon’s surface and perimeter to
             represent the full sound-emitting area.
 
         visibility_parallel (bool, optional):
-            If True, visibility polygons for all distributed sample points are computed in parallel using
-            multiprocessing. Recommended when the number of sample points is large. Default is True.
+            Deprecated and ignored: visibility for all sample points is always computed
+            in parallel threads by the Rust extension.
 
         visibility_max_workers (int | None, optional):
-            Maximum number of parallel worker processes for visibility computation. None uses the system default.
+            Maximum number of threads for the visibility computation. None uses all cores.
 
     Returns:
         gpd.GeoDataFrame:
@@ -91,26 +91,18 @@ def calculate_simplified_noise_frame(
             the original coordinate reference system (CRS) of the input sources.
 
     Notes:
-        - The function does not model reflections or complex diffraction effects. It uses straight-line
+        - The function does not model reflections or diffraction. It uses straight-line
           visibility (line-of-sight) and a layered distance-decay approach for rapid estimation.
         - Obstacles are used for visibility masking only, not as reflectors or absorbers.
         - Output resolution and accuracy depend heavily on the geometry type and point distribution settings.
-        - Parallel visibility significantly improves performance for line and
-          polygon sources with many sample points.
         - Results are useful for quick noise mapping or for generating initial noise envelopes prior to more
           detailed simulations.
     """
 
-    required_columns = ["source_noise_db", "geometric_mean_freq_hz"]
-    for col in required_columns:
-        if col not in noise_sources.columns:
-            raise ValueError(f"'{col}' column is missing in provided GeoDataFrame")
-        if noise_sources[col].isnull().any():
-            raise ValueError(f"Column '{col}' contains missing (NaN) values")
-    if (noise_sources["source_noise_db"] > MAX_DB_VALUE).any():
-        raise ValueError(
-            f"One or more values in 'source_noise_db' column exceed the physical limit of {MAX_DB_VALUE} dB."
-        )
+    noise_sources = noise_sources.copy()
+
+    for column in ("source_noise_db", "geometric_mean_freq_hz"):
+        source_values(noise_sources, column, None)
     original_crs = noise_sources.crs
     if len(obstacles) > 0:
         obstacles = obstacles.copy()
@@ -121,7 +113,6 @@ def calculate_simplified_noise_frame(
     else:
         local_crs = noise_sources.estimate_utm_crs()
         noise_sources.to_crs(local_crs, inplace=True)
-        noise_sources.reset_index(drop=True)
 
     noise_sources = noise_sources.explode(ignore_index=True)
     noise_sources["geom_type"] = noise_sources.geom_type
@@ -246,19 +237,7 @@ def calculate_simplified_noise_frame(
         frame_result.append(noise_from_feature)
 
     noise_gdf = gpd.GeoDataFrame(pd.concat(frame_result, ignore_index=True), crs=local_crs)
-    polygons = gpd.GeoDataFrame(
-        geometry=list(polygonize(noise_gdf.geometry.apply(polygons_to_multilinestring).union_all())), crs=local_crs
-    )
-    polygons_points = polygons.copy()
-    polygons_points.geometry = polygons.representative_point()
-    sim_result = polygons_points.sjoin(noise_gdf, predicate="within").reset_index()
-    sim_result = sim_result.groupby("index").agg({"noise_level": "max"})
-    sim_result["geometry"] = polygons
-    sim_result = (
-        gpd.GeoDataFrame(sim_result, geometry="geometry", crs=local_crs).dissolve(by="noise_level").reset_index()
-    )
-
-    return sim_result.to_crs(original_crs)
+    return overlay_by_value(noise_gdf, "noise_level", how="max").to_crs(original_crs)
 
 
 def _eval_donuts_gdf(initial_geometry, dist_db, local_crs, clip_poly) -> gpd.GeoDataFrame:
@@ -270,9 +249,7 @@ def _eval_donuts_gdf(initial_geometry, dist_db, local_crs, clip_poly) -> gpd.Geo
         donuts.append(cur_buffer.difference(to_cut_off))
         don_values.append(dist_db[i][1])
         to_cut_off = cur_buffer
-    noise_from_feature = (
-        gpd.GeoDataFrame(geometry=donuts, data={"noise_level": don_values}, crs=local_crs)
-        .clip(clip_poly, keep_geom_type=True)
-        .explode(ignore_index=True)
+    parts, owner = clip_polygons(donuts, clip_poly)
+    return gpd.GeoDataFrame(
+        geometry=parts, data={"noise_level": np.asarray(don_values, dtype=float)[owner]}, crs=local_crs
     )
-    return noise_from_feature
