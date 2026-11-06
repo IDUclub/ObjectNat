@@ -2,6 +2,35 @@
 
 <!-- version list -->
 
+## v3.0.0 (2026-11-06)
+
+### Features
+
+- Objectnat 3.0 — Rust engine, 2.5D and grid methods, deprecated parameters removed
+  ([#23](https://github.com/IDUclub/ObjectNat/pull/23),
+  [`63f3a53`](https://github.com/IDUclub/ObjectNat/commit/63f3a53332494b86359268795f32185cb7622e3e))
+
+ObjectNat 3.0: the computationally intensive parts run in a compiled Rust engine, which also powers
+  the new 2.5D and grid methods. The parameters of the former Python implementations are removed.
+  See the new docs page "Upgrading to 3.0" (docs/upgrading.rst).
+
+Changes on top of 2.2.0: - get_visibility no longer has method, resolution or parallel. -
+  calculate_simplified_noise_frame no longer has visibility_parallel. - New "Upgrading to 3.0" page
+  in English and Russian. - The installation notes ask for IduEdu 2.4.2.
+
+BREAKING CHANGE: get_visibility no longer accepts method, resolution or parallel, and
+  calculate_simplified_noise_frame no longer accepts visibility_parallel; radius isochrones and
+  coverage follow the network by default (off_network_distance=150); building from source requires
+  Rust.
+
+### Breaking Changes
+
+- Get_visibility no longer accepts method, resolution or parallel, and
+  calculate_simplified_noise_frame no longer accepts visibility_parallel; radius isochrones and
+  coverage follow the network by default (off_network_distance=150); building from source requires
+  Rust.
+
+
 ## v2.2.0 (2026-11-06)
 
 ### Features
