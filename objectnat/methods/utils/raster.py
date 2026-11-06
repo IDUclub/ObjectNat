@@ -220,7 +220,7 @@ class Raster(NamedTuple):
         name: str | None = None,
         legend: bool = True,
         caption: str | None = None,
-        tiles: str = "OpenStreetMap",
+        tiles=None,
         **kwargs,
     ):
         """
@@ -232,7 +232,8 @@ class Raster(NamedTuple):
             cmap, vmin, vmax, opacity, name: As in :meth:`to_folium`.
             legend: Add a colour bar.
             caption: Colour bar caption (default ``name``).
-            tiles: Base map of a new map.
+            tiles: Base map of a new map: a name or URL as in ``folium.Map``, or a ``folium.TileLayer``. Defaults to
+                a light grey map (Esri World Light Gray Canvas), whose tiles end at zoom 16 and are stretched beyond.
             **kwargs: Passed to ``folium.Map`` when a new map is created.
 
         Returns:
@@ -247,6 +248,8 @@ class Raster(NamedTuple):
         overlay = self.to_folium(cmap=cmap, vmin=lo, vmax=hi, opacity=opacity, name=name)
         if m is None:
             (south, west), (north, east) = overlay.bounds
+            if tiles is None:
+                tiles = folium.TileLayer("Esri.WorldGrayCanvas", max_zoom=19, max_native_zoom=16)
             m = folium.Map(tiles=tiles, **kwargs)
             m.fit_bounds([[south, west], [north, east]])
         overlay.add_to(m)
@@ -290,7 +293,7 @@ def rasterize(points: gpd.GeoDataFrame, column: str, *, cell_size: float | None 
     """
     Turn grid points with values into a :class:`Raster`, one cell per point.
 
-    Grid points are what the grid methods return: receivers of :func:`get_insolation` and
+    Grid points are what the grid methods return: receivers of :func:`get_insolation` and of
     :func:`simulate_noise_grid` (``output="receivers"`` or ``"both"``), the cells of :func:`get_visibility_catchment`
     and :func:`get_viewshed_catchment` and the points of :func:`get_isovist_grid`. Their
     ``attrs`` record the grid (CRS, cell size, position), so the raster reproduces it exactly in the local metric
@@ -308,7 +311,7 @@ def rasterize(points: gpd.GeoDataFrame, column: str, *, cell_size: float | None 
         :class:`Raster` covering the points; cells without a point are ``NaN``.
 
     Examples:
-        >>> receivers = get_insolation(buildings, "2026-03-21", output="receivers")
+        >>> receivers = get_insolation(buildings, "2026-03-21")
         >>> raster = rasterize(receivers, "sun_hours")
         >>> raster.plot(cmap="inferno", vmin=0, vmax=14)
         >>> raster.explore(cmap="inferno", vmin=0, vmax=14, name="sun hours")
