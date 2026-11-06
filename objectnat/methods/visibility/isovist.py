@@ -31,7 +31,7 @@ ISOVIST_METRICS = (
     "std_radial",
     "skew_radial",
     "drift",
-    "view_share",
+    "visible_share",
     "open_share",
 )
 
@@ -78,7 +78,7 @@ def isovist_metrics(observers: np.ndarray, polygons: np.ndarray, view_distances:
     out["perimeter"] = perimeter
     with np.errstate(divide="ignore", invalid="ignore"):
         out["compactness"] = 4 * np.pi * area / perimeter**2
-    out["view_share"] = area / (np.pi * view_distances**2)
+    out["visible_share"] = area / (np.pi * view_distances**2)
 
     # --- per-edge geometry of every exterior ring, relative to its observer -----------------------------
     parts, part_owner = shapely.get_parts(polygons[valid], return_index=True)

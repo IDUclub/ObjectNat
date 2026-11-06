@@ -84,7 +84,7 @@ def get_visibility(
     """
     Compute visibility polygons for one or many observer points.
 
-    Each observer gets the exact area visible within its viewing radius: the view disc minus everything
+    Each observer gets the exact area visible within its view distance: the view disc minus everything
     hidden behind obstacle walls. Points and obstacles are reprojected to a locally estimated projected
     CRS (typically UTM) for the calculation, and observers are processed in parallel by ObjectNat's Rust
     extension.
@@ -97,9 +97,9 @@ def get_visibility(
         obstacles (gpd.GeoDataFrame):
             GeoDataFrame with obstacle geometries (Polygon, MultiPolygon, LineString,
             MultiLineString) in any CRS. If empty or ``None``, no occlusion is
-            applied and visibility is limited only by the viewing radius.
+            applied and visibility is limited only by the view distance.
         view_distance (float | None, optional):
-            Global viewing radius for all points (in metres). Used when the
+            Global view distance for all points (in metres). Used when the
             ``"visibility_distance"`` column is not present in ``point_from``.
             If ``None`` and the column is also missing, a ``ValueError`` is raised.
         method (Literal["accurate", "simple"], optional):
@@ -116,7 +116,7 @@ def get_visibility(
             (length of the occluding radial edges), ``n_occlusions``, ``min_radial``, ``max_radial``,
             ``mean_radial``, ``std_radial``, ``skew_radial`` (moments of the distance to the boundary over
             all directions, integrated exactly), ``drift`` (distance from the observer to the centroid),
-            ``view_share`` (area / area of the view disc) and ``open_share`` (share of the perimeter on the
+            ``visible_share`` (area / area of the view disc) and ``open_share`` (share of the perimeter on the
             view-distance limit). Observers inside an obstacle get NaN.
 
     Returns:
@@ -222,7 +222,7 @@ def get_isovist_grid(
             One observer point per open cell, in the CRS of ``area`` (of ``obstacles`` for a shapely geometry),
             with the isovist metric columns of :func:`get_visibility`: ``area``, ``perimeter``,
             ``compactness``, ``occlusivity``, ``n_occlusions``, ``min_radial``, ``max_radial``,
-            ``mean_radial``, ``std_radial``, ``skew_radial``, ``drift``, ``view_share`` and ``open_share``.
+            ``mean_radial``, ``std_radial``, ``skew_radial``, ``drift``, ``visible_share`` and ``open_share``.
             ``attrs`` record the grid for :func:`rasterize`.
 
     Raises:

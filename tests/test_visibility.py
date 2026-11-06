@@ -140,7 +140,7 @@ def test_isovist_metrics():
     assert len(field) == 100 - 2  # two cell centres (25, ±5) fall on the building
     probe = field.distance(Point(X0 - 5, Y0 - 5)).idxmin()
     single = get_visibility(field.loc[[probe]], building, 100, isovist_metrics=True)
-    assert field.at[probe, "view_share"] == pytest.approx(single["view_share"].iloc[0])
+    assert field.at[probe, "visible_share"] == pytest.approx(single["visible_share"].iloc[0])
     assert np.isfinite(rasterize(field, "drift").values).sum() == len(field)
 
 
