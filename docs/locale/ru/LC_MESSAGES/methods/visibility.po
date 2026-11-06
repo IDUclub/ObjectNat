@@ -37,8 +37,14 @@ msgstr "**Видимость 2.5D** (:func:`objectnat.get_viewshed`, :func:`obje
 msgid "The **catchment** functions count, for every cell of a grid, the observers that see it; the counts are drawn as a raster. :func:`objectnat.get_observer_points` places observers along the streets of an IduEdu graph. All calculations run in parallel threads in ObjectNat's Rust extension."
 msgstr "Функции **охвата** подсчитывают для каждой ячейки сетки наблюдателей, которые её видят; результат рисуется растром. :func:`objectnat.get_observer_points` размещает наблюдателей вдоль улиц графа IduEdu. Все расчёты выполняются в параллельных потоках в расширении ObjectNat на Rust."
 
-msgid "Grid results answer two different questions, and their values have different units. An **isovist field** (:func:`objectnat.get_isovist_grid`) describes what an observer standing in each cell sees, for example the visible share of the view disc. A **catchment** counts the observers that see each cell; its unit is the number of observers (or the sum of their weights) in 2D and in 2.5D alike."
-msgstr "Результаты на сетке отвечают на два разных вопроса, и их значения имеют разные единицы. **Поле изовист** (:func:`objectnat.get_isovist_grid`) описывает, что видит наблюдатель, стоящий в каждой ячейке, например видимую долю круга обзора. **Охват** подсчитывает наблюдателей, которые видят каждую ячейку; его единица — число наблюдателей (или сумма их весов) и в 2D, и в 2.5D."
+# | msgid "Grid results answer two different questions, and their values have
+# | different units. An **isovist field** (:func:`objectnat.get_isovist_grid`)
+# | describes what an observer standing in each cell sees, for example the
+# | visible share of the view disc. A **catchment** counts the observers that
+# | see each cell; its unit is the number of observers (or the sum of their
+# | weights) in 2D and in 2.5D alike."
+msgid "Grid results answer two different questions, and their values have different units. An **isovist field** (:func:`objectnat.get_isovist_grid`) describes what an observer standing in each cell sees, for example the visible share of the view disc: it looks out of the place. A **catchment** counts the observers that see each cell: it looks at the place from the streets. Its unit is the number of observers (or the sum of their weights) in 2D and in 2.5D alike. The middle of a large square has a high visible share, but a low catchment if few streets lead to it."
+msgstr "Результаты на сетке отвечают на два разных вопроса, и их значения имеют разные единицы. **Поле изовист** (:func:`objectnat.get_isovist_grid`) описывает, что видит наблюдатель, стоящий в каждой ячейке, например видимую долю круга обзора: оно смотрит из места наружу. **Охват** подсчитывает наблюдателей, которые видят каждую ячейку: он смотрит на место со стороны улиц. Его единица — число наблюдателей (или сумма их весов) и в 2D, и в 2.5D. У середины большой площади видимая доля высокая, а охват низкий, если к ней ведёт мало улиц."
 
 msgid "2D visibility polygons"
 msgstr "Полигоны видимости 2D"

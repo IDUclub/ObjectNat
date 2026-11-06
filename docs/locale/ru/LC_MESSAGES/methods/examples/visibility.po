@@ -113,9 +113,20 @@ msgstr "`get_isovist_grid` ставит наблюдателей по сетке
 msgid "5. Your own area"
 msgstr "5\\. Своя территория"
 
-msgid "The catchment of the whole district: observers every 20 m along the pedestrian graph of IduEdu (`get_observer_points`) and all building footprints. Tens of thousands of observers take a few seconds. The cells are then kept inside the district boundary; rows of the result can be filtered, `rasterize` still restores the grid. Counts depend on the observer spacing, so compare rasters made with the same spacing. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
-msgstr "Охват всего района: наблюдатели через каждые 20 м вдоль пешеходного графа IduEdu (`get_observer_points`) и все контуры зданий. Десятки тысяч наблюдателей рассчитываются за несколько секунд. Затем оставляются ячейки внутри границы района; строки результата можно фильтровать, `rasterize` всё равно восстанавливает сетку. Значения зависят от шага наблюдателей, поэтому сравнивайте растры, построенные с одинаковым шагом. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
+# | msgid "The catchment of the whole district: observers every 20 m along the
+# | pedestrian graph of IduEdu (`get_observer_points`) and all building
+# | footprints. Tens of thousands of observers take a few seconds. The cells
+# are
+# | then kept inside the district boundary; rows of the result can be
+# filtered,
+# | `rasterize` still restores the grid. Counts depend on the observer
+# spacing,
+# | so compare rasters made with the same spacing. `Raster.plot` draws the
+# | raster, `Raster.explore` shows it on a web map with a colour bar and
+# | `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
+msgid "Observers every 20 m along the pedestrian graph of the district from IduEdu (`get_observer_points`); the buildings are only obstacles, they add no observers. Some 44 thousand observers take a few seconds. The raster covers everything the observers see, also beyond the district boundary. Counts depend on the observer spacing, so compare rasters made with the same spacing. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
+msgstr "Наблюдатели через каждые 20 м вдоль пешеходного графа района из IduEdu (`get_observer_points`); здания служат только препятствиями и наблюдателей не добавляют. Около 44 тысяч наблюдателей рассчитываются за несколько секунд. Растр покрывает всё, что видят наблюдатели, в том числе за границей района. Значения зависят от шага наблюдателей, поэтому сравнивайте растры, построенные с одинаковым шагом. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
 
-msgid "The isovist field of section 3 is obtained for any area in the same way, for example `rasterize(get_isovist_grid(my_obstacles, my_area, view_distance=200, cell_size=5), \"visible_share\")`. Its value in a cell describes what an observer standing there sees, whereas the catchment counts the observers that see the cell."
-msgstr "Поле изовист из раздела 3 строится для любой территории так же, например `rasterize(get_isovist_grid(my_obstacles, my_area, view_distance=200, cell_size=5), \"visible_share\")`. Его значение в ячейке описывает, что видит стоящий там наблюдатель, а охват считает наблюдателей, которые видят эту ячейку."
+msgid "The catchment and `visible_share` answer different questions. `visible_share` (an isovist metric, section 3) looks out of a place: how much of its view disc an observer standing there sees. The catchment looks at a place from all observers: how many of them see it, that is how visible it is from the streets. The middle of a large square has a high `visible_share`, but a low catchment if few streets lead to it. The isovist field of section 3 is obtained for any area in the same way, for example `rasterize(get_isovist_grid(my_obstacles, my_area, view_distance=200, cell_size=5), \"visible_share\")`."
+msgstr "Охват и `visible_share` отвечают на разные вопросы. `visible_share` (метрика изовисты, раздел 3) смотрит из места наружу: какую долю круга обзора видит наблюдатель, стоящий в нём. Охват смотрит на место со стороны всех наблюдателей: сколько из них его видят, то есть насколько оно заметно с улиц. У середины большой площади `visible_share` высокий, а охват низкий, если к ней ведёт мало улиц. Поле изовист из раздела 3 строится для любой территории так же, например `rasterize(get_isovist_grid(my_obstacles, my_area, view_distance=200, cell_size=5), \"visible_share\")`."
 

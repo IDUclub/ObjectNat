@@ -21,8 +21,10 @@ streets of an IduEdu graph. All calculations run in parallel threads in ObjectNa
 
 Grid results answer two different questions, and their values have different units. An **isovist field**
 (:func:`objectnat.get_isovist_grid`) describes what an observer standing in each cell sees, for example the
-visible share of the view disc. A **catchment** counts the observers that see each cell; its unit is the number of
-observers (or the sum of their weights) in 2D and in 2.5D alike.
+visible share of the view disc: it looks out of the place. A **catchment** counts the observers that see each cell:
+it looks at the place from the streets. Its unit is the number of observers (or the sum of their weights) in 2D and
+in 2.5D alike. The middle of a large square has a high visible share, but a low catchment if few streets lead to
+it.
 
 2D visibility polygons
 ----------------------

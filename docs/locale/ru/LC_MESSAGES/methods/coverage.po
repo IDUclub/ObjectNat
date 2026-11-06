@@ -302,8 +302,6 @@ msgstr "Ступенчатые зоны покрытия для geometry_type No
 # | ``\"ways\"`` (buffered streets) and ``\"separate\"`` (independent
 # buffers).
 # | Background: pedestrian streets of the graph and the district boundary."
-# | msgid "Stepped coverage zones up to 15 minutes in bands of 2 minutes for
-# the
 # | nodes, clipped to the district with ``zone``), ``\"radius\"`` (the cells
 # | clipped to the radius buffers and to the district), ``\"ways\"`` (buffered
 # | streets) and ``\"separate\"`` (independent buffers). Background:
