@@ -55,7 +55,7 @@ and the column ``dist`` (minutes or metres).
 Figures
 -------
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_v2.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_v3.png
    :alt: Isochrones with geometry_type ways and radius, and isochrones of three origins
    :align: center
    :width: 100%
@@ -63,7 +63,7 @@ Figures
    15-minute isochrone on the intermodal graph of Vasilyevsky Island with ``geometry_type="ways"`` and
    ``"radius"``, and 8-minute ``"radius"`` isochrones of three origins (one polygon per origin). Background: pedestrian streets of the graph and the district boundary.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v2.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v3.png
    :alt: Stepped isochrones with geometry_type ways, radius and separate
    :align: center
    :width: 100%

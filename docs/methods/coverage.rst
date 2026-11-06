@@ -58,7 +58,7 @@ in minutes or metres). All results are in the CRS of the input services.
 Figures
 -------
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_v2.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_v3.png
    :alt: Coverage zones by time, by distance and by radius
    :align: center
    :width: 100%
@@ -67,7 +67,7 @@ Figures
    within 600 m of network distance, and the graph-free :func:`objectnat.get_radius_coverage` with ``radius=800``.
    Background: pedestrian streets of the graph and the district boundary.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_stepped_4types_v2.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_stepped_4types_v3.png
    :alt: Stepped coverage zones for geometry_type None, radius, ways and separate
    :align: center
    :width: 100%
