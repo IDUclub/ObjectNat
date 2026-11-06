@@ -1,7 +1,5 @@
 """2.5D visibility: viewsheds and viewshed catchment zones among buildings of known height and terrain."""
 
-from typing import Literal, Sequence
-
 import geopandas as gpd
 import numpy as np
 import shapely
@@ -12,9 +10,9 @@ from objectnat._rust import (  # pylint: disable=no-name-in-module
     viewshed_cells,
     viewshed_count_grid,
 )
-from objectnat.methods.utils.raster import label_zones, resolve_output
+from objectnat.methods.utils.raster import label_zones
 from objectnat.methods.utils.scene import Scene, TerrainInput, kernel_scene, prepare_scene
-from objectnat.methods.visibility.catchment import _empty_result, _explicit_bounds, _finish, count_grid_result
+from objectnat.methods.visibility.catchment import cell_points, empty_cells
 
 logger = config.logger
 
@@ -149,19 +147,17 @@ def get_viewshed_catchment(
     cell_size: float = 5.0,
     include_roofs: bool = False,
     weight_column: str | None = None,
-    classes: int | Sequence[float] = 5,
-    output: Literal["zones", "cells", "both"] = "zones",
     max_workers: int | None = None,
-) -> gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+) -> gpd.GeoDataFrame:
     """
-    Build 2.5D visibility catchment zones: places classified by how many observers can see them, over
-    buildings of known height and terrain.
+    Count, for every place around the observers, how many of them see it, over buildings of known height and
+    terrain (the 2.5D visibility catchment).
 
     The 2.5D counterpart of :func:`get_visibility_catchment`: every cell around the observers gets the number
     of observers (or the sum of their weights) whose line of sight to the cell centre at ``target_height`` is
     clear, as in :func:`get_viewshed`. Observers stand on the ground with their eyes ``observer_height`` above
-    the terrain; observers inside a building footprint are left out. With ``include_roofs`` the roofs are
-    classified too, which shows the roofs and building tops seen from the streets.
+    the terrain; observers inside a building footprint are left out. With ``include_roofs`` roof cells are
+    counted too, which shows the roofs and building tops seen from the streets.
 
     Args:
         observers (gpd.GeoDataFrame):
@@ -183,25 +179,22 @@ def get_viewshed_catchment(
         cell_size (float, optional):
             Cell side in metres. Defaults to 5.
         include_roofs (bool, optional):
-            Classify roof cells too. Defaults to ``False``.
-        weight_column, classes, output:
-            Observer weights, class definition and cell output, as in :func:`get_visibility_catchment`.
+            Count roof cells too. Defaults to ``False``.
+        weight_column (str | None, optional):
+            Observer weights, as in :func:`get_visibility_catchment`.
         max_workers (int | None, optional):
             Number of threads (``None`` uses all cores).
 
     Returns:
-        gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
-            One (Multi)Polygon per class in the CRS of ``observers``, as in :func:`get_visibility_catchment`:
-            ``visibility_class`` (``1`` is the least visible) and ``count_min``/``count_max`` (or
-            ``weight_min``/``weight_max``). ``output="cells"`` or ``"both"`` returns the seen cells, as in
-            :func:`get_visibility_catchment`.
+        gpd.GeoDataFrame:
+            The cells seen by at least one observer, as points at the cell centres in the CRS of ``observers``,
+            with ``count`` (and ``weight``), as in :func:`get_visibility_catchment`; :func:`rasterize` turns
+            them into a :class:`Raster`.
 
     Raises:
-        ValueError: On empty observers, a missing view distance, bad weights or classes, or a grid larger than
-            30 million cells.
+        ValueError: On empty observers, a missing view distance, bad weights or a grid larger than 30 million
+            cells.
     """
-    lower_bounds = _explicit_bounds(classes)
-    output = resolve_output(output, "cells")
     scene, points, radius, eye_offset = _setup(
         observers, buildings, view_distance, observer_height,
         height_column, storeys_column, storey_height, default_height,
@@ -227,7 +220,7 @@ def get_viewshed_catchment(
     if weights is not None:
         usable &= weights > 0
     if not usable.any():
-        return _finish(_empty_result(value_name, observers.crs), None, output)
+        return empty_cells(value_name, observers.crs)
     oxy, radius, eye_offset = oxy[usable], radius[usable], eye_offset[usable]
     weights = weights[usable] if weights is not None else None
 
@@ -247,9 +240,7 @@ def get_viewshed_catchment(
         n_threads=max_workers,
         **kwargs,
     )
-    bounds = classes if lower_bounds is None else lower_bounds
-    grid = (float(x0), float(y0), float(cell))
-    return count_grid_result(counts, sums, bounds, grid, scene.local_crs, observers.crs, output)
+    return cell_points(counts, sums, (float(x0), float(y0), float(cell)), scene.local_crs, observers.crs)
 
 
 def _setup(

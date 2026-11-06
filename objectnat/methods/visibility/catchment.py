@@ -1,7 +1,4 @@
-"""Visibility catchment areas: how many observers see each place, classified into zones."""
-
-from collections.abc import Sequence
-from typing import Literal
+"""Visibility catchment: how many observers see each place, counted on a grid of cells."""
 
 import geopandas as gpd
 import numpy as np
@@ -11,13 +8,12 @@ from iduedu import UrbanGraph
 from objectnat import config
 from objectnat._rust import visibility_count_grid  # pylint: disable=no-name-in-module
 from objectnat.methods.accessibility._utils import geometry_edges
-from objectnat.methods.utils.raster import grid_attrs, label_zones, resolve_output
+from objectnat.methods.utils.raster import grid_attrs
 from objectnat.methods.visibility._native import DEFAULT_QUAD_SEGS, geometries_to_segments
 
 logger = config.logger
 
 MAX_GRID_CELLS = 200_000_000
-MAX_CLASSES = 255
 OBSTACLE_GEOM_TYPES = ("Polygon", "MultiPolygon", "LineString", "MultiLineString")
 
 
@@ -28,21 +24,16 @@ def get_visibility_catchment(
     view_distance: float | None = None,
     cell_size: float = 5.0,
     weight_column: str | None = None,
-    classes: int | Sequence[float] = 5,
-    output: Literal["zones", "cells", "both"] = "zones",
     max_workers: int | None = None,
-) -> gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+) -> gpd.GeoDataFrame:
     """
-    Build visibility catchment zones: places classified by how many observers can see them.
+    Count, for every place around the observers, how many of them see it (the visibility catchment).
 
-    The area around the observers is split into square cells. A cell is visible from an observer when its
-    centre lies inside the observer's exact visibility polygon (see :func:`get_visibility`); each cell gets the
-    number of such observers, or the sum of their weights. Cells seen by nobody (including cells inside
-    obstacles) are left out, the rest are grouped into classes, and every class is returned as one polygonal
-    zone.
-
-    With observers placed densely along streets (see :func:`get_observer_points`) the zones show where
-    objects can be seen from most often: the visual catchment of facades, squares and landmarks.
+    The area within ``view_distance`` of the observers is split into square cells. A cell counts an observer when
+    its centre lies inside the observer's exact visibility polygon (see :func:`get_visibility`); with
+    ``weight_column`` it sums the observers' weights instead. With observers placed densely along streets (see
+    :func:`get_observer_points`) the counts show where objects are seen from most often: the visual catchment of
+    facades, squares and landmarks. :func:`rasterize` turns the result into a :class:`Raster`.
 
     Args:
         observers (gpd.GeoDataFrame):
@@ -54,36 +45,26 @@ def get_visibility_catchment(
             View distance of every observer, in metres. Used when ``observers`` has no
             ``"visibility_distance"`` column; one of the two is required.
         cell_size (float, optional):
-            Cell side in metres. Smaller cells give finer zone outlines at a quadratic memory and time cost.
+            Cell side in metres. Halving it gives four times as many cells, and memory and time grow with them.
         weight_column (str | None, optional):
             Column of non-negative observer weights (e.g. pedestrian flow). Cells then sum the weights of the
             observers that see them instead of counting them. Observers with zero or missing weight are
             ignored.
-        classes (int | Sequence[float], optional):
-            Either the number of classes, built from quantiles of the non-zero cell values (classes with equal
-            bounds are merged, so fewer may be returned), or explicit ascending class lower bounds in observer
-            counts (or weight sums), e.g. ``[1, 5, 20]``: cells below the first bound are left out. Explicit
-            bounds make zones comparable between runs.
-        output (str, optional):
-            ``"zones"`` (default) for the class zones, ``"cells"`` for the cells seen by at least one observer as
-            points at the cell centres (no zone polygons are built), ``"both"`` for the tuple ``(zones, cells)``.
         max_workers (int | None, optional):
             Number of threads (``None`` uses all cores).
 
     Returns:
-        gpd.GeoDataFrame | tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
-            One (Multi)Polygon per class, in the CRS of ``observers``, sorted by ``visibility_class`` (``1`` is
-            the least visible class). Columns ``count_min`` / ``count_max`` (or ``weight_min`` / ``weight_max``
-            with ``weight_column``) give the range of cell values in the class. Zone outlines follow the cell
-            grid. With ``output="cells"`` (or ``"both"``) the cells, with ``count`` (and
-            ``weight`` with ``weight_column``) and ``visibility_class`` (``0`` for cells below the lowest class
-            bound) of every seen cell; :func:`rasterize` turns a column into a :class:`Raster`.
+        gpd.GeoDataFrame:
+            The cells seen by at least one observer, as points at the cell centres in the CRS of ``observers``,
+            with ``count`` (the number of observers that see the cell) and, with ``weight_column``, ``weight``
+            (the sum of their weights). Cells seen by nobody, including cells inside obstacles, are left out.
+            ``attrs`` record the grid, so :func:`rasterize` rebuilds it exactly.
 
     Raises:
         TypeError: If ``observers`` is not a GeoDataFrame.
-        ValueError: If ``observers`` is empty or has no CRS, if no view distance is given, if ``cell_size`` or
-            ``classes`` is invalid, if ``weight_column`` is missing or contains negative values, or if the grid
-            would exceed 200 million cells.
+        ValueError: If ``observers`` is empty or has no CRS, if no view distance is given, if ``cell_size`` is
+            invalid, if ``weight_column`` is missing or contains negative values, or if the grid would exceed
+            200 million cells.
 
     Notes:
         Visibility is symmetric, so the value of a cell is also the number of observers visible *from* it.
@@ -96,9 +77,6 @@ def get_visibility_catchment(
         raise ValueError("GeoDataFrame 'observers' must have a CRS.")
     if not np.isfinite(cell_size) or cell_size <= 0:
         raise ValueError(f"cell_size must be a positive number; got {cell_size!r}")
-    lower_bounds = _explicit_bounds(classes)
-    output = resolve_output(output, "cells")
-
     original_crs = observers.crs
     local_crs = observers.estimate_utm_crs()
     points_local = observers.to_crs(local_crs)
@@ -131,7 +109,7 @@ def get_visibility_catchment(
         weights = weights[usable]
     value_name = "count" if weights is None else "weight"
     if len(coords) == 0:
-        return _finish(_empty_result(value_name, original_crs), None, output)
+        return empty_cells(value_name, original_crs)
 
     reach = float(radii.max())
     x0 = np.floor((coords[:, 0].min() - reach) / cell_size) * cell_size
@@ -157,9 +135,7 @@ def get_visibility_catchment(
         n_threads=max_workers,
         one_sided=one_sided,
     )
-    grid = (float(x0), float(y0), float(cell_size))
-    bounds = classes if lower_bounds is None else lower_bounds
-    return count_grid_result(counts, weight_sums, bounds, grid, local_crs, original_crs, output)
+    return cell_points(counts, weight_sums, (float(x0), float(y0), float(cell_size)), local_crs, original_crs)
 
 
 def get_observer_points(urban_graph: UrbanGraph, *, spacing: float = 15.0) -> gpd.GeoDataFrame:
@@ -206,34 +182,6 @@ def get_observer_points(urban_graph: UrbanGraph, *, spacing: float = 15.0) -> gp
     return result.to_crs(crs) if crs is not None and result.crs != crs else result
 
 
-def _explicit_bounds(classes) -> np.ndarray | None:
-    """Validated explicit class bounds, or ``None`` for a class count."""
-    if isinstance(classes, (int, np.integer)) and not isinstance(classes, bool):
-        if not 1 <= classes <= MAX_CLASSES:
-            raise ValueError(f"classes must be between 1 and {MAX_CLASSES}; got {classes}")
-        return None
-    bounds = np.asarray(classes, dtype="float64").reshape(-1)
-    if bounds.size == 0 or bounds.size > MAX_CLASSES or not np.isfinite(bounds).all():
-        raise ValueError(f"classes must be an int or 1..{MAX_CLASSES} finite class lower bounds; got {classes!r}")
-    if (np.diff(bounds) <= 0).any():
-        raise ValueError(f"class lower bounds must be strictly ascending; got {classes!r}")
-    return bounds
-
-
-def _classify(values: np.ndarray, seen: np.ndarray, classes) -> np.ndarray:
-    """Class label of every cell (``0`` = left out) from a class count or explicit lower bounds."""
-    if isinstance(classes, np.ndarray):
-        bounds = classes
-    else:
-        visible = values[seen]
-        if visible.size == 0:
-            return np.zeros(values.shape, dtype="uint8")
-        bounds = np.unique(np.quantile(visible, np.linspace(0, 1, classes + 1)[:-1], method="lower"))
-    labels = np.searchsorted(bounds, values, side="right").astype("uint8")
-    labels[~seen] = 0
-    return labels
-
-
 def _obstacle_segments(obstacles, local_crs, bbox) -> tuple[np.ndarray, np.ndarray]:
     if obstacles is None or len(obstacles) == 0:
         return geometries_to_segments([])
@@ -243,56 +191,22 @@ def _obstacle_segments(obstacles, local_crs, bbox) -> tuple[np.ndarray, np.ndarr
     return geometries_to_segments(obstacles_local.geometry.values)
 
 
-def count_grid_result(counts, weight_sums, classes, grid, local_crs, crs, output: str):
-    """Class zones and/or seen cells of a grid of observer counts (and weight sums), as ``output`` asks."""
-    value_name = "count" if weight_sums is None else "weight"
-    values = counts.astype("float64") if weight_sums is None else weight_sums
-    labels = _classify(values, counts > 0, classes)
-    cells = cell_points(counts, weight_sums, labels, grid, local_crs, crs) if output != "zones" else None
-    if output == "cells":
-        return cells
-    if not labels.any():
-        return _finish(_empty_result(value_name, crs), cells, output)
-    x0, y0, cell = grid
-    rows = []
-    for label, geometry in label_zones(labels, (x0, y0), cell).items():
-        in_class = values[labels == label]
-        rows.append(
-            {
-                "visibility_class": label,
-                f"{value_name}_min": float(in_class.min()),
-                f"{value_name}_max": float(in_class.max()),
-                "geometry": geometry,
-            }
-        )
-    result = gpd.GeoDataFrame(rows, geometry="geometry", crs=local_crs)
-    if value_name == "count":
-        result = result.astype({"count_min": "int64", "count_max": "int64"})
-    return _finish(result.to_crs(crs), cells, output)
-
-
-def cell_points(counts, weight_sums, labels, grid, local_crs, crs) -> gpd.GeoDataFrame:
-    """Centres of the cells seen by at least one observer, with their count, weight sum and class."""
+def cell_points(counts, weight_sums, grid, local_crs, crs) -> gpd.GeoDataFrame:
+    """Centres of the cells seen by at least one observer, with their count (and weight sum)."""
     x0, y0, cell = grid
     j, i = np.nonzero(counts > 0)
     data = {"count": counts[j, i].astype("int64")}
     if weight_sums is not None:
         data["weight"] = weight_sums[j, i].astype("float64")
-    data["visibility_class"] = labels[j, i].astype("int64")
     points = shapely.points(x0 + (i + 0.5) * cell, y0 + (j + 0.5) * cell)
     cells = gpd.GeoDataFrame(data, geometry=points, crs=local_crs).to_crs(crs)
     cells.attrs.update(grid_attrs(local_crs, cell, (x0 + 0.5 * cell, y0 + 0.5 * cell)))
     return cells
 
 
-def _finish(zones: gpd.GeoDataFrame, cells: gpd.GeoDataFrame | None, output: str):
-    if output == "zones":
-        return zones
-    if cells is None:
-        cells = gpd.GeoDataFrame({"count": [], "visibility_class": []}, geometry=[], crs=zones.crs)
-    return cells if output == "cells" else (zones, cells)
-
-
-def _empty_result(value_name: str, crs) -> gpd.GeoDataFrame:
-    columns = {"visibility_class": [], f"{value_name}_min": [], f"{value_name}_max": []}
+def empty_cells(value_name: str, crs) -> gpd.GeoDataFrame:
+    """No cell is seen (no usable observer)."""
+    columns = {"count": np.array([], dtype="int64")}
+    if value_name == "weight":
+        columns["weight"] = np.array([], dtype="float64")
     return gpd.GeoDataFrame(columns, geometry=gpd.GeoSeries([], crs=crs), crs=crs)

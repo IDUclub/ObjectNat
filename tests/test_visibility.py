@@ -177,12 +177,12 @@ def test_viewshed_catchment_from_a_hilltop():
     y = np.arange(300, -301, -10.0)
     hill = np.maximum(0.0, 40 - 0.5 * np.hypot(x[None, :], y[:, None]))
     terrain = (hill, (10.0, 0.0, X0 - 305, 0.0, -10.0, Y0 + 305), CRS)
-    kwargs = {"view_distance": 200, "cell_size": 5, "classes": [1]}
+    kwargs = {"view_distance": 200, "cell_size": 5}
 
     from_hill = get_viewshed_catchment(observers, house, terrain=terrain, **kwargs)
     from_ground = get_viewshed_catchment(observers, house, **kwargs)
     behind = Point(X0 + 170, Y0)  # the sight line clears the far wall (10 m at 110 m) from about 147 m on
     # eyes stand 1.6 m above the hilltop, so the ground behind the house shows over its roof
-    assert from_hill.union_all().covers(behind)
-    assert not from_ground.union_all().covers(behind)
-    assert from_hill["count_max"].max() == 4
+    assert from_hill.distance(behind).min() < 5
+    assert from_ground.distance(behind).min() > 5
+    assert from_hill["count"].max() == 4

@@ -19,52 +19,30 @@ WALL = gpd.GeoDataFrame(geometry=[box(X0 - 0.5, Y0 - 50, X0 + 0.5, Y0 + 50)], cr
 
 def test_single_observer_without_obstacles_sees_its_disc():
     observers = _observers((0, 0)).to_crs(4326)
-    result, cells = get_visibility_catchment(observers, None, view_distance=100, cell_size=2, output="both")
+    cells = get_visibility_catchment(observers, None, view_distance=100, cell_size=2)
 
-    assert result.crs == observers.crs
-    assert result["visibility_class"].tolist() == [1]
-    assert result[["count_min", "count_max"]].values.tolist() == [[1, 1]]
-    zone = result.to_crs(CRS).geometry.iloc[0]
-    assert zone.is_valid
-    # the zone follows the cell grid: its area differs from the disc by at most one cell along the perimeter
-    assert zone.area == pytest.approx(np.pi * 100**2, abs=2 * np.pi * 100 * 2)
-    # the seen cells are the zone, cell by cell
-    assert (cells["count"] == 1).all() and (cells["visibility_class"] == 1).all()
+    assert cells.crs == observers.crs
+    assert (cells["count"] == 1).all()
+    # the seen cells cover the disc up to one cell along its perimeter
     raster = rasterize(cells, "count")
-    assert np.nansum(raster.values) * raster.cell_size**2 == pytest.approx(zone.area)
+    area = np.nansum(raster.values) * raster.cell_size**2
+    assert area == pytest.approx(np.pi * 100**2, abs=2 * np.pi * 100 * 2)
 
 
-@pytest.mark.parametrize("obstacles, expected_classes", [(None, [1, 2]), (WALL, [1])])
-def test_wall_separates_the_observers(obstacles, expected_classes):
+@pytest.mark.parametrize("obstacles, most_observers", [(None, 2), (WALL, 1)])
+def test_wall_separates_the_observers(obstacles, most_observers):
     observers = _observers((-10, 0), (10, 0))
-    result = get_visibility_catchment(observers, obstacles, view_distance=30, cell_size=1, classes=[1, 2])
+    cells = get_visibility_catchment(observers, obstacles, view_distance=30, cell_size=1)
 
-    assert result["visibility_class"].tolist() == expected_classes
-    assert result["count_max"].max() == len(expected_classes)
+    assert sorted(cells["count"].unique()) == list(range(1, most_observers + 1))
 
 
 def test_weights_are_summed():
     observers = _observers((-10, 0), (10, 0), flow=[1.0, 3.0])
-    result = get_visibility_catchment(
-        observers, None, view_distance=30, cell_size=1, weight_column="flow", classes=[1, 2, 4]
-    )
+    cells = get_visibility_catchment(observers, None, view_distance=30, cell_size=1, weight_column="flow")
 
-    assert result[["visibility_class", "weight_min", "weight_max"]].values.tolist() == [
-        [1, 1.0, 1.0],
-        [2, 3.0, 3.0],
-        [3, 4.0, 4.0],
-    ]
-    assert result.geometry.is_valid.all()
-
-
-def test_quantile_classes_split_the_values():
-    observers = _observers(*[(x, 0) for x in range(0, 50, 5)])
-    result = get_visibility_catchment(observers, None, view_distance=40, cell_size=2, classes=3)
-
-    assert result["visibility_class"].tolist() == [1, 2, 3]
-    assert (result["count_min"].to_numpy()[1:] > result["count_max"].to_numpy()[:-1]).all()
-    assert result["count_max"].max() == len(observers)
-    assert not result.geometry.iloc[0].intersects(result.geometry.iloc[2].buffer(-0.1))
+    assert sorted(cells["weight"].unique()) == [1.0, 3.0, 4.0]
+    assert sorted(cells["count"].unique()) == [1, 2]
 
 
 @pytest.mark.parametrize(
@@ -72,8 +50,6 @@ def test_quantile_classes_split_the_values():
     [
         ({}, "view_distance"),
         ({"view_distance": 10, "cell_size": 0}, "cell_size"),
-        ({"view_distance": 10, "classes": [3, 1]}, "ascending"),
-        ({"view_distance": 10, "classes": 0}, "classes"),
         ({"view_distance": 10, "weight_column": "missing"}, "weight_column"),
     ],
 )

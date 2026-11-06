@@ -14,7 +14,7 @@ MAX_LABEL = 255  # label_rings takes uint8 labels
 
 
 def resolve_output(output: str, points: str) -> str:
-    """Check ``output`` of a grid method: ``"zones"``, ``points`` (``"receivers"`` or ``"cells"``) or ``"both"``."""
+    """Check ``output`` of a grid method: ``"zones"``, ``points`` (e.g. ``"receivers"``) or ``"both"``."""
     if output not in ("zones", points, "both"):
         raise ValueError(f'output must be "zones", "{points}" or "both"; got {output!r}')
     return output
@@ -291,9 +291,8 @@ def rasterize(points: gpd.GeoDataFrame, column: str, *, cell_size: float | None 
     Turn grid points with values into a :class:`Raster`, one cell per point.
 
     Grid points are what the grid methods return: receivers of :func:`get_insolation` and
-    :func:`simulate_noise_grid` (``output="receivers"`` or ``"both"``), cells of :func:`get_visibility_catchment`
-    and :func:`get_viewshed_catchment` (``output="cells"`` or ``"both"``) and the points of
-    :func:`get_isovist_grid`. Their
+    :func:`simulate_noise_grid` (``output="receivers"`` or ``"both"``), the cells of :func:`get_visibility_catchment`
+    and :func:`get_viewshed_catchment` and the points of :func:`get_isovist_grid`. Their
     ``attrs`` record the grid (CRS, cell size, position), so the raster reproduces it exactly in the local metric
     CRS of the calculation, whatever CRS the points were returned in, and also after filtering rows.
 
