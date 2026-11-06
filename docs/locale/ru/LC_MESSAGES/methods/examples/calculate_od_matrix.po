@@ -1,0 +1,58 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Building-to-service travel-time matrix"
+msgstr "Матрица времени в пути от зданий до сервисов"
+
+msgid "This notebook computes the matrix of travel times from the example buildings to the example services on an intermodal graph (walk + public transport) with IduEdu's `od_matrix` and stores it in `examples_data/matrix_time.parquet` for the [provision example](provision.ipynb)."
+msgstr "Этот ноутбук рассчитывает матрицу времени в пути от зданий из примера до сервисов из примера по интермодальному графу (пешком + общественный транспорт) функцией `od_matrix` из IduEdu и сохраняет её в `examples_data/matrix_time.parquet` для [примера обеспеченности](provision.ipynb)."
+
+msgid "The last section, *Your own area*, explains how to compute the matrix for another territory."
+msgstr "Последний раздел, *Своя территория*, объясняет, как рассчитать матрицу для другой территории."
+
+msgid "1. Buildings and services"
+msgstr "1\\. Здания и сервисы"
+
+msgid "2. Territory"
+msgstr "2\\. Территория"
+
+msgid "The convex hull of all buildings and services, buffered by 0.001° (about 60–110 m), defines the graph extent."
+msgstr "Выпуклая оболочка всех зданий и сервисов с буфером 0,001° (около 60–110 м) задаёт границы графа."
+
+msgid "3. Intermodal graph"
+msgstr "3\\. Интермодальный граф"
+
+msgid "The territory is cut out of the Geofabrik extract of the Northwestern Federal District (IduEdu >= 2.4); the same call without the `with` block downloads the data from the Overpass API."
+msgstr "Территория вырезается из выгрузки Geofabrik по Северо-Западному федеральному округу (IduEdu >= 2.4); тот же вызов без блока `with` скачивает данные из Overpass API."
+
+msgid "4. Travel-time matrix"
+msgstr "4\\. Матрица времени в пути"
+
+msgid "`od_matrix` snaps origins and destinations to graph nodes and runs Dijkstra searches with the edge weight `weight` (`\"time_min\"`, minutes) up to `threshold` (45 minutes). Pairs beyond the threshold are unreachable."
+msgstr "`od_matrix` привязывает точки отправления и назначения к узлам графа и выполняет поиски Дейкстры с весом рёбер `weight` (`\"time_min\"`, минуты) до `threshold` (45 минут). Пары за пределами порога недостижимы."
+
+msgid "5. Storage"
+msgstr "5\\. Сохранение"
+
+msgid "The matrix is stored for the provision example."
+msgstr "Матрица сохраняется для примера обеспеченности."
+
+msgid "6. Your own area"
+msgstr "6\\. Своя территория"
+
+msgid "The notebook is the recipe for another area: put your buildings and services (GeoDataFrames in any CRS) into `buildings` and `services` in section 1 and run it. The territory around them, the graph and the matrix are then computed from them; `download_osm_pbf` chooses the Geofabrik extract itself when `region` is left out. Save the matrix under your own name and pass it to `get_service_provision` as in the [provision example](provision.ipynb)."
+msgstr "Этот ноутбук и есть рецепт для другой территории: запишите свои здания и сервисы (GeoDataFrame в любой системе координат) в `buildings` и `services` в разделе 1 и выполните его. Территория вокруг них, граф и матрица рассчитаются по ним; если `region` не задан, `download_osm_pbf` сам выбирает выгрузку Geofabrik. Сохраните матрицу под своим именем и передайте её в `get_service_provision`, как в [примере обеспеченности](provision.ipynb)."
+

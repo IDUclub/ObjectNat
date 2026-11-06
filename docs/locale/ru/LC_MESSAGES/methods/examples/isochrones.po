@@ -1,0 +1,112 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Isochrones"
+msgstr "Изохроны"
+
+msgid "This notebook builds isochrones on an intermodal `UrbanGraph` from IduEdu (walk + public transport):"
+msgstr "Этот ноутбук строит изохроны на интермодальном графе `UrbanGraph` из IduEdu (пешком + общественный транспорт):"
+
+msgid "`get_graph_isochrones` with `geometry_type=\"radius\"` and `\"ways\"` for one origin;"
+msgstr "`get_graph_isochrones` с `geometry_type=\"radius\"` и `\"ways\"` для одной точки отправления;"
+
+msgid "`get_stepped_graph_isochrones` with bands of width `step` for `\"radius\"`, `\"ways\"` and `\"separate\"`;"
+msgstr "`get_stepped_graph_isochrones` с поясами шириной `step` для `\"radius\"`, `\"ways\"` и `\"separate\"`;"
+
+msgid "an animation of stepped isochrones."
+msgstr "анимацию ступенчатых изохрон."
+
+msgid "The method is described on the [isochrones page](../isochrones.rst). The interactive maps of the stepped isochrones are not stored in the notebook because of their size; the figures on that page show the same results."
+msgstr "Метод описан на [странице изохрон](../isochrones.rst). Интерактивные карты ступенчатых изохрон не сохраняются в ноутбуке из-за размера; рисунки на той странице показывают те же результаты."
+
+msgid "The last section, *Your own area*, shows what to replace to get the same pictures for another territory."
+msgstr "Последний раздел, *Своя территория*, показывает, что заменить, чтобы получить такие же картинки для другой территории."
+
+msgid "1. Intermodal graph"
+msgstr "1\\. Интермодальный граф"
+
+msgid "The graph covers the district and is clipped to its boundary. Edge weights are `time_min` (minutes) and `length_meter` (metres)."
+msgstr "Граф покрывает район и обрезан по его границе. Веса рёбер — `time_min` (минуты) и `length_meter` (метры)."
+
+msgid "2. Origin"
+msgstr "2\\. Точка отправления"
+
+msgid "One origin point in WGS 84; it is snapped to the nearest graph node."
+msgstr "Одна точка отправления в WGS 84; она привязывается к ближайшему узлу графа."
+
+msgid "3. Radius isochrone"
+msgstr "3\\. Изохрона radius"
+
+msgid "Union of buffers around the nodes reachable within 10 minutes, each with the residual budget converted to a distance with the median edge speed of the graph."
+msgstr "Объединение буферов вокруг узлов, достижимых за 10 минут; остаток бюджета каждого узла переводится в расстояние по медианной скорости на рёбрах графа."
+
+msgid "4. Ways isochrone"
+msgstr "4\\. Изохрона ways"
+
+msgid "Pedestrian edges reachable within 10 minutes, buffered by `road_buffer_size` (5 m by default)."
+msgstr "Пешеходные рёбра, достижимые за 10 минут, с буфером `road_buffer_size` (по умолчанию 5 м)."
+
+msgid "5. Comparison"
+msgstr "5\\. Сравнение"
+
+msgid "The radius isochrone (blue) also covers places between streets; the ways isochrone (red) follows the streets."
+msgstr "Изохрона radius (синяя) покрывает и места между улицами; изохрона ways (красная) идёт по улицам."
+
+msgid "6. Stepped isochrones, radius"
+msgstr "6\\. Ступенчатые изохроны, radius"
+
+msgid "Bands of 3 minutes up to 15 minutes; `dist` is the upper bound of the band."
+msgstr "Пояса по 3 минуты до 15 минут; `dist` — верхняя граница пояса."
+
+msgid "7. Stepped isochrones, ways"
+msgstr "7\\. Ступенчатые изохроны, ways"
+
+msgid "Voronoi cells of the reachable nodes clipped to the buffered streets, in bands of 3 minutes."
+msgstr "Ячейки Вороного достижимых узлов, обрезанные по буферам улиц, поясами по 3 минуты."
+
+msgid "8. Stepped isochrones, separate"
+msgstr "8\\. Ступенчатые изохроны, separate"
+
+msgid "Independent buffers per band of 2 minutes up to 10 minutes."
+msgstr "Независимые буферы на каждый пояс по 2 минуты до 10 минут."
+
+msgid "Parameters used"
+msgstr "Использованные параметры"
+
+msgid "`geometry_type`: `\"radius\"`, `\"ways\"` or `\"separate\"` (stepped isochrones also accept `None`, Voronoi cells);"
+msgstr "`geometry_type`: `\"radius\"`, `\"ways\"` или `\"separate\"` (ступенчатые изохроны принимают также `None` — ячейки Вороного);"
+
+msgid "`weight_type`: `\"time_min\"` (minutes) or `\"length_meter\"` (metres);"
+msgstr "`weight_type`: `\"time_min\"` (минуты) или `\"length_meter\"` (метры);"
+
+msgid "`weight_value_cutoff`: the budget, in the units of `weight_type`;"
+msgstr "`weight_value_cutoff`: бюджет в единицах `weight_type`;"
+
+msgid "`step`: band width for stepped isochrones;"
+msgstr "`step`: ширина пояса для ступенчатых изохрон;"
+
+msgid "`buffer_factor` (`\"separate\"`) and `road_buffer_size` (`\"ways\"`, metres)."
+msgstr "`buffer_factor` (`\"separate\"`) и `road_buffer_size` (`\"ways\"`, метры)."
+
+msgid "9. Animation of stepped isochrones"
+msgstr "9\\. Анимация ступенчатых изохрон"
+
+msgid "10. Your own area"
+msgstr "10\\. Своя территория"
+
+msgid "The territory is an OSM relation (the `relation` of a district or a city on openstreetmap.org); `REGION` names the Geofabrik extract to cut it from (`iduedu.find_geofabrik_region` finds it for a polygon; without it IduEdu asks Overpass once to choose the extract). The result is a GeoDataFrame: draw it with matplotlib (here over the streets of the graph, with the territory boundary), explore it on a web map or save it for GIS with `to_file`."
+msgstr "Территория — отношение OSM (`relation` района или города на openstreetmap.org); `REGION` задаёт выгрузку Geofabrik, из которой она вырезается (`iduedu.find_geofabrik_region` находит её по полигону; без неё IduEdu один раз обращается к Overpass, чтобы выбрать выгрузку). Результат — GeoDataFrame: нарисуйте его в matplotlib (здесь поверх улиц графа, с границей территории), посмотрите на веб-карте или сохраните для ГИС через `to_file`."
+

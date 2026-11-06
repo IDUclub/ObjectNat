@@ -1,0 +1,76 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Examples"
+msgstr "Примеры"
+
+msgid "Each notebook runs end to end on the example data in ``docs/methods/examples/examples_data/`` (buildings with ``storeys_count``, services with ``capacity``, vegetation polygons and a building-to-service travel-time matrix for Vasilyevsky Island, Saint Petersburg). Notebooks that use a street graph build it with IduEdu from a Geofabrik extract. Every notebook ends with a section *Your own area*, which shows what to replace to get the same results for another territory."
+msgstr "Каждый ноутбук целиком выполняется на данных из ``docs/methods/examples/examples_data/`` (здания со столбцом ``storeys_count``, сервисы со столбцом ``capacity``, полигоны растительности и матрица времени в пути от зданий до сервисов для Васильевского острова, Санкт-Петербург). Ноутбуки, которым нужен граф улиц, строят его с IduEdu по выгрузке Geofabrik. Каждый ноутбук заканчивается разделом *Своя территория*, который показывает, что заменить, чтобы получить такие же результаты для другой территории."
+
+msgid "Notebook"
+msgstr "Ноутбук"
+
+msgid "Content"
+msgstr "Содержание"
+
+msgid ":doc:`isochrones`"
+msgstr ":doc:`isochrones`"
+
+msgid "Isochrones and stepped isochrones on an intermodal graph, all geometry types"
+msgstr "Изохроны и ступенчатые изохроны на интермодальном графе, все типы геометрии"
+
+msgid ":doc:`coverage`"
+msgstr ":doc:`coverage`"
+
+msgid "Coverage zones by time and distance, stepped coverage, graph-free radius coverage"
+msgstr "Зоны покрытия по времени и расстоянию, ступенчатое покрытие, покрытие по радиусу без графа"
+
+msgid ":doc:`calculate_od_matrix`"
+msgstr ":doc:`calculate_od_matrix`"
+
+msgid "Building-to-service travel-time matrix with IduEdu, stored for the provision example"
+msgstr "Матрица времени в пути от зданий до сервисов с IduEdu, сохранённая для примера обеспеченности"
+
+msgid ":doc:`provision`"
+msgstr ":doc:`provision`"
+
+msgid "Service provision, recalculation with a shorter threshold, clipping, sparse matrices"
+msgstr "Обеспеченность сервисами, пересчёт с меньшим порогом, обрезка, разреженные матрицы"
+
+msgid ":doc:`visibility`"
+msgstr ":doc:`visibility`"
+
+msgid "Exact 2D visibility polygons, isovist metrics and isovist fields, visibility catchment zones"
+msgstr "Точные полигоны видимости 2D, метрики изовист и поля изовист, зоны охвата видимости"
+
+msgid ":doc:`viewshed`"
+msgstr ":doc:`viewshed`"
+
+msgid "2.5D viewsheds over building heights, comparison with 2D visibility, viewshed catchment, terrain"
+msgstr "Области видимости 2.5D с учётом высот зданий, сравнение с видимостью 2D, охват областей видимости, рельеф"
+
+msgid ":doc:`noise`"
+msgstr ":doc:`noise`"
+
+msgid "Receiver-grid noise simulation, wave-front simulation and simplified noise frame"
+msgstr "Шум на сетке приёмников, моделирование волнового фронта и упрощённый шумовой каркас"
+
+msgid ":doc:`insolation`"
+msgstr ":doc:`insolation`"
+
+msgid "Ground sun hours for a day and a period, terrain, facade insolation per floor with a norm check"
+msgstr "Часы солнца на земле за день и за период, рельеф, инсоляция фасадов по этажам с проверкой норматива"
+

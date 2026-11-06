@@ -1,0 +1,73 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "2.5D visibility: viewsheds and viewshed catchment"
+msgstr "Видимость 2.5D: области видимости и их охват"
+
+msgid "`get_visibility` treats every obstacle as a wall of infinite height. `get_viewshed` uses building heights and terrain: a grid cell is visible when the line of sight from the observer's eye to the cell passes above every wall and above the ground. This notebook"
+msgstr "`get_visibility` считает каждое препятствие стеной бесконечной высоты. `get_viewshed` учитывает высоты зданий и рельеф: ячейка сетки видна, если луч зрения от глаз наблюдателя до ячейки проходит выше всех стен и выше земли. Этот ноутбук"
+
+msgid "compares a 2D visibility polygon with 2.5D viewsheds of a street observer and a roof observer;"
+msgstr "сравнивает полигон видимости 2D с областями видимости 2.5D наблюдателя на улице и наблюдателя на крыше;"
+
+msgid "shows the effect of `target_height` and terrain;"
+msgstr "показывает влияние `target_height` и рельефа;"
+
+msgid "builds 2D and 2.5D catchment zones of many observers."
+msgstr "строит зоны охвата 2D и 2.5D для множества наблюдателей."
+
+msgid "The method is described on the [visibility page](../visibility.rst)."
+msgstr "Метод описан на [странице видимости](../visibility.rst)."
+
+msgid "The last section, *Your own area*, shows what to replace to get the same pictures for another territory."
+msgstr "Последний раздел, *Своя территория*, показывает, что заменить, чтобы получить такие же картинки для другой территории."
+
+msgid "1. One observer: 2D and 2.5D"
+msgstr "1\\. Один наблюдатель: 2D и 2.5D"
+
+msgid "The street observer stands at the open point nearest to the centre; its eye is `observer_height=1.6` m above the ground. The roof observer stands 1 m inside the roof edge of the tallest building nearby; observers inside a footprint are placed on its roof. `include_roofs=True` also returns the visible parts of roofs."
+msgstr "Наблюдатель на улице стоит в ближайшей к центру открытой точке; его глаза находятся на `observer_height=1.6` м над землёй. Наблюдатель на крыше стоит в 1 м от края крыши самого высокого здания поблизости; наблюдатели внутри контура здания ставятся на его крышу. `include_roofs=True` возвращает также видимые части крыш."
+
+msgid "On flat ground, among buildings taller than the eye, the street viewshed coincides with the 2D polygon up to the cell size. The roof observer sees over the lower buildings."
+msgstr "На ровной земле среди зданий выше уровня глаз область видимости с улицы совпадает с полигоном 2D с точностью до размера ячейки. Наблюдатель на крыше видит поверх более низких зданий."
+
+msgid "2. Target height and terrain"
+msgstr "2\\. Высота цели и рельеф"
+
+msgid "`target_height` is the height above the ground of what is looked at: 0 m for the ground surface, 10 m for the upper part of a facade or a sign. Terrain is given as for insolation (GeoDataFrame, GeoTIFF or array); here a synthetic Gaussian hill, 20 m high under the street observer, is passed as an array with an affine transform. The buildings stand on the hill as well. From the rounded summit the ground falls away ever more steeply (a convex slope), so the lines of sight from an eye 1.6 m above it pass over the lower slopes and the visible ground shrinks to the hilltop: the terrain hides the ground below, as the walls do."
+msgstr "`target_height` — высота над землёй того, на что смотрят: 0 м для поверхности земли, 10 м для верхней части фасада или вывески. Рельеф задаётся так же, как для инсоляции (GeoDataFrame, GeoTIFF или массив); здесь синтетический гауссов холм высотой 20 м под наблюдателем на улице передаётся массивом с аффинным преобразованием. Здания тоже стоят на холме. От скруглённой вершины земля уходит вниз всё круче (выпуклый склон), поэтому лучи зрения от глаз на высоте 1,6 м проходят над нижними частями склона, и видимая земля сжимается до вершины: рельеф скрывает землю ниже, как это делают стены."
+
+msgid "3. Catchment zones of many observers"
+msgstr "3\\. Зоны охвата для множества наблюдателей"
+
+msgid "Observers are usually placed along streets with `get_observer_points(urban_graph, spacing=15)` on an IduEdu walk graph. To keep this notebook independent of OpenStreetMap downloads, observers are placed every 15 m on open ground within 12 m of a building, which approximates sidewalks and yards."
+msgstr "Обычно наблюдателей расставляют вдоль улиц функцией `get_observer_points(urban_graph, spacing=15)` на пешеходном графе IduEdu. Чтобы ноутбук не зависел от загрузки данных OpenStreetMap, наблюдатели размещены через 15 м на открытой территории не дальше 12 м от зданий, что приближённо соответствует тротуарам и дворам."
+
+msgid "Each cell gets the number of observers that see it. Explicit class bounds (`classes=[1, 5, 20, 50]`) put both results on one scale. The 2.5D catchment uses `target_height=10`: it counts the observers that see a point 10 m above the ground."
+msgstr "Каждая ячейка получает число наблюдателей, которые её видят. Явные границы классов (`classes=[1, 5, 20, 50]`) приводят оба результата к одной шкале. Охват 2.5D использует `target_height=10`: он считает наблюдателей, которые видят точку на высоте 10 м над землёй."
+
+msgid "4. Your own area"
+msgstr "4\\. Своя территория"
+
+msgid "Buildings with heights and observers: the 2.5D catchment as a raster of observer counts. `output=\"cells\"` returns the cells seen by at least one observer with their `count`, and `rasterize` puts them back on the calculation grid. The [visibility notebook](visibility.ipynb) draws the 2D catchment in the same units and on the same colour scale. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
+msgstr "Здания с высотами и наблюдатели: охват 2.5D в виде растра числа наблюдателей. `output=\"cells\"` возвращает ячейки, которые видит хотя бы один наблюдатель, с их `count`, а `rasterize` возвращает их на расчётную сетку. [Ноутбук видимости](visibility.ipynb) рисует охват 2D в тех же единицах и в той же цветовой шкале. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
+
+msgid "Limitations"
+msgstr "Ограничения"
+
+msgid "Roofs are flat and walls vertical; trees and street furniture do not block the view. Results are discrete at `cell_size`, and computation time per observer grows with `(view_distance / cell_size) ** 2`."
+msgstr "Крыши плоские, стены вертикальные; деревья и уличная мебель не закрывают обзор. Результаты дискретны с шагом `cell_size`, а время расчёта на наблюдателя растёт как `(view_distance / cell_size) ** 2`."
+

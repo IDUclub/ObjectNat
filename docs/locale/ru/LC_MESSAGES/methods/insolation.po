@@ -1,0 +1,298 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Insolation"
+msgstr "Инсоляция"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "Insolation analysis estimates how long a place receives direct sunlight among buildings of known height and, optionally, terrain. :func:`objectnat.get_insolation` computes the daily **sun hours** on a regular grid of ground receivers; :func:`objectnat.get_facade_insolation` computes them for facade points on every floor of the selected buildings. Both functions accept a single day or a period. Typical uses are checks of insolation norms for playgrounds and dwellings, comparison of development scenarios, and the placement of planting that needs direct sun."
+msgstr "Анализ инсоляции оценивает, сколько времени место получает прямой солнечный свет среди зданий известной высоты и, при необходимости, с учётом рельефа. :func:`objectnat.get_insolation` рассчитывает суточные **часы солнца** на регулярной сетке приёмников на земле; :func:`objectnat.get_facade_insolation` — для точек на фасадах на каждом этаже выбранных зданий. Обе функции принимают один день или период. Типичные задачи — проверка нормативов инсоляции для детских площадок и жилья, сравнение сценариев застройки и размещение растений, которым нужно прямое солнце."
+
+msgid "Ground shadows of a residential district on 21 June, 15-minute frames"
+msgstr "Тени на земле в жилом районе 21 июня, кадры через 15 минут"
+
+msgid "Sunlit and shaded ground on 21 June 2026 in the example district (Vasilyevsky Island, Saint Petersburg, 59.96° N), one frame every 15 minutes from sunrise to sunset. The title gives Moscow time (UTC+3) and the sun elevation and azimuth."
+msgstr "Освещённая и затенённая земля 21 июня 2026 года в районе из примера (Васильевский остров, Санкт-Петербург, 59,96° с. ш.), кадр каждые 15 минут от восхода до заката. В заголовке — московское время (UTC+3), высота и азимут солнца."
+
+msgid "Ground shadows of a residential district on 21 March, 15-minute frames"
+msgstr "Тени на земле в жилом районе 21 марта, кадры через 15 минут"
+
+msgid "The same district on 21 March 2026, the equinox."
+msgstr "Тот же район 21 марта 2026 года, в день равноденствия."
+
+msgid "Method"
+msgstr "Метод"
+
+msgid "**Sun position.** For every simulated day the sun position is sampled every ``time_step_min`` minutes (the midpoints of the intervals of a local solar day) with the NOAA solar position algorithm, including atmospheric refraction; the stated accuracy of the algorithm is about 0.01°. The date and the centre of the area determine the sun path, so latitude and season are taken into account. Positions below ``min_sun_elevation`` (degrees) count as no sun."
+msgstr "**Положение солнца.** Для каждого моделируемого дня положение солнца вычисляется каждые ``time_step_min`` минут (в серединах интервалов местных солнечных суток) по алгоритму NOAA с учётом атмосферной рефракции; заявленная точность алгоритма около 0,01°. Дата и центр территории определяют путь солнца, поэтому учитываются широта и сезон. Положения ниже ``min_sun_elevation`` (градусы) считаются отсутствием солнца."
+
+msgid "**Scene.** Buildings are extruded footprints with flat roofs. The height of a building is taken from ``height_column``; where it is missing, from ``storeys_column`` × ``storey_height``; where both are missing, from ``default_height``. Buildings with no height at all are skipped with a warning. Terrain is optional and can be given as"
+msgstr "**Сцена.** Здания — выдавленные контуры с плоскими крышами. Высота здания берётся из ``height_column``; если её нет — из ``storeys_column`` × ``storey_height``; если нет обоих значений — из ``default_height``. Здания без высоты пропускаются с предупреждением. Рельеф необязателен и задаётся как"
+
+msgid "a GeoDataFrame of polygons with heights in ``terrain_height_column`` (for example, elevation zones), rasterized with ``terrain_cell`` cells; overlapping polygons take the highest value;"
+msgstr "GeoDataFrame полигонов с высотами в ``terrain_height_column`` (например, зоны высот), растеризуемый с ячейками ``terrain_cell``; перекрывающиеся полигоны дают наибольшее значение;"
+
+msgid "a path to a GeoTIFF (requires ``rasterio``);"
+msgstr "путь к GeoTIFF (нужен ``rasterio``);"
+
+msgid "a tuple ``(heights, transform, crs)`` with a 2-D array, a north-up affine transform in rasterio order and a projected CRS."
+msgstr "кортеж ``(heights, transform, crs)`` из двумерного массива, ориентированного на север аффинного преобразования в порядке rasterio и проецированной системы координат."
+
+msgid "Buildings stand on the terrain at their footprint, and receivers are placed ``receiver_height`` above the terrain. The calculation runs in a local metric CRS (the raster CRS when a raster is given, otherwise an estimated UTM zone). Azimuths are measured from true north and corrected for the difference between true north and grid north (meridian convergence)."
+msgstr "Здания стоят на рельефе по своему контуру, а приёмники размещаются на высоте ``receiver_height`` над рельефом. Расчёт идёт в локальной метрической системе координат (системе растра, если он задан, иначе в оценённой зоне UTM). Азимуты отсчитываются от истинного севера с поправкой на разницу между истинным севером и севером сетки (сближение меридианов)."
+
+msgid "**Shadow test.** For every receiver and every sun position a ray is cast towards the sun. The receiver is sunlit when the ray passes above every building wall it crosses and above the terrain. The ray is followed only while it is lower than the highest roof or terrain point of the scene, so rays towards a high sun end early and cost little. The test runs in ObjectNat's Rust extension in parallel over receivers."
+msgstr "**Проверка тени.** Для каждого приёмника и каждого положения солнца строится луч к солнцу. Приёмник освещён, если луч проходит выше каждой пересекаемой стены здания и выше рельефа. Луч прослеживается, только пока он ниже самой высокой крыши или точки рельефа в сцене, поэтому лучи к высокому солнцу заканчиваются рано и почти ничего не стоят. Проверка выполняется в расширении ObjectNat на Rust параллельно по приёмникам."
+
+msgid "**Day statistics.** For each receiver and day the Rust extension returns the number of sunlit time steps and the longest uninterrupted sunlit run. These give three quantities, all in hours:"
+msgstr "**Суточная статистика.** Для каждого приёмника и дня расширение на Rust возвращает число освещённых шагов времени и самый длинный непрерывный освещённый отрезок. Из них получаются три величины, все в часах:"
+
+msgid "``sun_hours``: mean daily direct sun over the simulated days;"
+msgstr "``sun_hours``: среднесуточное прямое солнце за моделируемые дни;"
+
+msgid "``min_sun_hours``: direct sun on the worst simulated day;"
+msgstr "``min_sun_hours``: прямое солнце в худший моделируемый день;"
+
+msgid "``max_continuous_hours``: the longest continuous sunlit period on the worst day (the minimum over days of the daily longest run). Insolation norms usually set a minimum for this quantity; SanPiN 1.2.3685-21 (Russia), for example, sets the minimum continuous insolation of dwellings and playgrounds."
+msgstr "``max_continuous_hours``: наибольшая непрерывная продолжительность инсоляции в худший день (минимум по дням от наибольшего суточного отрезка). Нормативы инсоляции обычно задают минимум для этой величины; например, СанПиН 1.2.3685-21 (Россия) устанавливает минимальную непрерывную инсоляцию жилья и детских площадок."
+
+msgid "Time steps are discrete, so every value is a multiple of ``time_step_min``."
+msgstr "Шаги времени дискретны, поэтому каждое значение кратно ``time_step_min``."
+
+msgid "**Periods.** ``date=(\"2026-04-22\", \"2026-08-22\")`` simulates every ``day_step``-th day of the period and its last day; the scene is built once."
+msgstr "**Периоды.** ``date=(\"2026-04-22\", \"2026-08-22\")`` моделирует каждый ``day_step``-й день периода и его последний день; сцена строится один раз."
+
+msgid "Ground insolation"
+msgstr "Инсоляция на земле"
+
+msgid ":func:`objectnat.get_insolation` places receivers every ``grid_step`` metres inside ``area`` (by default the bounding box of the buildings), outside building footprints. Include the buildings around the area in ``buildings``: their shadows reach into it."
+msgstr ":func:`objectnat.get_insolation` размещает приёмники с шагом ``grid_step`` метров внутри ``area`` (по умолчанию — охватывающего прямоугольника зданий) вне контуров зданий. Включайте в ``buildings`` здания вокруг территории: их тени падают на неё."
+
+msgid "The result is a GeoDataFrame of zones, one (Multi)Polygon per class of mean daily sun hours, with the class bounds ``sun_hours_min`` and ``sun_hours_max`` (``inf`` for the last class) and a text ``label``. ``hour_breaks`` sets the bounds (default 1, 2, 3, 4, 6 and 8 h). Class ``0`` is ground that receives no direct sun on any simulated day. ``output=\"receivers\"`` returns the receiver points with ``sun_hours``, ``min_sun_hours`` and ``max_continuous_hours`` instead of the zones, and ``output=\"both\"`` returns both. Without zones the calculation is faster: building the zone polygons takes most of the time of a single day. The ``attrs`` of both results contain the simulated ``days`` and ``day_length_hours``, the mean time the sun is above ``min_sun_elevation``. :func:`objectnat.rasterize` turns any receiver column into a raster for maps, GeoTIFF files and web maps (see :doc:`rasters`)."
+msgstr "Результат — GeoDataFrame зон, по одному (Multi)Polygon на класс среднесуточных часов солнца, с границами класса ``sun_hours_min`` и ``sun_hours_max`` (``inf`` для последнего класса) и текстовой меткой ``label``. ``hour_breaks`` задаёт границы (по умолчанию 1, 2, 3, 4, 6 и 8 ч). Класс ``0`` — земля, на которую не попадает прямое солнце ни в один моделируемый день. ``output=\"receivers\"`` возвращает вместо зон точки приёмников с ``sun_hours``, ``min_sun_hours`` и ``max_continuous_hours``, а ``output=\"both\"`` — и то, и другое. Без зон расчёт быстрее: построение полигонов зон занимает большую часть времени для одного дня. ``attrs`` обоих результатов содержат моделируемые дни ``days`` и ``day_length_hours`` — среднее время, когда солнце выше ``min_sun_elevation``. :func:`objectnat.rasterize` превращает любой столбец приёмников в растр для карт, файлов GeoTIFF и веб-карт (см. :doc:`rasters`)."
+
+msgid "Hours of direct sunlight on the ground during a day or a period, among buildings of known height and terrain."
+msgstr "Часы прямого солнечного света на земле за день или за период среди зданий известной высоты и рельефа."
+
+msgid "The sun is followed through every simulated day in ``time_step_min`` steps (NOAA solar position for the date and the location of the area, with refraction), so its path changes with latitude and season. For every point of a regular grid and every sun position above ``min_sun_elevation`` a ray is cast towards the sun; the point is in the sun when the ray passes above every building wall it crosses and above the terrain. Buildings are extruded footprints with flat roofs standing on the terrain. The result shows how many hours each place gets and which places stay in shadow all the time."
+msgstr "Солнце прослеживается в течение каждого моделируемого дня с шагом ``time_step_min`` (положение солнца по NOAA для даты и места территории, с рефракцией), поэтому его путь меняется с широтой и сезоном. Для каждой точки регулярной сетки и каждого положения солнца выше ``min_sun_elevation`` строится луч к солнцу; точка освещена, если луч проходит выше каждой пересекаемой стены здания и выше рельефа. Здания — выдавленные контуры с плоскими крышами, стоящие на рельефе. Результат показывает, сколько часов солнца получает каждое место и какие места всё время остаются в тени."
+
+msgid "Parameters"
+msgstr "Параметры"
+
+msgid "Building footprints (Polygon/MultiPolygon) in any CRS. Include the buildings around the area of interest too: shadows come from them."
+msgstr "Контуры зданий (Polygon/MultiPolygon) в любой системе координат. Включайте и здания вокруг изучаемой территории: тени падают и от них."
+
+msgid "One day (``\"2026-06-21\"``) or a period ``(start, end)``, both days included (``(\"2026-04-22\", \"2026-08-22\")``). Every day is covered from sunrise to sunset."
+msgstr "Один день (``\"2026-06-21\"``) или период ``(start, end)``, оба дня включительно (``(\"2026-04-22\", \"2026-08-22\")``). Каждый день рассчитывается от восхода до заката."
+
+msgid "Where to place receivers. Shapely geometries are taken in the CRS of ``buildings``. Defaults to the bounding box of the buildings."
+msgstr "Где размещать приёмники. Геометрии shapely считаются заданными в системе координат ``buildings``. По умолчанию — охватывающий прямоугольник зданий."
+
+msgid "Column with building heights in metres. Defaults to ``\"height\"``."
+msgstr "Столбец с высотами зданий в метрах. По умолчанию ``\"height\"``."
+
+msgid "Column with the number of storeys, used (times ``storey_height``) where the height is missing."
+msgstr "Столбец с числом этажей; используется (умноженный на ``storey_height``), если высоты нет."
+
+msgid "Height of one storey in metres. Defaults to 3."
+msgstr "Высота одного этажа в метрах. По умолчанию 3."
+
+msgid "Height for buildings with neither value. Without it such buildings are skipped with a warning."
+msgstr "Высота для зданий без обоих значений. Без неё такие здания пропускаются с предупреждением."
+
+msgid "Ground heights in metres, one of:  - a GeoDataFrame of polygons with the height in ``terrain_height_column`` (e.g. elevation zones);   it is rasterized with ``terrain_cell`` cells, overlapping polygons take the highest value and   places no polygon covers count as no data; - a GeoTIFF path (requires ``rasterio``); - a tuple ``(heights, transform, crs)`` with a 2-D array, an affine transform ``(a, b, c, d, e,   f)`` as in rasterio (``x = a * col + c``, ``y = e * row + f``, north-up, no rotation) and a   projected CRS.  Rasters set the CRS of the calculation; NaN marks missing data. Without terrain the ground is flat."
+msgstr "Ground heights in metres, one of:  - a GeoDataFrame of polygons with the height in ``terrain_height_column`` (e.g. elevation zones);   it is rasterized with ``terrain_cell`` cells, overlapping polygons take the highest value and   places no polygon covers count as no data; - a GeoTIFF path (requires ``rasterio``); - a tuple ``(heights, transform, crs)`` with a 2-D array, an affine transform ``(a, b, c, d, e,   f)`` as in rasterio (``x = a * col + c``, ``y = e * row + f``, north-up, no rotation) and a   projected CRS.  Rasters set the CRS of the calculation; NaN marks missing data. Without terrain the ground is flat."
+
+msgid "Ground heights in metres, one of:"
+msgstr "Высоты земли в метрах, одно из:"
+
+msgid "a GeoDataFrame of polygons with the height in ``terrain_height_column`` (e.g. elevation zones); it is rasterized with ``terrain_cell`` cells, overlapping polygons take the highest value and places no polygon covers count as no data;"
+msgstr "GeoDataFrame полигонов с высотой в ``terrain_height_column`` (например, зоны высот); он растеризуется с ячейками ``terrain_cell``, перекрывающиеся полигоны дают наибольшее значение, а места, не покрытые полигонами, считаются отсутствием данных;"
+
+msgid "a GeoTIFF path (requires ``rasterio``);"
+msgstr "путь к GeoTIFF (нужен ``rasterio``);"
+
+msgid "a tuple ``(heights, transform, crs)`` with a 2-D array, an affine transform ``(a, b, c, d, e, f)`` as in rasterio (``x = a * col + c``, ``y = e * row + f``, north-up, no rotation) and a projected CRS."
+msgstr "кортеж ``(heights, transform, crs)`` из двумерного массива, аффинного преобразования ``(a, b, c, d, e, f)`` как в rasterio (``x = a * col + c``, ``y = e * row + f``, на север, без поворота) и проецированной системы координат."
+
+msgid "Rasters set the CRS of the calculation; NaN marks missing data. Without terrain the ground is flat."
+msgstr "Растры задают систему координат расчёта; NaN отмечает отсутствие данных. Без рельефа земля ровная."
+
+msgid "Height column of a terrain GeoDataFrame. Defaults to ``\"height\"``."
+msgstr "Столбец высоты в GeoDataFrame рельефа. По умолчанию ``\"height\"``."
+
+msgid "Cell size in metres used to rasterize a terrain GeoDataFrame. Defaults to 5."
+msgstr "Размер ячейки в метрах для растеризации GeoDataFrame рельефа. По умолчанию 5."
+
+msgid "Receiver spacing in metres. Defaults to 2."
+msgstr "Шаг приёмников в метрах. По умолчанию 2."
+
+msgid "Time step in minutes; it must divide a day evenly. Defaults to 10."
+msgstr "Шаг времени в минутах; сутки должны делиться на него без остатка. По умолчанию 10."
+
+msgid "For a period, simulate every ``day_step``-th day (the last day of the period is always included). Defaults to 7."
+msgstr "Для периода — моделировать каждый ``day_step``-й день (последний день периода включается всегда). По умолчанию 7."
+
+msgid "Sun positions lower than this (degrees) count as no sun, e.g. to leave out the low morning and evening sun as insolation norms do. Defaults to 0."
+msgstr "Положения солнца ниже этого угла (градусы) считаются отсутствием солнца, например чтобы, как в нормативах инсоляции, не учитывать низкое утреннее и вечернее солнце. По умолчанию 0."
+
+msgid "Height of the receivers above the ground in metres. Defaults to 0."
+msgstr "Высота приёмников над землёй в метрах. По умолчанию 0."
+
+msgid "Bounds of the sun-hour classes of the result, in hours per day. Defaults to ``(1, 2, 3, 4, 6, 8)``."
+msgstr "Границы классов часов солнца в результате, в часах в сутки. По умолчанию ``(1, 2, 3, 4, 6, 8)``."
+
+msgid "``\"zones\"`` (default) for the sun-hour zones, ``\"receivers\"`` for the receiver points only (faster: no zone polygons are built, which takes most of the time of a single day), ``\"both\"`` for the tuple ``(zones, receivers)``."
+msgstr "``\"zones\"`` (по умолчанию) — зоны часов солнца, ``\"receivers\"`` — только точки приёмников (быстрее: полигоны зон, построение которых занимает большую часть времени для одного дня, не строятся), ``\"both\"`` — кортеж ``(zones, receivers)``."
+
+msgid "Number of threads (``None`` uses all cores)."
+msgstr "Число потоков (``None`` — все ядра)."
+
+msgid "Returns"
+msgstr "Возвращает"
+
+msgid "Zones of equal class of daily sun hours (the mean over the simulated days) in the CRS of ``buildings``, with ``sun_hours_min``, ``sun_hours_max`` (``inf`` for the last class) and ``label``. The zone ``0`` is ground that gets no direct sun on any simulated day. Buildings are cut out. With ``output=\"receivers\"`` (or ``\"both\"``) the receiver points with:  - ``sun_hours``: mean hours of direct sun per day; - ``min_sun_hours``: hours on the worst day; - ``max_continuous_hours``: the longest uninterrupted sunlit period on the worst day (the least   of the daily longest periods), for which insolation norms usually set a minimum.  ``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is above ``min_sun_elevation``); the receivers' ``attrs`` also record the grid, so :func:`rasterize` turns any of their columns into a :class:`Raster`."
+msgstr "Zones of equal class of daily sun hours (the mean over the simulated days) in the CRS of ``buildings``, with ``sun_hours_min``, ``sun_hours_max`` (``inf`` for the last class) and ``label``. The zone ``0`` is ground that gets no direct sun on any simulated day. Buildings are cut out. With ``output=\"receivers\"`` (or ``\"both\"``) the receiver points with:  - ``sun_hours``: mean hours of direct sun per day; - ``min_sun_hours``: hours on the worst day; - ``max_continuous_hours``: the longest uninterrupted sunlit period on the worst day (the least   of the daily longest periods), for which insolation norms usually set a minimum.  ``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is above ``min_sun_elevation``); the receivers' ``attrs`` also record the grid, so :func:`rasterize` turns any of their columns into a :class:`Raster`."
+
+msgid "Zones of equal class of daily sun hours (the mean over the simulated days) in the CRS of ``buildings``, with ``sun_hours_min``, ``sun_hours_max`` (``inf`` for the last class) and ``label``. The zone ``0`` is ground that gets no direct sun on any simulated day. Buildings are cut out. With ``output=\"receivers\"`` (or ``\"both\"``) the receiver points with:"
+msgstr "Зоны одного класса суточных часов солнца (среднее за моделируемые дни) в системе координат ``buildings`` с ``sun_hours_min``, ``sun_hours_max`` (``inf`` для последнего класса) и ``label``. Зона ``0`` — земля, на которую не попадает прямое солнце ни в один моделируемый день. Здания вырезаются. При ``output=\"receivers\"`` (или ``\"both\"``) — точки приёмников со столбцами:"
+
+msgid "``sun_hours``: mean hours of direct sun per day;"
+msgstr "``sun_hours``: среднее число часов прямого солнца в сутки;"
+
+msgid "``min_sun_hours``: hours on the worst day;"
+msgstr "``min_sun_hours``: часы в худший день;"
+
+msgid "``max_continuous_hours``: the longest uninterrupted sunlit period on the worst day (the least of the daily longest periods), for which insolation norms usually set a minimum."
+msgstr "``max_continuous_hours``: наибольшая непрерывная продолжительность инсоляции в худший день (наименьший из суточных наибольших отрезков), для которой нормативы инсоляции обычно задают минимум."
+
+msgid "``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is above ``min_sun_elevation``); the receivers' ``attrs`` also record the grid, so :func:`rasterize` turns any of their columns into a :class:`Raster`."
+msgstr "``attrs`` содержат ``days`` (моделируемые даты) и ``day_length_hours`` (среднее время, когда солнце выше ``min_sun_elevation``); ``attrs`` приёмников также записывают сетку, поэтому :func:`rasterize` превращает любой их столбец в :class:`Raster`."
+
+msgid "Return type"
+msgstr "Тип возвращаемого значения"
+
+msgid "Raises"
+msgstr "Исключения"
+
+msgid "On missing CRS, empty input, unknown height columns, a bad time step or period."
+msgstr "При отсутствии системы координат, пустых входных данных, неизвестных столбцах высот, некорректном шаге времени или периоде."
+
+msgid "If ``terrain`` is a file path and ``rasterio`` is not installed."
+msgstr "Если ``terrain`` — путь к файлу, а ``rasterio`` не установлен."
+
+msgid "Sun-hour zones on 21 March and 21 June"
+msgstr "Зоны часов солнца 21 марта и 21 июня"
+
+msgid "Classes of direct sun hours on 21 March and 21 June 2026 in a 500 × 400 m area (outlined), ``grid_step=2``, ``time_step_min=10``. Building heights are ``storeys_count`` × 3 m."
+msgstr "Классы часов прямого солнца 21 марта и 21 июня 2026 года на территории 500 × 400 м (обведена), ``grid_step=2``, ``time_step_min=10``. Высота зданий — ``storeys_count`` × 3 м."
+
+msgid "Mean sun hours and longest continuous sun over a period"
+msgstr "Средние часы солнца и наибольшая непрерывная инсоляция за период"
+
+msgid "Period 22 April – 22 August 2026 with ``day_step=7`` (19 simulated days), receivers rasterized with :func:`objectnat.rasterize` on one scale. Left: mean daily sun hours. Right: longest continuous sunlit period on the worst day."
+msgstr "Период 22 апреля – 22 августа 2026 года с ``day_step=7`` (19 моделируемых дней), приёмники растеризованы :func:`objectnat.rasterize` в одной шкале. Слева: среднесуточные часы солнца. Справа: наибольшая непрерывная продолжительность инсоляции в худший день."
+
+msgid "Sun hours without and with a ridge south of the area, and their difference"
+msgstr "Часы солнца без гряды к югу от территории и с ней, и их разность"
+
+msgid "The same area on 21 March on flat ground and with a synthetic ridge running west–east, 50 m high, its crest 50 m south of the area, given as a ``(heights, transform, crs)`` array (dashed contours in metres). The low equinox sun comes from the south. In the southern 40 m of the area, at the foot of the ridge, receivers lose 7 h a day on average, and two thirds of them get no direct sun at all; up to 180 m further north some places still lose 1–2 h. A hill under the area itself changes little, because buildings and receivers rise with the ground."
+msgstr "Та же территория 21 марта на ровной земле и с синтетической грядой высотой 50 м, вытянутой с запада на восток, с гребнем в 50 м к югу от территории, заданной массивом ``(heights, transform, crs)`` (пунктирные изолинии в метрах). Низкое солнце в равноденствие светит с юга. В южных 40 м территории, у подножия гряды, приёмники теряют в среднем 7 ч в сутки, и две трети из них вообще не получают прямого солнца; до 180 м севернее отдельные места всё ещё теряют 1–2 ч. Холм под самой территорией мало что меняет, потому что здания и приёмники поднимаются вместе с землёй."
+
+msgid "Facade insolation"
+msgstr "Инсоляция фасадов"
+
+msgid ":func:`objectnat.get_facade_insolation` places points along every wall of the buildings that intersect ``area`` (outer and courtyard walls) every ``spacing`` metres, 0.1 m in front of the wall, on every floor at ``window_height`` above the floor level. Walls shared with a neighbouring building get no points. The number of floors is the storeys value when given, otherwise the height divided by ``storey_height``. A point counts the sun only while the sun is in front of its facade, at least ``min_facade_angle`` degrees (horizontal) away from the facade plane, and the ray towards the sun is not blocked by other buildings or the terrain. All buildings in ``buildings`` cast shadows, including those outside ``area``."
+msgstr ":func:`objectnat.get_facade_insolation` размещает точки вдоль каждой стены зданий, пересекающих ``area`` (внешних и дворовых стен), с шагом ``spacing`` метров, в 0,1 м перед стеной, на каждом этаже на высоте ``window_height`` над уровнем пола. На стенах, общих с соседним зданием, точек нет. Число этажей — значение этажности, если оно задано, иначе высота, делённая на ``storey_height``. Точка учитывает солнце, только пока солнце находится перед её фасадом не ближе ``min_facade_angle`` градусов (по горизонтали) к плоскости фасада, а луч к солнцу не перекрыт другими зданиями или рельефом. Тени отбрасывают все здания из ``buildings``, в том числе за пределами ``area``."
+
+msgid "The result has one point per wall position and floor with ``building`` (index label of the building), ``floor`` (1 is the ground floor), ``height`` above the ground, ``facade_azimuth`` (direction the facade faces, degrees clockwise from true north), ``sun_hours``, ``min_sun_hours`` and ``max_continuous_hours``. With ``norm_hours`` it also has ``meets_norm`` (``max_continuous_hours >= norm_hours``). Grouping the points by ``building`` and ``floor`` shows which floors and facades fail a norm; comparing runs with and without a planned building shows which windows it shades."
+msgstr "В результате по одной точке на позицию на стене и этаж со столбцами ``building`` (метка индекса здания), ``floor`` (1 — первый этаж), ``height`` над землёй, ``facade_azimuth`` (направление, куда обращён фасад, в градусах по часовой стрелке от истинного севера), ``sun_hours``, ``min_sun_hours`` и ``max_continuous_hours``. С ``norm_hours`` добавляется ``meets_norm`` (``max_continuous_hours >= norm_hours``). Группировка точек по ``building`` и ``floor`` показывает, какие этажи и фасады не проходят по нормативу; сравнение расчётов с проектируемым зданием и без него показывает, какие окна оно затеняет."
+
+msgid "Hours of direct sunlight on building facades, floor by floor: which windows get sun and which do not."
+msgstr "Часы прямого солнечного света на фасадах зданий по этажам: какие окна получают солнце, а какие нет."
+
+msgid "Calculation points are placed along every wall of the buildings in ``area`` (outer walls and courtyard walls) every ``spacing`` metres, on every floor at ``window_height`` above the floor level, just in front of the wall. Walls shared with a neighbouring building get no points. A point is sunlit when the sun is in front of its facade, at least ``min_facade_angle`` away from the facade plane, and the ray towards the sun passes above every other wall and the terrain, as in :func:`get_insolation`. All buildings cast shadows, including those outside ``area``."
+msgstr "Расчётные точки размещаются вдоль каждой стены зданий в ``area`` (внешних и дворовых стен) с шагом ``spacing`` метров, на каждом этаже на высоте ``window_height`` над уровнем пола, прямо перед стеной. На стенах, общих с соседним зданием, точек нет. Точка освещена, если солнце находится перед её фасадом не ближе ``min_facade_angle`` к плоскости фасада, а луч к солнцу проходит выше всех других стен и рельефа, как в :func:`get_insolation`. Тени отбрасывают все здания, в том числе за пределами ``area``."
+
+msgid "Building footprints with heights, as in :func:`get_insolation`."
+msgstr "Контуры зданий с высотами, как в :func:`get_insolation`."
+
+msgid "One day or a period ``(start, end)``, as in :func:`get_insolation`."
+msgstr "Один день или период ``(start, end)``, как в :func:`get_insolation`."
+
+msgid "Buildings intersecting it get facade points (shapely geometries in the CRS of ``buildings``). Defaults to all buildings."
+msgstr "Здания, пересекающие эту территорию, получают точки на фасадах (геометрии shapely в системе координат ``buildings``). По умолчанию — все здания."
+
+msgid "Building heights, as in :func:`get_insolation`. The number of floors is the storeys value when given, otherwise the height divided by ``storey_height`` (at least one floor)."
+msgstr "Высоты зданий, как в :func:`get_insolation`. Число этажей — значение этажности, если оно задано, иначе высота, делённая на ``storey_height`` (не меньше одного этажа)."
+
+msgid "Ground heights, as in :func:`get_insolation`."
+msgstr "Высоты земли, как в :func:`get_insolation`."
+
+msgid "Distance between points along a wall in metres; shorter walls get one point. Defaults to 3."
+msgstr "Расстояние между точками вдоль стены в метрах; более короткие стены получают одну точку. По умолчанию 3."
+
+msgid "Height of the points above each floor level in metres. Defaults to 1.2."
+msgstr "Высота точек над уровнем каждого этажа в метрах. По умолчанию 1.2."
+
+msgid "Only these floors (1 is the ground floor). Defaults to all floors."
+msgstr "Только эти этажи (1 — первый этаж). По умолчанию все этажи."
+
+msgid "Sun sampling, as in :func:`get_insolation`."
+msgstr "Выборка положений солнца, как в :func:`get_insolation`."
+
+msgid "Sun closer than this angle (degrees, horizontal) to the facade plane does not count. Defaults to 0: any sun in front of the facade counts."
+msgstr "Солнце ближе этого угла (градусы, по горизонтали) к плоскости фасада не учитывается. По умолчанию 0: учитывается любое солнце перед фасадом."
+
+msgid "Required continuous sunlight in hours; adds ``meets_norm`` (``max_continuous_hours >= norm_hours``)."
+msgstr "Требуемая непрерывная инсоляция в часах; добавляет ``meets_norm`` (``max_continuous_hours >= norm_hours``)."
+
+msgid "One point per wall position and floor in the CRS of ``buildings`` with ``building`` (index label of the building), ``floor``, ``height`` (above the ground), ``facade_azimuth`` (direction the facade faces, degrees clockwise from true north), ``sun_hours``, ``min_sun_hours`` and ``max_continuous_hours`` (as in :func:`get_insolation`) and, with ``norm_hours``, ``meets_norm``. ``attrs`` contain ``days`` and ``day_length_hours``."
+msgstr "По одной точке на позицию на стене и этаж в системе координат ``buildings`` со столбцами ``building`` (метка индекса здания), ``floor``, ``height`` (над землёй), ``facade_azimuth`` (направление, куда обращён фасад, в градусах по часовой стрелке от истинного севера), ``sun_hours``, ``min_sun_hours`` и ``max_continuous_hours`` (как в :func:`get_insolation`) и, при ``norm_hours``, ``meets_norm``. ``attrs`` содержат ``days`` и ``day_length_hours``."
+
+msgid "Continuous facade insolation on floors 1, 5 and 10 and share of points meeting 2.5 h"
+msgstr "Непрерывная инсоляция фасадов на 1, 5 и 10 этажах и доля точек, получающих 2,5 ч"
+
+msgid "Facade points (``spacing=3``) on 22 April 2026 coloured by the longest continuous sunlit period, for floors 1, 5 and 10, and the share of points with at least 2.5 h of continuous sun per floor (``norm_hours=2.5``). The number of points per floor is given in brackets. The 2.5 h threshold is an example value; use the norm and the calculation day that apply to the project."
+msgstr "Точки на фасадах (``spacing=3``) 22 апреля 2026 года, окрашенные по наибольшей непрерывной продолжительности инсоляции, для 1, 5 и 10 этажей, и доля точек, получающих не меньше 2,5 ч непрерывного солнца, по этажам (``norm_hours=2.5``). Число точек на этаже указано в скобках. Порог 2,5 ч — пример; используйте норматив и расчётный день, которые относятся к проекту."
+
+msgid "Limitations"
+msgstr "Ограничения"
+
+msgid "Roofs are flat. Pitched roofs, balconies, loggias, eaves and trees are not modelled."
+msgstr "Крыши плоские. Скатные крыши, балконы, лоджии, карнизы и деревья не моделируются."
+
+msgid "Facade points lie in front of the outer wall surface; window reveals (the wall depth) are not modelled, so the sun angles that a deep window opening would cut off still count, unless ``min_facade_angle`` excludes them."
+msgstr "Точки на фасадах лежат перед внешней поверхностью стены; оконные откосы (толщина стены) не моделируются, поэтому углы солнца, которые срезал бы глубокий оконный проём, всё равно учитываются, если их не исключает ``min_facade_angle``."
+
+msgid "Only direct sunlight is counted; diffuse sky light and reflected light are not, and cloud cover is ignored."
+msgstr "Учитывается только прямой солнечный свет; рассеянный свет неба и отражённый свет не учитываются, облачность игнорируется."
+
+msgid "Results are discrete in time (``time_step_min``) and space (``grid_step``, ``spacing``); a continuous period can be under- or overestimated by up to one time step at each end."
+msgstr "Результаты дискретны по времени (``time_step_min``) и пространству (``grid_step``, ``spacing``); непрерывный период может быть занижен или завышен на один шаг времени с каждого конца."
+
+msgid "The accuracy of the result is limited by the building heights: heights derived from storey counts (``storeys`` × ``storey_height``) can differ from surveyed heights by several metres."
+msgstr "Точность результата ограничена высотами зданий: высоты, полученные из этажности (``storeys`` × ``storey_height``), могут отличаться от измеренных на несколько метров."
+
+msgid "Example notebook"
+msgstr "Пример в ноутбуке"
+
+msgid ":doc:`examples/insolation`"
+msgstr ":doc:`examples/insolation`"
+

@@ -83,8 +83,9 @@ def simulate_noise(
         use_parallel (bool, optional): Whether to use ProcessPool for task distribution or not. Default is True.
 
     Returns:
-        gpd.GeoDataFrame: A GeoDataFrame containing the noise simulation results, including noise levels and geometries
-            of the affected areas. Each point's simulation results will be merged into a single GeoDataFrame.
+        gpd.GeoDataFrame:
+            Noise levels (``noise_level``, dB) with the geometries of the areas they cover; the results of all
+            source points are merged into one GeoDataFrame.
     """
     # Obstacles args
     absorb_ratio_column = kwargs.get("absorb_ratio_column", None)

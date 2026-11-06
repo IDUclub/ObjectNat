@@ -44,7 +44,7 @@ def get_graph_coverage(
        reachable node is labelled with its nearest destination within
        ``weight_value_cutoff``.
     3. Builds Voronoi polygons around the graph nodes.
-    4. Dissolves the reachable Voronoi cells per source into one zone each.
+    4. Dissolves the reachable Voronoi cells per destination into one zone each.
     5. Clips the result to ``zone``, to a residual-radius / road geometry
        (``geometry_type``), or to the concave hull of the reachable nodes.
 

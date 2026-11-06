@@ -1,0 +1,73 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Service provision"
+msgstr "Обеспеченность сервисами"
+
+msgid "`get_service_provision` allocates the demand of buildings to services with limited capacity, given a matrix of travel costs and a normative threshold. This notebook"
+msgstr "`get_service_provision` распределяет спрос зданий между сервисами с ограниченной вместимостью по матрице стоимостей пути и нормативному порогу. Этот ноутбук"
+
+msgid "computes provision with a 10-minute threshold on a precomputed intermodal travel-time matrix;"
+msgstr "рассчитывает обеспеченность с порогом 10 минут по заранее рассчитанной интермодальной матрице времени в пути;"
+
+msgid "maps the provision value and service load;"
+msgstr "строит карты показателя обеспеченности и нагрузки сервисов;"
+
+msgid "removes links longer than 8 minutes with `recalculate_links` and clips the result to a subarea;"
+msgstr "удаляет связи длиннее 8 минут функцией `recalculate_links` и обрезает результат по части территории;"
+
+msgid "repeats the calculation with a pandas sparse matrix."
+msgstr "повторяет расчёт с разреженной матрицей pandas."
+
+msgid "The matrix in `examples_data/matrix_time.parquet` was computed with IduEdu ([calculate_od_matrix](calculate_od_matrix.ipynb)); unreachable pairs are `inf`."
+msgstr "Матрица в `examples_data/matrix_time.parquet` рассчитана с IduEdu ([calculate_od_matrix](calculate_od_matrix.ipynb)); недостижимые пары равны `inf`."
+
+msgid "The last section, *Your own area*, shows what to replace to get the same pictures for another territory."
+msgstr "Последний раздел, *Своя территория*, показывает, что заменить, чтобы получить такие же картинки для другой территории."
+
+msgid "1. Provision within 10 minutes"
+msgstr "1\\. Обеспеченность в пределах 10 минут"
+
+msgid "The result is a `ProvisionResult`: a sparse `flow` matrix of allocated demand and the tables `demand_rows` and `capacity_rows`. A fixed `seed` makes the allocation reproducible."
+msgstr "Результат — `ProvisionResult`: разреженная матрица `flow` распределённого спроса и таблицы `demand_rows` и `capacity_rows`. Фиксированный `seed` делает распределение воспроизводимым."
+
+msgid "2. Maps"
+msgstr "2\\. Карты"
+
+msgid "`provision_value` is the share of a building's demand supplied by services within the threshold; `service_load` is the total demand allocated to a service."
+msgstr "`provision_value` — доля спроса здания, удовлетворённая сервисами в пределах порога; `service_load` — суммарный спрос, распределённый на сервис."
+
+msgid "3. Shorter threshold and clipping"
+msgstr "3\\. Меньший порог и обрезка"
+
+msgid "`recalculate_links` removes flows whose cost exceeds `new_max_dist` and rebuilds the metrics; removed demand is not reallocated. `clip_provision` keeps buildings intersecting a zone, their links and the services they use."
+msgstr "`recalculate_links` удаляет потоки со стоимостью больше `new_max_dist` и пересчитывает показатели; удалённый спрос не перераспределяется. `clip_provision` оставляет здания, пересекающие зону, их связи и сервисы, которыми они пользуются."
+
+msgid "4. Sparse matrices"
+msgstr "4\\. Разреженные матрицы"
+
+msgid "For large areas most building–service pairs are unreachable within any reasonable cost. A pandas sparse DataFrame with `NaN` (or `inf`) as fill value stores only reachable pairs; `get_service_provision` reads it entry by entry without densifying. IduEdu's `od_matrix` returns such a matrix."
+msgstr "На больших территориях большинство пар здание–сервис недостижимы при любой разумной стоимости. Разреженный DataFrame pandas с `NaN` (или `inf`) в качестве заполнителя хранит только достижимые пары; `get_service_provision` читает его поэлементно без уплотнения. Такую матрицу возвращает `od_matrix` из IduEdu."
+
+msgid "Only pairs with a cost up to `3 * threshold` take part in the allocation. For a 5-minute threshold the pairs beyond 15 minutes can therefore be dropped without changing the result:"
+msgstr "В распределении участвуют только пары со стоимостью до `3 * threshold`. Поэтому при пороге 5 минут пары дальше 15 минут можно отбросить без изменения результата:"
+
+msgid "5. Your own area"
+msgstr "5\\. Своя территория"
+
+msgid "Buildings with a demand column, services with a capacity column and the travel costs between them ([calculate_od_matrix](calculate_od_matrix.ipynb) builds the matrix for any area). The provision joins back to the buildings: draw it with matplotlib, explore it on a web map or save it for GIS with `to_file`."
+msgstr "Здания со столбцом спроса, сервисы со столбцом вместимости и стоимости пути между ними ([calculate_od_matrix](calculate_od_matrix.ipynb) строит матрицу для любой территории). Обеспеченность присоединяется к зданиям: нарисуйте её в matplotlib, посмотрите на веб-карте или сохраните для ГИС через `to_file`."
+

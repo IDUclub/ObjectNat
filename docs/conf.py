@@ -35,6 +35,30 @@ extensions = [
 
 html_theme = "furo"
 html_static_path = ["_static"]
+html_css_files = ["lang.css"]
+templates_path = ["_templates"]
+# the language switch sits under the logo; the other entries are furo's defaults
+html_sidebars = {
+    "**": [
+        "sidebar/brand.html",
+        "sidebar/lang.html",
+        "sidebar/search.html",
+        "sidebar/scroll-start.html",
+        "sidebar/navigation.html",
+        "sidebar/ethical-ads.html",
+        "sidebar/scroll-end.html",
+        "sidebar/variant-selector.html",
+    ]
+}
+
+# Two languages: English sources, Russian translations in locale/ru/LC_MESSAGES/<page>.po (one catalogue per
+# page). Build the Russian site with ``-D language=ru`` into html/ru; ``python docs/i18n.py update`` adds new or
+# changed text to the catalogues and ``python docs/i18n.py check`` fails while anything is left untranslated.
+language = "en"
+locale_dirs = ["locale/"]
+gettext_compact = False
+gettext_location = False
+gettext_uuid = False
 
 html_show_sourcelink = True
 

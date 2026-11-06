@@ -38,7 +38,8 @@ After changing Rust code, run `uv sync` again to rebuild the extension.
 | Format check  | `make format-check`               | what CI enforces                                   |
 | Lint          | `make lint`                       | pylint                                             |
 | Rust checks   | `make rust-check`                 | cargo fmt, clippy, unit tests                      |
-| Build docs    | `make docs`                       | Sphinx → `docs/_build/html`                        |
+| Build docs    | `make docs`                       | Sphinx → `docs/_build/html`, Russian in `html/ru`  |
+| Translations  | `make docs-i18n`, `make docs-i18n-check` | update the Russian catalogues; check them  |
 
 Line length is 120. Imports are isort-sorted (`__init__.py` files are skipped).
 
@@ -48,6 +49,26 @@ answer, the tests fall back to the Geofabrik extract `northwestern-fed-district`
 downloaded once and the district is cut out of it into `tests/test_cache/geofabrik/territories/osm_1114252.osm.pbf`.
 Set the order with `OBJECTNAT_TEST_OSM_SOURCES` (e.g. `pbf` for Geofabrik only). The boundary and the graph are
 cached in `tests/test_cache/` (git-ignored), so later runs need no network.
+
+## Documentation in two languages
+
+The documentation is written in English and translated into Russian with Sphinx's gettext tools. Every page,
+every text cell of the example notebooks and every docstring that the API reference shows has its translation in
+`docs/locale/ru/LC_MESSAGES/<page>.po`; the Russian site is built into `docs/_build/html/ru` and both sites link
+to each other from the sidebar. A change of English text is not finished until it is translated:
+
+1. Edit the English source (`.rst`, notebook markdown, docstrings).
+2. Run `make docs-i18n` (`python docs/i18n.py update`). New messages get an empty `msgstr`; changed ones keep the
+   old translation, marked `#, fuzzy`, with the previous English text as `#| msgid` for comparison.
+3. Translate the empty entries and fix the fuzzy ones, deleting the `#, fuzzy` line (any `.po` editor works, e.g.
+   Poedit, or a text editor). Keep reST/MyST markup, roles, links and literals as in the English text; write
+   decimal commas in prose (`2,8 га`) but not in code.
+4. Run `make docs-i18n-check` (CI runs it on every pull request) and `make docs`, and look at the changed pages in
+   both languages.
+
+A parameter description with a nested list appears in a catalogue as a whole and as its parts; `make docs-i18n`
+keeps the whole one unchanged so that Sphinx translates the parts, which you translate. `README.rst` and
+`README_RU.rst` are kept in step by hand.
 
 ## Commit messages (Conventional Commits)
 

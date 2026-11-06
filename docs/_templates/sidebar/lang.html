@@ -1,0 +1,11 @@
+{#- Language switch: the English site is the root of the output, the Russian one its ru/ subdirectory. -#}
+{%- set up = "../" * pagename.count("/") -%}
+<div class="lang-switch">
+  {%- if language == "ru" %}
+  <a href="{{ up }}../{{ pagename }}.html" hreflang="en" lang="en">English</a>
+  <span class="lang-switch-current" lang="ru">Русский</span>
+  {%- else %}
+  <span class="lang-switch-current" lang="en">English</span>
+  <a href="{{ up }}ru/{{ pagename }}.html" hreflang="ru" lang="ru">Русский</a>
+  {%- endif %}
+</div>

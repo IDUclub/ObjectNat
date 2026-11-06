@@ -25,7 +25,7 @@ Object-oriented Network Analysis Tools
    :alt: Лицензия
 
 .. |badge-docs| image:: https://img.shields.io/badge/docs-latest-4aa0d5?logo=readthedocs
-   :target: https://iduclub.github.io/ObjectNat/
+   :target: https://iduclub.github.io/ObjectNat/ru/
    :alt: Документация
 
 |badge-black| |badge-pypi| |badge-ci| |badge-coverage| |badge-license| |badge-docs|
@@ -46,39 +46,39 @@ Object-oriented Network Analysis Tools
 инсоляцию. Входные и выходные данные — GeoDataFrame библиотеки GeoPandas; ресурсоёмкие вычисления выполняются
 в скомпилированном расширении на Rust.
 
-`Документация <https://iduclub.github.io/ObjectNat/>`__ · `Примеры <https://iduclub.github.io/ObjectNat/methods/examples/index.html>`__
+`Документация <https://iduclub.github.io/ObjectNat/ru/>`__ · `Примеры <https://iduclub.github.io/ObjectNat/ru/methods/examples/index.html>`__ · `Documentation in English <https://iduclub.github.io/ObjectNat/>`__
 
 ----
 
 Методы
 ------
 
-**Изохроны** (`документация <https://iduclub.github.io/ObjectNat/methods/isochrones.html>`__, `пример <https://iduclub.github.io/ObjectNat/methods/examples/isochrones.html>`__).
+**Изохроны** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/isochrones.html>`__, `пример <https://iduclub.github.io/ObjectNat/ru/methods/examples/isochrones.html>`__).
 ``get_graph_isochrones`` и ``get_stepped_graph_isochrones`` возвращают территорию, достижимую из точек отправления
 за заданное время (мин) или сетевое расстояние (м) по графу ``iduedu.UrbanGraph``: один полигон на точку или
 пояса шириной ``step``. Полигон строится по буферам остаточного расстояния вокруг достижимых узлов
 (``"radius"``), по буферам достижимых улиц (``"ways"``) или по объединённым буферам (``"separate"``).
 
-**Зоны покрытия** (`документация <https://iduclub.github.io/ObjectNat/methods/coverage.html>`__, `пример <https://iduclub.github.io/ObjectNat/methods/examples/coverage.html>`__).
+**Зоны покрытия** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/coverage.html>`__, `пример <https://iduclub.github.io/ObjectNat/ru/methods/examples/coverage.html>`__).
 ``get_graph_coverage`` и ``get_stepped_graph_coverage`` относят каждое место к сервису, до которого сетевая
 стоимость в пределах заданного бюджета минимальна (поиск по обращённому графу, ячейки Вороного узлов графа),
 поэтому зоны не перекрываются. ``get_radius_coverage`` строит зоны без графа, по фиксированному радиусу.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v2.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v3.png
    :align: center
    :width: 100%
    :alt: Пояса изохрон с geometry_type ways, radius и separate, шаг 3 минуты
 
-**Обеспеченность сервисами** (`документация <https://iduclub.github.io/ObjectNat/methods/provision.html>`__,
-`пример <https://iduclub.github.io/ObjectNat/methods/examples/provision.html>`__). ``get_service_provision`` распределяет спрос зданий между
+**Обеспеченность сервисами** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/provision.html>`__,
+`пример <https://iduclub.github.io/ObjectNat/ru/methods/examples/provision.html>`__). ``get_service_provision`` распределяет спрос зданий между
 сервисами с ограниченной вместимостью по гравитационной вероятностной модели на плотной или разреженной
 (pandas sparse) матрице стоимостей с нормативным порогом. Результат — ``ProvisionResult`` с разреженной матрицей
 потоков и показателями по зданиям и сервисам (``provision_value`` — доля спроса, обеспеченная в пределах порога).
 Вспомогательные функции присоединяют показатели к GeoDataFrame, строят линии связей, удаляют связи длиннее
 нового порога и обрезают результат по территории.
 
-**Видимость** (`документация <https://iduclub.github.io/ObjectNat/methods/visibility.html>`__, примеры: `2D <https://iduclub.github.io/ObjectNat/methods/examples/visibility.html>`__,
-`2.5D <https://iduclub.github.io/ObjectNat/methods/examples/viewshed.html>`__). ``get_visibility`` вычисляет точный полигон видимости (изовисту)
+**Видимость** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/visibility.html>`__, примеры: `2D <https://iduclub.github.io/ObjectNat/ru/methods/examples/visibility.html>`__,
+`2.5D <https://iduclub.github.io/ObjectNat/ru/methods/examples/viewshed.html>`__). ``get_visibility`` вычисляет точный полигон видимости (изовисту)
 каждого наблюдателя среди препятствий, которые считаются стенами бесконечной высоты, а при
 ``isovist_metrics=True`` — площадь, компактность, окклюзивность, радиальные статистики, смещение центроида
 (drift) и долю видимого круга. ``get_viewshed`` учитывает высоты зданий и рельеф: ячейка сетки видна, если луч
@@ -92,7 +92,7 @@ Object-oriented Network Analysis Tools
    :width: 100%
    :alt: Полигон видимости 2D, область видимости с уровня улицы и с крыши
 
-**Шум** (`документация <https://iduclub.github.io/ObjectNat/methods/noise.html>`__, `пример <https://iduclub.github.io/ObjectNat/methods/examples/noise.html>`__).
+**Шум** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/noise.html>`__, `пример <https://iduclub.github.io/ObjectNat/ru/methods/examples/noise.html>`__).
 ``simulate_noise_grid`` рассчитывает уровни звука в узлах сетки приёмников от точечных, линейных и площадных
 источников: прямой путь и отражения первого порядка с учётом геометрического расхождения, поглощения в воздухе,
 поглощения стенами и ослабления растительностью, а также дифракцию в тень за углами зданий, с энергетическим
@@ -101,12 +101,12 @@ Object-oriented Network Analysis Tools
 земли не моделируется.
 Подробнее: `вики <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__.
 
-**Инсоляция** (`документация <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__, `пример <https://iduclub.github.io/ObjectNat/methods/examples/insolation.html>`__).
+**Инсоляция** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/insolation.html>`__, `пример <https://iduclub.github.io/ObjectNat/ru/methods/examples/insolation.html>`__).
 ``get_insolation`` прослеживает положение солнца (алгоритм NOAA) в течение дня или периода и возвращает для
 сетки точек на земле среди зданий известной высоты и, при необходимости, рельефа (GeoDataFrame, GeoTIFF или
 массив) зоны продолжительности прямого солнечного освещения в часах за сутки, включая участки, на которые прямое
 солнце не попадает. Для точек также доступны часы в худший день и наибольшая непрерывная продолжительность
-инсоляции, которую ограничивают нормативы. ``get_facade_insolation`` рассчитывает те же величины для точек на
+инсоляции, для которой нормативы задают минимум. ``get_facade_insolation`` рассчитывает те же величины для точек на
 фасадах по этажам и проверяет их по нормативу.
 
 .. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21_v2.gif

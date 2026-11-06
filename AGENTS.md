@@ -65,8 +65,13 @@ uv run isort objectnat tests    # or: make format
 uv run black objectnat tests
 uv run pylint objectnat         # or: make lint
 
-# Build docs
-uv run sphinx-build -b html docs docs/_build/html   # or: make docs
+# Build docs (English, then Russian into html/ru)    # or: make docs
+uv run sphinx-build -b html docs docs/_build/html
+uv run sphinx-build -b html -D language=ru -d docs/_build/doctrees-ru docs docs/_build/html/ru
+
+# Russian translation of the docs: add new/changed text to the catalogues, then check nothing is untranslated
+uv run python docs/i18n.py update                   # or: make docs-i18n
+uv run python docs/i18n.py check                    # or: make docs-i18n-check (CI fails on untranslated text)
 
 # Rust extension (built automatically by `uv sync`; needs a Rust toolchain): checks and unit tests
 (cd rust && cargo fmt --check && cargo clippy --release --all-targets -- -D warnings && cargo test --release)
@@ -157,6 +162,16 @@ distance includes the boarding wait, and several of them can share one stop loca
 `tests/test_cache/geofabrik/`) when Overpass does not answer, and caches the graph as `tests/test_cache/*.urbangraph`.
 Matplotlib runs on the `Agg` backend
 (set in conftest). Example data (buildings/services/etc.) lives under `docs/methods/examples/examples_data/`.
+
+### Documentation in two languages
+
+English is the source; Russian lives in gettext catalogues `docs/locale/ru/LC_MESSAGES/<page>.po` (pages, notebook
+markdown and the docstrings autodoc shows). `docs/conf.py` sets `locale_dirs`, one catalogue per page and the
+language switch (`docs/_templates/sidebar/lang.html`: the Russian site is the `ru/` subdirectory of the English one).
+**Whenever English text changes — a page, a notebook text cell, a public docstring — run `docs/i18n.py update`,
+translate every empty or `#, fuzzy` entry (keep markup, roles, literals and links; decimal commas in Russian prose)
+and finish with `docs/i18n.py check`.** Containers of nested lists (`Text:  - a - b`) stay identical to the
+English; the update step keeps them so. `README_RU.rst` mirrors `README.rst`.
 
 ### Releases
 

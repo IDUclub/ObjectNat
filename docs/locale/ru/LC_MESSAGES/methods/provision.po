@@ -1,0 +1,232 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Service Provision"
+msgstr "Обеспеченность сервисами"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "Service provision analysis allocates the **demand** of buildings (for example, the number of school-age children) to **services** with limited **capacity** (school places), given a matrix of travel costs between them and a normative **threshold** (minutes or metres). It shows which buildings are served within the threshold, which are served only by services farther away, and which services are overloaded or underused."
+msgstr "Анализ обеспеченности распределяет **спрос** зданий (например, число детей школьного возраста) между **сервисами** с ограниченной **вместимостью** (местами в школах) по матрице стоимостей пути между ними и нормативному **порогу** (минуты или метры). Он показывает, какие здания обслуживаются в пределах порога, какие — только более далёкими сервисами и какие сервисы перегружены или недогружены."
+
+msgid ":func:`objectnat.get_service_provision` computes the allocation and returns a :class:`objectnat.ProvisionResult`. Helper functions join the metrics back to the buildings and services and build link geometries; :func:`objectnat.recalculate_links` and :func:`objectnat.clip_provision` adjust a computed result."
+msgstr ":func:`objectnat.get_service_provision` рассчитывает распределение и возвращает :class:`objectnat.ProvisionResult`. Вспомогательные функции присоединяют показатели к зданиям и сервисам и строят геометрию связей; :func:`objectnat.recalculate_links` и :func:`objectnat.clip_provision` изменяют уже рассчитанный результат."
+
+msgid "Inputs"
+msgstr "Входные данные"
+
+msgid "``buildings``: GeoDataFrame with a numeric demand column (``buildings_demand_column``, default ``\"demand\"``);"
+msgstr "``buildings``: GeoDataFrame с числовым столбцом спроса (``buildings_demand_column``, по умолчанию ``\"demand\"``);"
+
+msgid "``services``: GeoDataFrame with a numeric capacity column (``services_capacity_column``, default ``\"capacity\"``);"
+msgstr "``services``: GeoDataFrame с числовым столбцом вместимости (``services_capacity_column``, по умолчанию ``\"capacity\"``);"
+
+msgid "``distance_matrix``: costs with rows ``buildings.index`` and columns ``services.index``, in the units of ``threshold``. It may be a dense DataFrame (``inf`` or ``NaN`` for unreachable pairs) or a pandas sparse DataFrame (``SparseDtype`` with ``NaN`` or ``inf`` as fill value) that stores only reachable pairs. Sparse matrices are read entry by entry without densifying, so large areas fit in memory. IduEdu's ``od_matrix`` returns such a sparse matrix (see :doc:`examples/calculate_od_matrix`)."
+msgstr "``distance_matrix``: стоимости со строками ``buildings.index`` и столбцами ``services.index`` в единицах ``threshold``. Это может быть плотный DataFrame (``inf`` или ``NaN`` для недостижимых пар) или разреженный DataFrame pandas (``SparseDtype`` с ``NaN`` или ``inf`` в качестве заполнителя), который хранит только достижимые пары. Разреженные матрицы читаются поэлементно без уплотнения, поэтому большие территории помещаются в памяти. Такую разреженную матрицу возвращает ``od_matrix`` из IduEdu (см. :doc:`examples/calculate_od_matrix`)."
+
+msgid "Method"
+msgstr "Метод"
+
+msgid "The allocation is a gravity-based probabilistic model computed in ObjectNat's Rust extension over the sparse matrix entries:"
+msgstr "Распределение — гравитационная вероятностная модель, которая вычисляется в расширении ObjectNat на Rust по элементам разреженной матрицы:"
+
+msgid "Candidate links are building–service pairs with a finite cost ``d <= 3 * threshold``; the model uses ``a = d + 1``."
+msgstr "Кандидаты в связи — пары здание–сервис с конечной стоимостью ``d <= 3 * threshold``; модель использует ``a = d + 1``."
+
+msgid "In each iteration, every service with remaining capacity offers it to the buildings with remaining demand within the current selection range. Of these candidates it keeps the buildings whose gravity weight ``1 / a²`` lies in the upper quantile and distributes its capacity over them by weighted random draws."
+msgstr "На каждой итерации каждый сервис с оставшейся вместимостью предлагает её зданиям с оставшимся спросом в текущем радиусе отбора. Из этих кандидатов он оставляет здания, гравитационный вес которых ``1 / a²`` попадает в верхний квантиль, и распределяет между ними вместимость взвешенными случайными выборками."
+
+msgid "Every building accepts at most its remaining demand from the offers, again by weighted draws."
+msgstr "Каждое здание принимает из предложений не больше своего оставшегося спроса, тоже взвешенными выборками."
+
+msgid "Buildings and services with no remaining demand, capacity or candidates drop out; the selection range grows by a factor of 1.5, and the iterations continue until nothing can be allocated."
+msgstr "Здания и сервисы без оставшегося спроса, вместимости или кандидатов выбывают; радиус отбора увеличивается в 1,5 раза, и итерации продолжаются, пока распределять нечего."
+
+msgid "The random streams are seeded per object and iteration from ``seed``, so a fixed seed gives the same result regardless of the number of CPU cores. Different seeds give alternative allocations with the same model."
+msgstr "Случайные последовательности инициализируются из ``seed`` отдельно для каждого объекта и итерации, поэтому при фиксированном seed результат одинаков при любом числе ядер процессора. Разные seed дают альтернативные распределения в рамках той же модели."
+
+msgid "Outputs"
+msgstr "Результаты"
+
+msgid ":class:`objectnat.ProvisionResult` contains"
+msgstr ":class:`objectnat.ProvisionResult` содержит"
+
+msgid "``flow``: sparse building × service matrix of allocated demand;"
+msgstr "``flow``: разреженную матрицу здание × сервис с распределённым спросом;"
+
+msgid "``demand_rows``: per building ``demand``, ``demand_left``, ``supplied_demands_within`` and ``supplied_demands_without`` (allocated from services within / beyond ``threshold``), ``min_dist`` (cost to the nearest service), ``avg_dist`` (flow-weighted mean cost) and ``provision_value`` = ``supplied_demands_within / demand``;"
+msgstr "``demand_rows``: по каждому зданию ``demand``, ``demand_left``, ``supplied_demands_within`` и ``supplied_demands_without`` (спрос, полученный от сервисов в пределах / за пределами ``threshold``), ``min_dist`` (стоимость пути до ближайшего сервиса), ``avg_dist`` (средняя стоимость, взвешенная по потокам) и ``provision_value`` = ``supplied_demands_within / demand``;"
+
+msgid "``capacity_rows``: per service ``capacity``, ``capacity_left``, ``carried_capacity_within``, ``carried_capacity_without`` and ``service_load`` (total allocated demand);"
+msgstr "``capacity_rows``: по каждому сервису ``capacity``, ``capacity_left``, ``carried_capacity_within``, ``carried_capacity_without`` и ``service_load`` (суммарный распределённый спрос);"
+
+msgid "``distance_matrix`` and ``threshold`` used for the calculation."
+msgstr "``distance_matrix`` и ``threshold``, использованные в расчёте."
+
+msgid ":func:`objectnat.get_provision_buildings` and :func:`objectnat.get_provision_services` join these metrics to copies of the input GeoDataFrames; :func:`objectnat.get_provision_links` returns one straight line per non-zero flow, from the representative point of the building to the service, with ``building_index``, ``service_index``, ``demand`` (allocated units) and ``distance`` (cost)."
+msgstr ":func:`objectnat.get_provision_buildings` и :func:`objectnat.get_provision_services` присоединяют эти показатели к копиям входных GeoDataFrame; :func:`objectnat.get_provision_links` возвращает по одной прямой на каждый ненулевой поток, от характерной точки здания к сервису, со столбцами ``building_index``, ``service_index``, ``demand`` (распределённые единицы) и ``distance`` (стоимость)."
+
+msgid "Compute service provision between demand locations and service facilities."
+msgstr "Рассчитывает обеспеченность сервисами между точками спроса и объектами обслуживания."
+
+msgid "The function implements a **gravity-based allocation model**: service capacity is distributed across nearby demand points with weights that **decay with the square of distance (or generalized cost)**. Closer buildings receive proportionally higher shares of the available capacity. Only building-service pairs within ``3 * threshold`` take part in the allocation, which runs in ObjectNat's Rust extension over those pairs only."
+msgstr "Функция реализует **гравитационную модель распределения**: вместимость сервиса распределяется между ближними точками спроса с весами, которые **убывают с квадратом расстояния (или обобщённой стоимости)**. Более близкие здания получают пропорционально большую долю доступной вместимости. В распределении участвуют только пары здание–сервис в пределах ``3 * threshold``; оно выполняется в расширении ObjectNat на Rust только по этим парам."
+
+msgid "Parameters"
+msgstr "Параметры"
+
+msgid "GeoDataFrame of demand locations. Must include a numeric demand column."
+msgstr "GeoDataFrame точек спроса. Должен содержать числовой столбец спроса."
+
+msgid "OD cost matrix where rows are ``buildings.index`` and columns are ``services.index``. Units must match ``threshold``. Either a dense DataFrame (``inf``/``NaN`` = unreachable) or, for large areas, a pandas sparse DataFrame (``SparseDtype`` with a ``NaN`` or ``inf`` fill value) that stores only the reachable pairs."
+msgstr "Матрица стоимостей OD, строки которой — ``buildings.index``, а столбцы — ``services.index``. Единицы должны совпадать с ``threshold``. Плотный DataFrame (``inf``/``NaN`` — недостижимо) или, для больших территорий, разреженный DataFrame pandas (``SparseDtype`` с заполнителем ``NaN`` или ``inf``), который хранит только достижимые пары."
+
+msgid "GeoDataFrame of service facilities. Must include a numeric capacity column."
+msgstr "GeoDataFrame объектов обслуживания. Должен содержать числовой столбец вместимости."
+
+msgid "Normative cost threshold. Units are the same as in ``distance_matrix``."
+msgstr "Нормативный порог стоимости. Единицы те же, что в ``distance_matrix``."
+
+msgid "Column name of building demand values. Default is ``\"demand\"``."
+msgstr "Имя столбца со спросом зданий. По умолчанию ``\"demand\"``."
+
+msgid "Column name of service capacity values. Default is ``\"capacity\"``."
+msgstr "Имя столбца с вместимостью сервисов. По умолчанию ``\"capacity\"``."
+
+msgid "Seed of the random draws in the allocation. A fixed seed yields reproducible results (independent of the number of CPU cores); vary it to sample alternative allocations. Default is ``0``."
+msgstr "Начальное значение генератора случайных выборок при распределении. Фиксированное значение даёт воспроизводимый результат (независимо от числа ядер процессора); меняйте его, чтобы получить альтернативные распределения. По умолчанию ``0``."
+
+msgid "Returns"
+msgstr "Возвращает"
+
+msgid "Dataclass with a sparse building-service flow matrix, building metrics, service metrics, the aligned distance matrix, and the provision threshold."
+msgstr "Dataclass с разреженной матрицей потоков здание–сервис, показателями зданий и сервисов, согласованной матрицей расстояний и нормативным порогом."
+
+msgid "Return type"
+msgstr "Тип возвращаемого значения"
+
+msgid "Result of a service provision calculation."
+msgstr "Результат расчёта обеспеченности сервисами."
+
+msgid "Sparse building-service allocation matrix. Rows match building indices, columns match service indices, and non-zero values are allocated demand units."
+msgstr "Разреженная матрица распределения здание–сервис. Строки соответствуют индексам зданий, столбцы — индексам сервисов, ненулевые значения — распределённые единицы спроса."
+
+msgid "Per-building metrics indexed like ``flow.index``. Includes original demand, remaining demand, supplied demand within/beyond the threshold, the cost to the nearest service, the flow-weighted mean cost and provision value."
+msgstr "Показатели зданий с индексом как у ``flow.index``. Включают исходный спрос, оставшийся спрос, спрос, удовлетворённый в пределах и за пределами порога, стоимость пути до ближайшего сервиса, среднюю стоимость, взвешенную по потокам, и показатель обеспеченности."
+
+msgid "Per-service metrics indexed like ``flow.columns``. Includes original capacity, remaining capacity, carried capacity within/beyond the threshold, and total service load."
+msgstr "Показатели сервисов с индексом как у ``flow.columns``. Включают исходную вместимость, оставшуюся вместимость, вместимость, отданную в пределах и за пределами порога, и суммарную нагрузку сервиса."
+
+msgid "Aligned OD cost matrix used for the calculation (dense, or pandas sparse when a sparse matrix was passed). Its index and columns must match ``flow``."
+msgstr "Согласованная матрица стоимостей OD, использованная в расчёте (плотная или разреженная pandas, если была передана разреженная матрица). Её индекс и столбцы должны совпадать с ``flow``."
+
+msgid "Normative distance or time threshold used to split flows into within-threshold and beyond-threshold metrics."
+msgstr "Нормативный порог расстояния или времени, по которому потоки делятся на показатели в пределах и за пределами порога."
+
+msgid "Join provision demand metrics to buildings."
+msgstr "Присоединяет к зданиям показатели спроса из расчёта обеспеченности."
+
+msgid "Existing columns with the same names as provision metrics are dropped and replaced. The returned object preserves the input type and index."
+msgstr "Существующие столбцы с теми же именами, что у показателей, удаляются и заменяются. Возвращаемый объект сохраняет тип и индекс входных данных."
+
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\` \\| \\:py\\:class\\:\\`\\~pandas.DataFrame\\``"
+msgstr ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\` \\| \\:py\\:class\\:\\`\\~pandas.DataFrame\\``"
+
+msgid "Join provision capacity metrics to services."
+msgstr "Присоединяет к сервисам показатели вместимости из расчёта обеспеченности."
+
+msgid "Build building-service link geometries from non-zero provision flows."
+msgstr "Строит геометрию связей здание–сервис по ненулевым потокам."
+
+msgid "Services are reprojected to the buildings CRS when both CRS values are set and differ. Empty flows return an empty ``GeoDataFrame``. Links whose building or service ids are absent from the supplied GeoDataFrames are filtered out."
+msgstr "Сервисы перепроецируются в систему координат зданий, если у обоих наборов задана система координат и они различаются. Для пустых потоков возвращается пустой ``GeoDataFrame``. Связи, идентификаторов здания или сервиса которых нет в переданных GeoDataFrame, отбрасываются."
+
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\``"
+msgstr ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\``"
+
+msgid "Provision value of residential buildings"
+msgstr "Показатель обеспеченности жилых зданий"
+
+msgid "Provision value of residential buildings for the example schools with a 10-minute threshold on the intermodal travel-time matrix (``seed=0``); square size shows school capacity. Non-residential buildings and streets are grey; the black line is the district boundary."
+msgstr "Показатель обеспеченности жилых зданий школами из примера с порогом 10 минут по интермодальной матрице времени в пути (``seed=0``); размер квадрата показывает вместимость школы. Нежилые здания и улицы серые; чёрная линия — граница района."
+
+msgid "Provision with building–school links"
+msgstr "Обеспеченность со связями здание–школа"
+
+msgid "The same result with :func:`objectnat.get_provision_links`: one line per non-zero flow, width proportional to the allocated demand. Dark links lie within the threshold, light ones beyond it (up to ``3 * threshold``); the light links carry the demand that the schools within 10 minutes cannot accommodate."
+msgstr "Тот же результат с :func:`objectnat.get_provision_links`: по одной линии на ненулевой поток, ширина пропорциональна распределённому спросу. Тёмные связи лежат в пределах порога, светлые — за ним (до ``3 * threshold``); по светлым связям идёт спрос, который школы в пределах 10 минут не могут принять."
+
+msgid "Recalculation and clipping"
+msgstr "Пересчёт и обрезка"
+
+msgid ":func:`objectnat.recalculate_links` removes the flows whose cost exceeds ``new_max_dist`` and rebuilds the aggregate metrics without a new allocation. The removed demand is not redistributed to other services; run :func:`objectnat.get_service_provision` again for a full reallocation."
+msgstr ":func:`objectnat.recalculate_links` удаляет потоки со стоимостью больше ``new_max_dist`` и пересчитывает сводные показатели без нового распределения. Удалённый спрос не перераспределяется на другие сервисы; для полного перераспределения снова запустите :func:`objectnat.get_service_provision`."
+
+msgid ":func:`objectnat.clip_provision` keeps the buildings that intersect ``selection_zone``, the links of these buildings and the services the links refer to. All four inputs must share one CRS."
+msgstr ":func:`objectnat.clip_provision` оставляет здания, пересекающие ``selection_zone``, связи этих зданий и сервисы, на которые ссылаются эти связи. Все четыре входных набора должны быть в одной системе координат."
+
+msgid "Recalculate a provision result with a shorter maximum link cost."
+msgstr "Пересчитывает результат расчёта обеспеченности с меньшей максимальной стоимостью связи."
+
+msgid "Flows whose cost exceeds ``new_max_dist`` are removed, and building/service aggregates are recomputed without redistributing removed demand."
+msgstr "Потоки со стоимостью больше ``new_max_dist`` удаляются, а сводные показатели зданий и сервисов пересчитываются без перераспределения удалённого спроса."
+
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~objectnat.methods.provision.provision\\_result.ProvisionResult\\``"
+msgstr ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~objectnat.methods.provision.provision\\_result.ProvisionResult\\``"
+
+msgid "Clip service provision outputs to a specific geographic boundary."
+msgstr "Обрезает результаты расчёта обеспеченности по заданной границе."
+
+msgid "Keeps only buildings that intersect ``selection_zone``, links that connect to the kept buildings, and services referenced by those links."
+msgstr "Оставляет только здания, пересекающие ``selection_zone``, связи этих зданий и сервисы, на которые ссылаются эти связи."
+
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`tuple\\`\\\\ \\\\\\[\\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\`\\, \\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\`\\, \\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\`\\]`"
+msgstr ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`tuple\\`\\\\ \\\\\\[\\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\`\\, \\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\`\\, \\:py\\:class\\:\\`\\~geopandas.geodataframe.GeoDataFrame\\`\\]`"
+
+msgid "Provision after recalculate_links"
+msgstr "Обеспеченность после recalculate_links"
+
+msgid "``recalculate_links(result, 10)``: the links longer than 10 minutes are removed and the metrics are rebuilt; their demand stays unallocated."
+msgstr "``recalculate_links(result, 10)``: связи длиннее 10 минут удалены, показатели пересчитаны; их спрос остаётся нераспределённым."
+
+msgid "Provision clipped to a selection zone"
+msgstr "Обеспеченность, обрезанная по зоне отбора"
+
+msgid ":func:`objectnat.clip_provision` with a 450 m circle: the buildings in the zone, all their links and the schools these links lead to, including schools outside the zone."
+msgstr ":func:`objectnat.clip_provision` с кругом радиусом 450 м: здания в зоне, все их связи и школы, к которым ведут эти связи, в том числе школы за пределами зоны."
+
+msgid "Limitations"
+msgstr "Ограничения"
+
+msgid "The allocation is stochastic: individual flows depend on ``seed``; aggregate metrics vary little between seeds for large inputs but can vary for small ones."
+msgstr "Распределение случайно: отдельные потоки зависят от ``seed``; сводные показатели для больших наборов данных мало меняются от seed к seed, но для малых могут меняться."
+
+msgid "Demand and capacity are integers (allocated in units); fractional values are truncated."
+msgstr "Спрос и вместимость — целые числа (распределяются поштучно); дробные значения отбрасываются."
+
+msgid "The model has no explicit choice behaviour (quality, preference, catchment rules); every reachable service within ``3 * threshold`` can receive demand."
+msgstr "В модели нет явного поведения выбора (качество, предпочтения, правила закрепления); спрос может получить любой достижимый сервис в пределах ``3 * threshold``."
+
+msgid "The result is only as accurate as the cost matrix; the example matrix contains travel times in minutes on an intermodal graph."
+msgstr "Результат точен настолько, насколько точна матрица стоимостей; матрица из примера содержит время в пути в минутах по интермодальному графу."
+
+msgid "Example notebooks"
+msgstr "Примеры в ноутбуках"
+
+msgid ":doc:`examples/calculate_od_matrix` (cost matrix with IduEdu) and :doc:`examples/provision`."
+msgstr ":doc:`examples/calculate_od_matrix` (матрица стоимостей с IduEdu) и :doc:`examples/provision`."
+

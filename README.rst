@@ -44,7 +44,7 @@ coverage and service provision on street graphs from `IduEdu <https://github.com
 2D and over building heights, noise levels and insolation. Inputs and outputs are GeoPandas GeoDataFrames; the
 computationally intensive parts run in a compiled Rust extension.
 
-`Documentation <https://iduclub.github.io/ObjectNat/>`__ · `Examples <https://iduclub.github.io/ObjectNat/methods/examples/index.html>`__
+`Documentation <https://iduclub.github.io/ObjectNat/>`__ · `Examples <https://iduclub.github.io/ObjectNat/methods/examples/index.html>`__ · `Документация на русском <https://iduclub.github.io/ObjectNat/ru/>`__
 
 ----
 
@@ -62,7 +62,7 @@ bands of width ``step``. The polygon is built from residual-distance buffers aro
 network cost within a budget (search on the reversed graph, Voronoi cells of graph nodes), so zones do not overlap.
 ``get_radius_coverage`` is a graph-free variant with a fixed radius.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v2.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v3.png
    :align: center
    :width: 100%
    :alt: Stepped isochrones with geometry_type ways, radius and separate, bands of 3 minutes

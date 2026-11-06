@@ -1,0 +1,100 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Insolation: sun hours on the ground and on facades"
+msgstr "Инсоляция: часы солнца на земле и на фасадах"
+
+msgid "This notebook computes hours of direct sunlight among buildings of known height with `get_insolation` (ground receivers) and `get_facade_insolation` (facade points per floor):"
+msgstr "Этот ноутбук рассчитывает часы прямого солнечного света среди зданий известной высоты функциями `get_insolation` (приёмники на земле) и `get_facade_insolation` (точки на фасадах по этажам):"
+
+msgid "sun-hour zones for a single day (equinox and summer solstice);"
+msgstr "зоны часов солнца за один день (равноденствие и летнее солнцестояние);"
+
+msgid "a period (22 April – 22 August) with the longest continuous sunlit period on the worst day, as rasters (`rasterize`);"
+msgstr "период (22 апреля – 22 августа) с наибольшей непрерывной продолжительностью инсоляции в худший день, в виде растров (`rasterize`);"
+
+msgid "the effect of terrain given as an array, and the raster on a web map (`Raster.explore`);"
+msgstr "влияние рельефа, заданного массивом, и растр на веб-карте (`Raster.explore`);"
+
+msgid "facade insolation per floor and a check against a continuous-insolation norm."
+msgstr "инсоляцию фасадов по этажам и проверку по нормативу непрерывной инсоляции."
+
+msgid "The example buildings (Vasilyevsky Island, Saint Petersburg, 59.96° N) have a `storeys_count` column; heights are storeys × 3 m. The method is described on the [insolation page](../insolation.rst)."
+msgstr "У зданий из примера (Васильевский остров, Санкт-Петербург, 59,96° с. ш.) есть столбец `storeys_count`; высота — этажность × 3 м. Метод описан на [странице инсоляции](../insolation.rst)."
+
+msgid "The last section, *Your own area*, shows what to replace to get the same pictures for another territory."
+msgstr "Последний раздел, *Своя территория*, показывает, что заменить, чтобы получить такие же картинки для другой территории."
+
+msgid "1. Study area"
+msgstr "1\\. Исследуемая территория"
+
+msgid "A 500 × 400 m residential area with courtyards. All buildings within 300 m of it are passed to the functions, because buildings outside the area also cast shadows into it."
+msgstr "Жилая территория 500 × 400 м с дворами. В функции передаются все здания в пределах 300 м от неё, потому что здания за её пределами тоже отбрасывают на неё тени."
+
+msgid "2. One day"
+msgstr "2\\. Один день"
+
+msgid "`date` is a single day. Receivers are placed every `grid_step` metres outside footprints, and the sun position is sampled every `time_step_min` minutes. The result has one zone per class of daily sun hours (`hour_breaks`); class `0` is ground with no direct sun at all. `attrs` contain the simulated days and the day length."
+msgstr "`date` — один день. Приёмники размещаются с шагом `grid_step` метров вне контуров зданий, а положение солнца вычисляется каждые `time_step_min` минут. В результате по одной зоне на класс суточных часов солнца (`hour_breaks`); класс `0` — земля совсем без прямого солнца. `attrs` содержат моделируемые дни и продолжительность дня."
+
+msgid "3. A period and the worst day"
+msgstr "3\\. Период и худший день"
+
+msgid "`date=(start, end)` simulates every `day_step`-th day of the period and its last day. With `output=\"receivers\"` the receiver points have `sun_hours` (mean over the simulated days), `min_sun_hours` (worst day) and `max_continuous_hours` (longest continuous sunlit period on the worst day), for which insolation norms usually set a minimum."
+msgstr "`date=(start, end)` моделирует каждый `day_step`-й день периода и его последний день. При `output=\"receivers\"` у точек приёмников есть `sun_hours` (среднее за моделируемые дни), `min_sun_hours` (худший день) и `max_continuous_hours` (наибольшая непрерывная продолжительность инсоляции в худший день), для которой нормативы инсоляции обычно задают минимум."
+
+msgid "`rasterize` turns a receiver column into a `Raster` (values, affine transform, CRS) on the grid of the calculation, whatever CRS the receivers are in; `plot` draws it with matplotlib. Both maps share one colour scale."
+msgstr "`rasterize` превращает столбец приёмников в `Raster` (значения, аффинное преобразование, система координат) на расчётной сетке, в какой бы системе координат ни были приёмники; `plot` рисует его в matplotlib. Обе карты используют одну цветовую шкалу."
+
+msgid "Share of the open ground in the area that receives at least 3 h of continuous sun on every simulated day:"
+msgstr "Доля открытой земли на территории, которая получает не меньше 3 ч непрерывного солнца в каждый моделируемый день:"
+
+msgid "4. Terrain"
+msgstr "4\\. Рельеф"
+
+msgid "Terrain can be a GeoDataFrame of polygons with heights (rasterized with `terrain_cell` cells), a GeoTIFF path or a `(heights, transform, crs)` tuple; a `Raster` is such a tuple too. Here a synthetic ridge 50 m high runs west–east with its crest 50 m south of the area, given as an array with 5 m cells. Buildings stand on the terrain and receivers are placed on it, so a hill under the area itself changes little: what matters is terrain that rises above the line to the sun, here the ridge between the area and the low equinox sun."
+msgstr "Рельеф может быть GeoDataFrame полигонов с высотами (растеризуется с ячейками `terrain_cell`), путём к GeoTIFF или кортежем `(heights, transform, crs)`; `Raster` тоже такой кортеж. Здесь синтетическая гряда высотой 50 м тянется с запада на восток с гребнем в 50 м к югу от территории и задана массивом с ячейками 5 м. Здания стоят на рельефе, и приёмники размещаются на нём, поэтому холм под самой территорией мало что меняет: важен рельеф, который поднимается выше линии на солнце, здесь — гряда между территорией и низким солнцем равноденствия."
+
+msgid "Rasters on a web map and in GIS"
+msgstr "Растры на веб-карте и в ГИС"
+
+msgid "`Raster.explore` shows the raster on a folium map with a colour bar, like `GeoDataFrame.explore()`; pass a map as the first argument to add the layer to it. Web maps draw images in Web Mercator, so the grid is resampled to a Mercator grid first and lines up with the base map; cells without a value are transparent. `Raster.to_folium` returns the bare image overlay, and `Raster.to_geotiff(path)` writes a GeoTIFF for QGIS or ArcGIS (requires `rasterio`)."
+msgstr "`Raster.explore` показывает растр на карте folium с цветовой шкалой, как `GeoDataFrame.explore()`; чтобы добавить слой на существующую карту, передайте её первым аргументом. Веб-карты рисуют изображения в проекции Web Mercator, поэтому сетка сначала пересчитывается на сетку Меркатора и совпадает с подложкой; ячейки без значения прозрачны. `Raster.to_folium` возвращает сам слой изображения, а `Raster.to_geotiff(path)` записывает GeoTIFF для QGIS или ArcGIS (нужен `rasterio`)."
+
+msgid "5. Facades per floor"
+msgstr "5\\. Фасады по этажам"
+
+msgid "`get_facade_insolation` places points every `spacing` metres along the walls of the buildings intersecting `area`, on every floor at `window_height` above the floor level. The sun counts while it is in front of the facade and the ray towards it is clear. `norm_hours` adds `meets_norm`, the check of the longest continuous sunlit period."
+msgstr "`get_facade_insolation` размещает точки с шагом `spacing` метров вдоль стен зданий, пересекающих `area`, на каждом этаже на высоте `window_height` над уровнем пола. Солнце учитывается, пока оно находится перед фасадом, а луч к нему свободен. `norm_hours` добавляет `meets_norm` — проверку наибольшей непрерывной продолжительности инсоляции."
+
+msgid "The example uses 22 April and 2.5 h of continuous sun as the norm value; use the calculation day and the value of the norm that applies to the project (for Russia, SanPiN 1.2.3685-21)."
+msgstr "В примере взяты 22 апреля и 2,5 ч непрерывного солнца в качестве нормативного значения; используйте расчётный день и значение норматива, которые относятся к проекту (для России — СанПиН 1.2.3685-21)."
+
+msgid "Buildings with the lowest share of facade points meeting the norm on the ground floor:"
+msgstr "Здания с наименьшей долей точек на фасадах первого этажа, проходящих по нормативу:"
+
+msgid "6. Your own area"
+msgstr "6\\. Своя территория"
+
+msgid "Building footprints with heights or storeys and an area. The buildings around the area cast shadows into it, so pass them too. `output=\"receivers\"` skips the zone polygons; `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
+msgstr "Контуры зданий с высотами или этажностью и территория. Здания вокруг территории отбрасывают на неё тени, поэтому передайте и их. `output=\"receivers\"` не строит полигоны зон; `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
+
+msgid "Limitations"
+msgstr "Ограничения"
+
+msgid "Roofs are flat; balconies, loggias, window reveals and trees are not modelled, and only direct sunlight is counted. Values are multiples of `time_step_min`. See the [insolation page](../insolation.rst) for details."
+msgstr "Крыши плоские; балконы, лоджии, оконные откосы и деревья не моделируются, учитывается только прямой солнечный свет. Значения кратны `time_step_min`. Подробнее — на [странице инсоляции](../insolation.rst)."
+

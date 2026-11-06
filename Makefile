@@ -8,7 +8,7 @@ COVERAGE_XML ?= coverage.xml
 COVERAGE_HTML ?= htmlcov
 
 .PHONY: help install install-dev lock update lint format format-check test \
-        coverage coverage-xml coverage-html docs clean build publish \
+        coverage coverage-xml coverage-html docs docs-i18n docs-i18n-check clean build publish \
         version version-next changelog rust-check
 
 help:
@@ -25,7 +25,9 @@ help:
 	@echo "  coverage          - run tests with terminal coverage report"
 	@echo "  coverage-xml      - run tests and write coverage.xml for CI"
 	@echo "  coverage-html     - run tests and write HTML coverage report"
-	@echo "  docs              - build documentation"
+	@echo "  docs              - build the English and Russian documentation (docs/_build/html, .../html/ru)"
+	@echo "  docs-i18n         - add new and changed text to the Russian catalogues (docs/locale/ru)"
+	@echo "  docs-i18n-check   - fail while anything in the documentation is left untranslated"
 	@echo "  build             - build wheel and sdist with uv"
 	@echo "  publish           - publish package with uv"
 	@echo "  version           - print the current version (from $(PACKAGE)/_version.py)"
@@ -80,6 +82,13 @@ coverage-html:
 
 docs:
 	$(UV_RUN) sphinx-build -b html docs docs/_build/html
+	$(UV_RUN) sphinx-build -b html -D language=ru -d docs/_build/doctrees-ru docs docs/_build/html/ru
+
+docs-i18n:
+	$(UV_RUN) python docs/i18n.py update
+
+docs-i18n-check:
+	$(UV_RUN) python docs/i18n.py check
 
 clean:
 	rm -rf ./dist ./build ./*.egg-info ./$(COVERAGE_HTML) ./.coverage ./.coverage.* ./$(COVERAGE_XML)

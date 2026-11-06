@@ -1,0 +1,70 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-06 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Noise simulation"
+msgstr "Моделирование шума"
+
+msgid "ObjectNat has three noise models with the same inputs (source level `source_noise_db` in dB at 1 m and characteristic frequency `geometric_mean_freq_hz` in Hz, per source or as arguments):"
+msgstr "В ObjectNat три модели шума с одинаковыми входными данными (уровень источника `source_noise_db` в дБ на расстоянии 1 м и характерная частота `geometric_mean_freq_hz` в Гц, для каждого источника или как аргументы):"
+
+msgid "`simulate_noise_grid`: levels on a receiver grid, direct paths, first-order reflections and diffraction around building corners, energy summation; point, line and polygon sources;"
+msgstr "`simulate_noise_grid`: уровни на сетке приёмников, прямые пути, отражения первого порядка и дифракция у углов зданий, энергетическое суммирование; точечные, линейные и площадные источники;"
+
+msgid "`simulate_noise`: wave-front model for point sources with multiple reflections and vegetation;"
+msgstr "`simulate_noise`: модель волнового фронта для точечных источников с многократными отражениями и растительностью;"
+
+msgid "`calculate_simplified_noise_frame`: visibility masks and distance decay, for a quick estimate."
+msgstr "`calculate_simplified_noise_frame`: маски видимости и затухание с расстоянием для быстрой оценки."
+
+msgid "The sources here are a street (a line through the open space between blocks) and two point sources."
+msgstr "Источники здесь — улица (линия через открытое пространство между кварталами) и два точечных источника."
+
+msgid "The last section, *Your own area*, shows what to replace to get the same pictures for another territory."
+msgstr "Последний раздел, *Своя территория*, показывает, что заменить, чтобы получить такие же картинки для другой территории."
+
+msgid "1. Receiver grid"
+msgstr "1\\. Сетка приёмников"
+
+msgid "Receivers are placed every `grid_step` metres; the street is sampled every `source_spacing` metres (default 5) so that it follows the line-source law. Levels are grouped into bands of `db_sim_step` dB (`noise_level` is the upper bound of the band); `output=\"both\"` also returns the receivers with their exact levels, and `output=\"receivers\"` returns only the receivers."
+msgstr "Приёмники размещаются с шагом `grid_step` метров; улица разбивается на точки с шагом `source_spacing` метров (по умолчанию 5), чтобы она следовала закону линейного источника. Уровни группируются в полосы по `db_sim_step` дБ (`noise_level` — верхняя граница полосы); `output=\"both\"` возвращает также приёмники с точными уровнями, а `output=\"receivers\"` — только приёмники."
+
+msgid "The bands are `db_sim_step` dB wide; the receivers have the exact, continuous level. `rasterize` turns them into a raster on the calculation grid, which shows what the secondary paths add: compared with `reflections=False`, reflections add 1–3 dB along the street canyon and form new beams where the direct sound is blocked; compared with `diffraction=False`, diffraction fills the shadows beside the beams and behind the buildings next to the point sources (at most 20 dB below the free field around one corner, 25 dB around two)."
+msgstr "Полосы имеют ширину `db_sim_step` дБ; приёмники содержат точный непрерывный уровень. `rasterize` превращает их в растр на расчётной сетке, который показывает прибавку от вторичных путей: по сравнению с `reflections=False` отражения добавляют 1–3 дБ вдоль уличного каньона и образуют новые пучки там, где прямой звук перекрыт; по сравнению с `diffraction=False` дифракция заполняет тени рядом с пучками и за зданиями возле точечных источников (не больше чем на 20 дБ ниже свободного поля вокруг одного угла и на 25 дБ вокруг двух)."
+
+msgid "Two equal sources add +3 dB in this model, because energies are summed. Without reflections and diffraction the area behind the buildings stays silent:"
+msgstr "В этой модели два одинаковых источника дают +3 дБ, потому что энергии суммируются. Без отражений и дифракции за зданиями тихо:"
+
+msgid "2. Wave-front simulation"
+msgstr "2\\. Моделирование волнового фронта"
+
+msgid "`simulate_noise` takes point sources only. It propagates the sound in layers of `db_sim_step` dB with up to `reflection_n` reflections and vegetation attenuation."
+msgstr "`simulate_noise` принимает только точечные источники. Она распространяет звук слоями по `db_sim_step` дБ с не более чем `reflection_n` отражениями и ослаблением растительностью."
+
+msgid "3. Simplified noise frame"
+msgstr "3\\. Упрощённый шумовой каркас"
+
+msgid "`calculate_simplified_noise_frame` accepts point, line and polygon sources and needs no propagation simulation; obstacles act only as line-of-sight masks."
+msgstr "`calculate_simplified_noise_frame` принимает точечные, линейные и площадные источники и не требует моделирования распространения; препятствия служат только масками прямой видимости."
+
+msgid "The models differ: `simulate_noise_grid` and `simulate_noise` include reflections, the simplified frame does not; `simulate_noise` and the simplified frame combine sources by the band maximum, `simulate_noise_grid` by energy summation. Only `simulate_noise_grid` includes diffraction around building corners; none of them models ground effect. See the [noise page](../noise.rst)."
+msgstr "Модели различаются: `simulate_noise_grid` и `simulate_noise` учитывают отражения, упрощённый каркас — нет; `simulate_noise` и упрощённый каркас объединяют источники по максимуму полосы, `simulate_noise_grid` — энергетическим суммированием. Дифракцию у углов зданий учитывает только `simulate_noise_grid`; влияние земли не моделирует ни одна. См. [страницу шума](../noise.rst)."
+
+msgid "4. Your own area"
+msgstr "4\\. Своя территория"
+
+msgid "Sources (points, roads as lines, sites as polygons, with `source_noise_db` and `geometric_mean_freq_hz`) and buildings: the receivers as a raster of exact levels. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
+msgstr "Источники (точки, дороги в виде линий, площадки в виде полигонов, с `source_noise_db` и `geometric_mean_freq_hz`) и здания: приёмники в виде растра точных уровней. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
+
