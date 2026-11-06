@@ -117,7 +117,7 @@ objectnat/
       scene.py       — 2.5D scene for insolation and viewsheds: building heights, terrain, local CRS
       raster.py      — Raster (values, transform, crs) and rasterize: grid points of insolation, noise, catchment
                        and isovist grids to rasters (matplotlib, GeoTIFF, folium); grid methods record their grid
-                       in attrs; insolation and noise take output="zones" | "receivers" | "both"
+                       in attrs; noise takes output="zones" | "receivers" | "both"
 rust/                — Rust crate compiled by maturin into the extension `objectnat._rust` (PyO3, abi3)
   src/visibility.rs  — exact batch visibility polygons (grid index, critical directions, rayon)
   src/provision.rs   — gravity-probabilistic provision allocation on sparse OD entries (rayon)

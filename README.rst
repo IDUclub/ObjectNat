@@ -108,9 +108,9 @@ distance decay. Ground effect is not modelled. Background: `wiki <https://github
 
 **Insolation** (`docs <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__, `example <https://iduclub.github.io/ObjectNat/methods/examples/insolation.html>`__).
 ``get_insolation`` follows the sun (NOAA solar position) through a day or a period and returns, on a ground grid
-among buildings of known height and optional terrain (GeoDataFrame, GeoTIFF or array), zones of daily direct sun
-hours, including ground with no direct sun. The receiver points also give the hours on the worst day and the
-longest continuous sunlit period, for which insolation norms set a minimum. ``get_facade_insolation`` computes the same quantities
+among buildings of known height and optional terrain (GeoDataFrame, GeoTIFF or array), the daily hours of direct
+sun, including ground with no direct sun, the hours on the worst day and the longest continuous sunlit period, for
+which insolation norms set a minimum; ``rasterize`` draws them as a raster. ``get_facade_insolation`` computes the same quantities
 for facade points on every floor and checks them against a norm.
 
 .. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21_v2.gif

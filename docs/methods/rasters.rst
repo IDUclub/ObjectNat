@@ -14,7 +14,7 @@ Several methods compute values on a regular grid of square cells and return the 
      - Points returned with
      - Columns and the value of a cell
    * - :func:`objectnat.get_insolation`
-     - ``output="receivers"`` or ``"both"``
+     - always
      - ``sun_hours``, ``min_sun_hours``, ``max_continuous_hours``: direct sun at the receiver, hours per day
    * - :func:`objectnat.simulate_noise_grid`
      - ``output="receivers"`` or ``"both"``
@@ -27,9 +27,7 @@ Several methods compute values on a regular grid of square cells and return the 
      - isovist metrics of an observer standing in the cell: ``visible_share`` (share of the view disc),
        ``compactness``, ``occlusivity`` (m), ``drift`` (m), ...
 
-For insolation and noise, ``output="receivers"`` skips the zone polygons, which is faster when only the values are
-needed:
-for a single day of insolation the polygons take most of the run time.
+For noise, ``output="receivers"`` skips the level bands, which is faster when only the values are needed.
 
 :func:`objectnat.rasterize` turns one column of such points into a :class:`objectnat.Raster`: a 2-D array with an
 affine transform and a CRS. A raster shows a continuous quantity cell by cell, without the class bounds of the zone
@@ -64,7 +62,7 @@ the format of ``terrain`` arguments, so a raster can be passed back as terrain.
 
    from objectnat import get_insolation, rasterize
 
-   receivers = get_insolation(buildings, "2026-03-21", area=area, output="receivers")
+   receivers = get_insolation(buildings, "2026-03-21", area=area)
    sun = rasterize(receivers, "sun_hours")
 
    image = sun.plot(cmap="inferno", vmin=0, vmax=14)          # matplotlib

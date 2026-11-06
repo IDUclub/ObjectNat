@@ -35,8 +35,8 @@ msgstr "Столбцы и значение в ячейке"
 msgid ":func:`objectnat.get_insolation`"
 msgstr ":func:`objectnat.get_insolation`"
 
-msgid "``output=\"receivers\"`` or ``\"both\"``"
-msgstr "``output=\"receivers\"`` или ``\"both\"``"
+msgid "always"
+msgstr "всегда"
 
 msgid "``sun_hours``, ``min_sun_hours``, ``max_continuous_hours``: direct sun at the receiver, hours per day"
 msgstr "``sun_hours``, ``min_sun_hours``, ``max_continuous_hours``: прямое солнце в приёмнике, часов в сутки"
@@ -44,14 +44,14 @@ msgstr "``sun_hours``, ``min_sun_hours``, ``max_continuous_hours``: прямое
 msgid ":func:`objectnat.simulate_noise_grid`"
 msgstr ":func:`objectnat.simulate_noise_grid`"
 
+msgid "``output=\"receivers\"`` or ``\"both\"``"
+msgstr "``output=\"receivers\"`` или ``\"both\"``"
+
 msgid "``noise_level``: sound level at the receiver, dB"
 msgstr "``noise_level``: уровень звука в приёмнике, дБ"
 
 msgid ":func:`objectnat.get_visibility_catchment`, :func:`objectnat.get_viewshed_catchment`"
 msgstr ":func:`objectnat.get_visibility_catchment`, :func:`objectnat.get_viewshed_catchment`"
-
-msgid "always"
-msgstr "всегда"
 
 # | msgid "``count``: the number of observers that see the cell (``weight``:
 # the
@@ -68,8 +68,12 @@ msgstr "метрики изовисты наблюдателя, стоящего
 # | msgid "``output=\"receivers\"`` (``\"cells\"``) skips the zone polygons,
 # | which is faster when only the values are needed: for a single day of
 # | insolation the polygons take most of the run time."
-msgid "For insolation and noise, ``output=\"receivers\"`` skips the zone polygons, which is faster when only the values are needed: for a single day of insolation the polygons take most of the run time."
-msgstr "Для инсоляции и шума ``output=\"receivers\"`` не строит полигоны зон, это быстрее, когда нужны только значения: для одного дня инсоляции полигоны занимают большую часть времени расчёта."
+# | msgid "For insolation and noise, ``output=\"receivers\"`` skips the zone
+# | polygons, which is faster when only the values are needed: for a single
+# day
+# | of insolation the polygons take most of the run time."
+msgid "For noise, ``output=\"receivers\"`` skips the level bands, which is faster when only the values are needed."
+msgstr "Для шума ``output=\"receivers\"`` не строит полосы уровней, это быстрее, когда нужны только значения."
 
 msgid ":func:`objectnat.rasterize` turns one column of such points into a :class:`objectnat.Raster`: a 2-D array with an affine transform and a CRS. A raster shows a continuous quantity cell by cell, without the class bounds of the zone polygons, and it can be drawn with matplotlib, written to a GeoTIFF file or shown on a folium web map."
 msgstr ":func:`objectnat.rasterize` превращает один столбец таких точек в :class:`objectnat.Raster`: двумерный массив с аффинным преобразованием и системой координат. Растр показывает непрерывную величину по ячейкам, без границ классов полигонов зон, и его можно нарисовать в matplotlib, записать в файл GeoTIFF или показать на веб-карте folium."
@@ -107,7 +111,15 @@ msgstr "Превращает точки сетки со значениями в 
 # | position), so the raster reproduces it exactly in the local metric CRS of
 # | the calculation, whatever CRS the points were returned in, and also after
 # | filtering rows."
-msgid "Grid points are what the grid methods return: receivers of :func:`get_insolation` and :func:`simulate_noise_grid` (``output=\"receivers\"`` or ``\"both\"``), the cells of :func:`get_visibility_catchment` and :func:`get_viewshed_catchment` and the points of :func:`get_isovist_grid`. Their ``attrs`` record the grid (CRS, cell size, position), so the raster reproduces it exactly in the local metric CRS of the calculation, whatever CRS the points were returned in, and also after filtering rows."
+# | (``output=\"receivers\"`` or ``\"both\"``), the cells of
+# | :func:`get_visibility_catchment` and :func:`get_viewshed_catchment` and
+# the
+# | points of :func:`get_isovist_grid`. Their ``attrs`` record the grid (CRS,
+# | cell size, position), so the raster reproduces it exactly in the local
+# | metric CRS of the calculation, whatever CRS the points were returned in,
+# and
+# | also after filtering rows."
+msgid "Grid points are what the grid methods return: receivers of :func:`get_insolation` and of :func:`simulate_noise_grid` (``output=\"receivers\"`` or ``\"both\"``), the cells of :func:`get_visibility_catchment` and :func:`get_viewshed_catchment` and the points of :func:`get_isovist_grid`. Their ``attrs`` record the grid (CRS, cell size, position), so the raster reproduces it exactly in the local metric CRS of the calculation, whatever CRS the points were returned in, and also after filtering rows."
 msgstr "Точки сетки — это то, что возвращают методы на сетке: приёмники :func:`get_insolation` и :func:`simulate_noise_grid` (``output=\"receivers\"`` или ``\"both\"``), ячейки :func:`get_visibility_catchment` и :func:`get_viewshed_catchment` и точки :func:`get_isovist_grid`. Их ``attrs`` записывают сетку (систему координат, размер ячейки, положение), поэтому растр точно воспроизводит её в локальной метрической системе координат расчёта, в какой бы системе координат ни были возвращены точки, в том числе после фильтрации строк."
 
 msgid "Points without that record (for example, read from a file) require ``cell_size``; they are then placed in their own CRS if it is projected, or in an estimated UTM zone, with the first point as a cell centre."
@@ -215,8 +227,8 @@ msgstr "Добавить цветовую шкалу."
 msgid "Colour bar caption (default ``name``)."
 msgstr "Подпись цветовой шкалы (по умолчанию ``name``)."
 
-msgid "Base map of a new map."
-msgstr "Подложка новой карты."
+msgid "Base map of a new map: a name or URL as in ``folium.Map``, or a ``folium.TileLayer``. Defaults to a light grey map (Esri World Light Gray Canvas), whose tiles end at zoom 16 and are stretched beyond."
+msgstr "Подложка новой карты: название или URL, как в ``folium.Map``, либо ``folium.TileLayer``. По умолчанию светло-серая карта (Esri World Light Gray Canvas), тайлы которой заканчиваются на масштабе 16 и дальше растягиваются."
 
 msgid "Passed to ``folium.Map`` when a new map is created."
 msgstr "Передаются в ``folium.Map`` при создании новой карты."

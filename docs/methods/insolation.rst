@@ -20,13 +20,6 @@ sun.
    59.96° N), one frame every 15 minutes from sunrise to sunset. The title gives Moscow time (UTC+3) and the sun
    elevation and azimuth.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-03-21_v2.gif
-   :alt: Ground shadows of a residential district on 21 March, 15-minute frames
-   :align: center
-   :width: 70%
-
-   The same district on 21 March 2026, the equinox.
-
 Method
 ------
 
@@ -78,25 +71,22 @@ Ground insolation
 bounding box of the buildings), outside building footprints. Include the buildings around the area in
 ``buildings``: their shadows reach into it.
 
-The result is a GeoDataFrame of zones, one (Multi)Polygon per class of mean daily sun hours, with the class bounds
-``sun_hours_min`` and ``sun_hours_max`` (``inf`` for the last class) and a text ``label``. ``hour_breaks`` sets the
-bounds (default 1, 2, 3, 4, 6 and 8 h). Class ``0`` is ground that receives no direct sun on any simulated day.
-``output="receivers"`` returns the receiver points with ``sun_hours``, ``min_sun_hours`` and
-``max_continuous_hours`` instead of the zones, and ``output="both"`` returns both. Without zones the calculation is
-faster: building the zone polygons takes most of the time of a single day. The ``attrs`` of both results contain
-the simulated ``days`` and ``day_length_hours``, the mean time the sun is above ``min_sun_elevation``.
-:func:`objectnat.rasterize` turns any receiver column into a raster for maps, GeoTIFF files and web maps (see
-:doc:`rasters`).
+The result is the receiver points with ``sun_hours``, ``min_sun_hours`` and ``max_continuous_hours``;
+``sun_hours`` is ``0`` on ground that receives no direct sun on any simulated day. The ``attrs`` contain the
+simulated ``days``, ``day_length_hours`` (the mean time the sun is above ``min_sun_elevation``) and the grid, so
+:func:`objectnat.rasterize` turns any column into a raster for maps, GeoTIFF files and web maps (see
+:doc:`rasters`). A raster shows the hours as a continuous colour scale; thresholds such as a norm are applied to the
+columns directly, for example ``receivers["max_continuous_hours"] >= 2.5``.
 
 .. autofunction:: objectnat.get_insolation
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_day_sun_hours_v2.png
-   :alt: Sun-hour zones on 21 March and 21 June
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_day_sun_hours_v4.png
+   :alt: Direct sun hours on 21 March and 21 June
    :align: center
    :width: 100%
 
-   Classes of direct sun hours on 21 March and 21 June 2026 in a 500 × 400 m area (outlined), ``grid_step=2``,
-   ``time_step_min=10``. Building heights are ``storeys_count`` × 3 m.
+   Direct sun hours on 21 March and 21 June 2026 in a 500 × 400 m area (outlined), ``grid_step=2``,
+   ``time_step_min=10``, receivers rasterized with :func:`objectnat.rasterize` on one colour scale. Building heights are ``storeys_count`` × 3 m.
 
 .. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_period_receivers_v2.png
    :alt: Mean sun hours and longest continuous sun over a period
