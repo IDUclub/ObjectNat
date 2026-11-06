@@ -23,8 +23,10 @@ msgstr "Этот ноутбук строит зоны покрытия серв�
 msgid "`get_graph_coverage` by distance (800 m) and by time (10 min);"
 msgstr "`get_graph_coverage` по расстоянию (800 м) и по времени (10 мин);"
 
-msgid "`get_stepped_graph_coverage` in bands of 2 minutes with the four geometry types;"
-msgstr "`get_stepped_graph_coverage` поясами по 2 минуты с четырьмя типами геометрии;"
+# | msgid "`get_stepped_graph_coverage` in bands of 2 minutes with the four
+# | geometry types;"
+msgid "`get_stepped_graph_coverage` in bands of 2 minutes, as Voronoi cells and as separate buffers;"
+msgstr "`get_stepped_graph_coverage` поясами по 2 минуты в виде ячеек Вороного и в виде независимых буферов;"
 
 msgid "the graph-free `get_radius_coverage`."
 msgstr "`get_radius_coverage` без графа."
@@ -78,20 +80,22 @@ msgstr "`geometry_type` (необязательно): `\"radius\"` или `\"way
 msgid "5. Stepped coverage by time"
 msgstr "5\\. Ступенчатое покрытие по времени"
 
-msgid "The covered area split into bands of 2 minutes up to 15 minutes, with the four values of `geometry_type`:"
-msgstr "Обслуживаемая территория, разбитая на пояса по 2 минуты до 15 минут, с четырьмя значениями `geometry_type`:"
+# | msgid "The covered area split into bands of 2 minutes up to 15 minutes,
+# with
+# | the four values of `geometry_type`:"
+msgid "The covered area split into bands of 2 minutes up to 15 minutes, with two values of `geometry_type`:"
+msgstr "Обслуживаемая территория, разбитая на пояса по 2 минуты до 15 минут, с двумя значениями `geometry_type`:"
 
 msgid "`None`: Voronoi cells of the graph nodes;"
 msgstr "`None`: ячейки Вороного узлов графа;"
 
-msgid "`\"radius\"`: the cells clipped to buffers of the residual distance around the reachable nodes;"
-msgstr "`\"radius\"`: ячейки, обрезанные по буферам остаточного расстояния вокруг достижимых узлов;"
-
-msgid "`\"ways\"`: the cells clipped to the buffered streets;"
-msgstr "`\"ways\"`: ячейки, обрезанные по буферам улиц;"
-
 msgid "`\"separate\"`: independent buffers per band, without Voronoi cells."
 msgstr "`\"separate\"`: независимые буферы для каждого пояса, без ячеек Вороного."
+
+# | msgid "`geometry_type` (optional): `\"radius\"` or `\"ways\"` additionally
+# | clips the zones to residual-distance buffers or to the buffered streets."
+msgid "`\"radius\"` and `\"ways\"` clip the same Voronoi bands to the residual-distance buffers or to the buffered streets, as in the [isochrones notebook](isochrones.ipynb)."
+msgstr "`\"radius\"` и `\"ways\"` обрезают те же пояса Вороного по буферам остаточного расстояния или по буферам улиц, как в [ноутбуке изохрон](isochrones.ipynb)."
 
 msgid "6. Radius coverage"
 msgstr "6\\. Покрытие по радиусу"

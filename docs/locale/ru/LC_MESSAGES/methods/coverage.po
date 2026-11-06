@@ -290,8 +290,10 @@ msgstr "Зоны покрытия по времени, по расстоянию
 msgid "Coverage zones of the example services: within 10 minutes on the intermodal graph clipped to the district, within 600 m of network distance, and the graph-free :func:`objectnat.get_radius_coverage` with ``radius=800``. Background: pedestrian streets of the graph and the district boundary."
 msgstr "Зоны покрытия сервисов из примера: в пределах 10 минут на интермодальном графе с обрезкой по району, в пределах 600 м сетевого расстояния и без графа, :func:`objectnat.get_radius_coverage` с ``radius=800``. Фон: пешеходные улицы графа и граница района."
 
-msgid "Stepped coverage zones for geometry_type None, radius, ways and separate"
-msgstr "Ступенчатые зоны покрытия для geometry_type None, radius, ways и separate"
+# | msgid "Stepped coverage zones for geometry_type None, radius, ways and
+# | separate"
+msgid "Stepped coverage zones for geometry_type None and separate"
+msgstr "Ступенчатые зоны покрытия для geometry_type None и separate"
 
 # | msgid "Stepped coverage zones up to 15 minutes in bands of 2 minutes for
 # the
@@ -300,8 +302,15 @@ msgstr "Ступенчатые зоны покрытия для geometry_type No
 # | ``\"ways\"`` (buffered streets) and ``\"separate\"`` (independent
 # buffers).
 # | Background: pedestrian streets of the graph and the district boundary."
-msgid "Stepped coverage zones up to 15 minutes in bands of 2 minutes for the four values of ``geometry_type``: ``None`` (Voronoi cells of the graph nodes, clipped to the district with ``zone``), ``\"radius\"`` (the cells clipped to the radius buffers and to the district), ``\"ways\"`` (buffered streets) and ``\"separate\"`` (independent buffers). Background: pedestrian streets of the graph and the district boundary."
-msgstr "Ступенчатые зоны покрытия до 15 минут поясами по 2 минуты для четырёх значений ``geometry_type``: ``None`` (ячейки Вороного узлов графа, обрезанные по району через ``zone``), ``\"radius\"`` (ячейки, обрезанные по буферам радиуса и по району), ``\"ways\"`` (буферы улиц) и ``\"separate\"`` (независимые буферы). Фон: пешеходные улицы графа и граница района."
+# | msgid "Stepped coverage zones up to 15 minutes in bands of 2 minutes for
+# the
+# | nodes, clipped to the district with ``zone``), ``\"radius\"`` (the cells
+# | clipped to the radius buffers and to the district), ``\"ways\"`` (buffered
+# | streets) and ``\"separate\"`` (independent buffers). Background:
+# pedestrian
+# | streets of the graph and the district boundary."
+msgid "Stepped coverage zones up to 15 minutes in bands of 2 minutes: ``geometry_type=None`` (Voronoi cells of the graph nodes, clipped to the district with ``zone``) and ``\"separate\"`` (independent buffers). ``\"radius\"`` and ``\"ways\"`` clip the same Voronoi bands to the radius buffers or to the buffered streets. Background: pedestrian streets of the graph and the district boundary."
+msgstr "Ступенчатые зоны покрытия до 15 минут поясами по 2 минуты: ``geometry_type=None`` (ячейки Вороного узлов графа, обрезанные по району через ``zone``) и ``\"separate\"`` (независимые буферы). ``\"radius\"`` и ``\"ways\"`` обрезают те же пояса Вороного по буферам радиуса или по буферам улиц. Фон: пешеходные улицы графа и граница района."
 
 msgid "Limitations"
 msgstr "Ограничения"

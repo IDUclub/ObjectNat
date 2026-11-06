@@ -113,19 +113,8 @@ msgstr "`get_isovist_grid` ставит наблюдателей по сетке
 msgid "5. Your own area"
 msgstr "5\\. Своя территория"
 
-# | msgid "Building footprints and observers: the catchment of the observers
-# as
-# | a raster of observer counts, in the same units and on the same colour
-# scale
-# | as the 2.5D raster in the [viewshed notebook](viewshed.ipynb).
-# | `output=\"cells\"` returns the cells seen by at least one observer with
-# | their `count`, and `rasterize` puts them back on the calculation grid.
-# | `Raster.plot` draws the raster, `Raster.explore` shows it on a web map
-# with
-# | a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires
-# | `rasterio`)."
-msgid "Building footprints and observers: the catchment of the observers as a raster of observer counts, in the same units and on the same colour scale as the 2.5D raster in the [viewshed notebook](viewshed.ipynb). The function returns the cells seen by at least one observer with their `count`, and `rasterize` puts them back on the calculation grid. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
-msgstr "Контуры зданий и наблюдатели: охват наблюдателей в виде растра числа наблюдателей, в тех же единицах и в той же цветовой шкале, что и растр 2.5D в [ноутбуке областей видимости](viewshed.ipynb). Функция возвращает ячейки, которые видит хотя бы один наблюдатель, с их `count`, а `rasterize` возвращает их на расчётную сетку. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
+msgid "The catchment of the whole district: observers every 20 m along the pedestrian graph of IduEdu (`get_observer_points`) and all building footprints. Tens of thousands of observers take a few seconds. The cells are then kept inside the district boundary; rows of the result can be filtered, `rasterize` still restores the grid. Counts depend on the observer spacing, so compare rasters made with the same spacing. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
+msgstr "Охват всего района: наблюдатели через каждые 20 м вдоль пешеходного графа IduEdu (`get_observer_points`) и все контуры зданий. Десятки тысяч наблюдателей рассчитываются за несколько секунд. Затем оставляются ячейки внутри границы района; строки результата можно фильтровать, `rasterize` всё равно восстанавливает сетку. Значения зависят от шага наблюдателей, поэтому сравнивайте растры, построенные с одинаковым шагом. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
 
 msgid "The isovist field of section 3 is obtained for any area in the same way, for example `rasterize(get_isovist_grid(my_obstacles, my_area, view_distance=200, cell_size=5), \"visible_share\")`. Its value in a cell describes what an observer standing there sees, whereas the catchment counts the observers that see the cell."
 msgstr "Поле изовист из раздела 3 строится для любой территории так же, например `rasterize(get_isovist_grid(my_obstacles, my_area, view_distance=200, cell_size=5), \"visible_share\")`. Его значение в ячейке описывает, что видит стоящий там наблюдатель, а охват считает наблюдателей, которые видят эту ячейку."

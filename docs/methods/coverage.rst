@@ -68,15 +68,15 @@ Figures
    within 600 m of network distance, and the graph-free :func:`objectnat.get_radius_coverage` with ``radius=800``.
    Background: pedestrian streets of the graph and the district boundary.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_stepped_4types_v4.png
-   :alt: Stepped coverage zones for geometry_type None, radius, ways and separate
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_stepped_2types_v4.png
+   :alt: Stepped coverage zones for geometry_type None and separate
    :align: center
    :width: 100%
 
-   Stepped coverage zones up to 15 minutes in bands of 2 minutes for the four values of ``geometry_type``:
-   ``None`` (Voronoi cells of the graph nodes, clipped to the district with ``zone``), ``"radius"`` (the cells
-   clipped to the radius buffers and to the district), ``"ways"`` (buffered streets) and ``"separate"``
-   (independent buffers). Background: pedestrian streets of the graph and the district boundary.
+   Stepped coverage zones up to 15 minutes in bands of 2 minutes: ``geometry_type=None`` (Voronoi cells of the
+   graph nodes, clipped to the district with ``zone``) and ``"separate"`` (independent buffers). ``"radius"`` and
+   ``"ways"`` clip the same Voronoi bands to the radius buffers or to the buffered streets. Background: pedestrian
+   streets of the graph and the district boundary.
 
 Limitations
 -----------

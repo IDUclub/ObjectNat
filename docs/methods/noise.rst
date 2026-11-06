@@ -121,12 +121,14 @@ hole of that radius around the source; ``use_parallel`` distributes the work ove
 
 .. autofunction:: objectnat.simulate_noise
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_simulation_1point.png
-   :alt: Wave-front simulation for one point source
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_simulation_v4.png
+   :alt: Level bands of the wave-front simulation for two point sources
    :align: center
    :width: 75%
 
-   :func:`objectnat.simulate_noise` for one point source.
+   :func:`objectnat.simulate_noise` for the two point sources of the :func:`objectnat.simulate_noise_grid` example
+   (95 dB at 2 kHz, 85 dB at 500 Hz) among the example buildings and vegetation, ``reflection_n=2``,
+   ``target_noise_db=40``, ``db_sim_step=5``.
 
 Simplified noise frame
 ----------------------
@@ -143,12 +145,14 @@ reflections and vegetation are not modelled.
 
 .. autofunction:: objectnat.calculate_simplified_noise_frame
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_frame.png
-   :alt: Simplified noise frame
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_frame_v4.png
+   :alt: Simplified noise frame for a street and two point sources
    :align: center
    :width: 75%
 
-   Simplified noise frame for point, line and polygon sources.
+   :func:`objectnat.calculate_simplified_noise_frame` for the street (line source, 80 dB at 1 m) and the two point
+   sources of the same example, ``target_noise_db=40``, ``db_sim_step=5``. Without reflections and diffraction only
+   the places in the line of sight of a source are reached.
 
 Limitations
 -----------

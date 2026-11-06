@@ -257,11 +257,12 @@ msgstr "Использовать ли ProcessPool для распределен�
 msgid "Noise levels (``noise_level``, dB) with the geometries of the areas they cover; the results of all source points are merged into one GeoDataFrame."
 msgstr "Уровни шума (``noise_level``, дБ) с геометрией охватываемых ими территорий; результаты всех точечных источников объединены в один GeoDataFrame."
 
-msgid "Wave-front simulation for one point source"
-msgstr "Моделирование волнового фронта для одного точечного источника"
+# | msgid "Wave-front simulation for one point source"
+msgid "Level bands of the wave-front simulation for two point sources"
+msgstr "Полосы уровней моделирования волнового фронта для двух точечных источников"
 
-msgid ":func:`objectnat.simulate_noise` for one point source."
-msgstr ":func:`objectnat.simulate_noise` для одного точечного источника."
+msgid ":func:`objectnat.simulate_noise` for the two point sources of the :func:`objectnat.simulate_noise_grid` example (95 dB at 2 kHz, 85 dB at 500 Hz) among the example buildings and vegetation, ``reflection_n=2``, ``target_noise_db=40``, ``db_sim_step=5``."
+msgstr ":func:`objectnat.simulate_noise` для двух точечных источников из примера :func:`objectnat.simulate_noise_grid` (95 дБ на 2 кГц, 85 дБ на 500 Гц) среди зданий и растительности примера, ``reflection_n=2``, ``target_noise_db=40``, ``db_sim_step=5``."
 
 msgid "Simplified noise frame"
 msgstr "Упрощённый шумовой каркас"
@@ -329,8 +330,12 @@ msgstr "Разрешение и точность результата сильн
 msgid "Results are useful for quick noise mapping or for generating initial noise envelopes prior to more detailed simulations."
 msgstr "Результаты подходят для быстрого картирования шума или для первичных огибающих перед более подробным моделированием."
 
-msgid "Simplified noise frame for point, line and polygon sources."
-msgstr "Упрощённый шумовой каркас для точечных, линейных и площадных источников."
+# | msgid "Simplified noise frame for point, line and polygon sources."
+msgid "Simplified noise frame for a street and two point sources"
+msgstr "Упрощённый шумовой каркас для улицы и двух точечных источников"
+
+msgid ":func:`objectnat.calculate_simplified_noise_frame` for the street (line source, 80 dB at 1 m) and the two point sources of the same example, ``target_noise_db=40``, ``db_sim_step=5``. Without reflections and diffraction only the places in the line of sight of a source are reached."
+msgstr ":func:`objectnat.calculate_simplified_noise_frame` для улицы (линейный источник, 80 дБ на расстоянии 1 м) и двух точечных источников того же примера, ``target_noise_db=40``, ``db_sim_step=5``. Без отражений и дифракции звук доходит только до мест в прямой видимости источника."
 
 msgid "Limitations"
 msgstr "Ограничения"

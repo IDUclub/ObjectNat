@@ -73,16 +73,8 @@ msgstr "Каждая ячейка получает число наблюдате
 msgid "4. Your own area"
 msgstr "4\\. Своя территория"
 
-# | msgid "Buildings with heights and observers: the 2.5D catchment as a
-# raster
-# | of observer counts. `output=\"cells\"` returns the cells seen by at least
-# | one observer with their `count`, and `rasterize` puts them back on the
-# | calculation grid. The [visibility notebook](visibility.ipynb) draws the 2D
-# | catchment in the same units and on the same colour scale. `Raster.plot`
-# | draws the raster, `Raster.explore` shows it on a web map with a colour bar
-# | and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
-msgid "Buildings with heights and observers: the 2.5D catchment as a raster of observer counts. The function returns the cells seen by at least one observer with their `count`, and `rasterize` puts them back on the calculation grid. The [visibility notebook](visibility.ipynb) draws the 2D catchment in the same units and on the same colour scale. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
-msgstr "Здания с высотами и наблюдатели: охват 2.5D в виде растра числа наблюдателей. Функция возвращает ячейки, которые видит хотя бы один наблюдатель, с их `count`, а `rasterize` возвращает их на расчётную сетку. [Ноутбук видимости](visibility.ipynb) рисует охват 2D в тех же единицах и в той же цветовой шкале. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
+msgid "Buildings with heights and one viewpoint above the ground, for example an observation deck or a camera on a mast: `observer_height` raises the eye above the terrain, and `include_roofs=True` also returns the visible parts of roofs. The example compares a viewpoint 20 m and 60 m above a street in the centre of Vasilyevsky Island; from 60 m the eye is above most roofs and sees along the streets and across the Neva. The result is clipped to the area covered by the building data (the convex hull of the buildings), because nothing blocks the view beyond it. Save it for GIS with `to_file`; the catchment of many observers is computed as in section 3."
+msgstr "Здания с высотами и одна точка обзора над землёй, например смотровая площадка или камера на мачте: `observer_height` поднимает глаза над рельефом, а `include_roofs=True` возвращает и видимые части крыш. В примере сравниваются точки обзора на высоте 20 м и 60 м над улицей в центре Васильевского острова; с 60 м глаза выше большинства крыш и видят вдоль улиц и через Неву. Результат обрезан по территории, для которой есть данные о зданиях (выпуклая оболочка зданий), потому что за её пределами обзор ничто не загораживает. Сохраните его для ГИС методом `to_file`; охват множества наблюдателей рассчитывается как в разделе 3."
 
 msgid "Limitations"
 msgstr "Ограничения"

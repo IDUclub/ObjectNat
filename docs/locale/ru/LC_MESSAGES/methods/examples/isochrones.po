@@ -23,11 +23,10 @@ msgstr "Этот ноутбук строит изохроны на интерм�
 msgid "`get_graph_isochrones` with `geometry_type=\"radius\"` and `\"ways\"` for one origin;"
 msgstr "`get_graph_isochrones` с `geometry_type=\"radius\"` и `\"ways\"` для одной точки отправления;"
 
-msgid "`get_stepped_graph_isochrones` with bands of width `step` for `\"radius\"`, `\"ways\"` and `\"separate\"`;"
-msgstr "`get_stepped_graph_isochrones` с поясами шириной `step` для `\"radius\"`, `\"ways\"` и `\"separate\"`;"
-
-msgid "an animation of stepped isochrones."
-msgstr "анимацию ступенчатых изохрон."
+# | msgid "`get_stepped_graph_isochrones` with bands of width `step` for
+# | `\"radius\"`, `\"ways\"` and `\"separate\"`;"
+msgid "`get_stepped_graph_isochrones` with bands of width `step` for `\"radius\"`, `\"ways\"` and `\"separate\"`."
+msgstr "`get_stepped_graph_isochrones` с поясами шириной `step` для `\"radius\"`, `\"ways\"` и `\"separate\"`."
 
 msgid "The method is described on the [isochrones page](../isochrones.rst). The interactive maps show a light copy of every result (`for_map`: outlines simplified by 2 m), which keeps the notebook small."
 msgstr "Метод описан на [странице изохрон](../isochrones.rst). Интерактивные карты показывают облегчённую копию каждого результата (`for_map`: контуры упрощены на 2 м), чтобы ноутбук оставался небольшим."
@@ -101,21 +100,9 @@ msgstr "`step`: ширина пояса для ступенчатых изохр
 msgid "`buffer_factor` (`\"separate\"`) and `road_buffer_size` (`\"ways\"`, metres)."
 msgstr "`buffer_factor` (`\"separate\"`) и `road_buffer_size` (`\"ways\"`, метры)."
 
-msgid "9. Animation of stepped isochrones"
-msgstr "9\\. Анимация ступенчатых изохрон"
-
-msgid "The saved animation, a frame per step:"
-msgstr "Сохранённая анимация, по кадру на шаг:"
-
-msgid "![Stepped isochrones with steps of 0.1–5 minutes](https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/isochrones_steps_animation.gif)"
-msgstr "![Ступенчатые изохроны с шагом от 0,1 до 5 минут](https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/isochrones_steps_animation.gif)"
-
-# | msgid "8. Stepped isochrones, separate"
-msgid "Stepped isochrones with steps of 0.1–5 minutes"
-msgstr "Ступенчатые изохроны с шагом от 0,1 до 5 минут"
-
-msgid "10. Your own area"
-msgstr "10\\. Своя территория"
+# | msgid "10. Your own area"
+msgid "9. Your own area"
+msgstr "9\\. Своя территория"
 
 msgid "The territory is an OSM relation (the `relation` of a district or a city on openstreetmap.org); `REGION` names the Geofabrik extract to cut it from (`iduedu.find_geofabrik_region` finds it for a polygon; without it IduEdu asks Overpass once to choose the extract). The result is a GeoDataFrame: draw it with matplotlib (here over the streets of the graph, with the territory boundary), explore it on a web map or save it for GIS with `to_file`."
 msgstr "Территория — отношение OSM (`relation` района или города на openstreetmap.org); `REGION` задаёт выгрузку Geofabrik, из которой она вырезается (`iduedu.find_geofabrik_region` находит её по полигону; без неё IduEdu один раз обращается к Overpass, чтобы выбрать выгрузку). Результат — GeoDataFrame: нарисуйте его в matplotlib (здесь поверх улиц графа, с границей территории), посмотрите на веб-карте или сохраните для ГИС через `to_file`."
