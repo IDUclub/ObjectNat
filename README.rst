@@ -54,15 +54,16 @@ Methods
 **Isochrones** (`docs <https://iduclub.github.io/ObjectNat/methods/isochrones.html>`__, `example <https://iduclub.github.io/ObjectNat/methods/examples/isochrones.html>`__).
 ``get_graph_isochrones`` and ``get_stepped_graph_isochrones`` return the area reachable from origins within a
 travel time (minutes) or network distance (metres) on an ``iduedu.UrbanGraph``, as one polygon per origin or as
-bands of width ``step``. The polygon is built from residual-distance buffers around the reachable nodes
-(``"radius"``), from the buffered reachable streets (``"ways"``) or from merged buffers (``"separate"``).
+bands of width ``step``. The polygon is built from residual-distance buffers around the reachable nodes, at most
+``off_network_distance`` (150 m) off the streets (``"radius"``), from the buffered reachable streets (``"ways"``) or
+from merged buffers (``"separate"``).
 
 **Coverage zones** (`docs <https://iduclub.github.io/ObjectNat/methods/coverage.html>`__, `example <https://iduclub.github.io/ObjectNat/methods/examples/coverage.html>`__).
 ``get_graph_coverage`` and ``get_stepped_graph_coverage`` assign every place to the service it reaches at the lowest
 network cost within a budget (search on the reversed graph, Voronoi cells of graph nodes), so zones do not overlap.
 ``get_radius_coverage`` is a graph-free variant with a fixed radius.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v3.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v4.png
    :align: center
    :width: 100%
    :alt: Stepped isochrones with geometry_type ways, radius and separate, bands of 3 minutes
@@ -74,7 +75,7 @@ probabilistic model over a dense or pandas-sparse cost matrix and a normative th
 share of demand supplied within the threshold); helpers join the metrics to GeoDataFrames, build link lines,
 drop links beyond a shorter threshold and clip the result to an area.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_links_v2.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_links_v4.png
    :align: center
    :width: 100%
    :alt: Provision value of residential buildings and building–school links within and beyond a 10-minute threshold

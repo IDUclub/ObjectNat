@@ -35,17 +35,25 @@ msgstr "Поиск Дейкстры идёт от точек отправлен�
 msgid "The reachable nodes are turned into a polygon according to ``geometry_type``. The residual budget of a node (cutoff minus its cost) is converted to a distance, for ``time_min`` with the median edge speed of the graph (``length_meter / time_min``):"
 msgstr "Достижимые узлы превращаются в полигон в зависимости от ``geometry_type``. Остаток бюджета в узле (предел минус стоимость пути до узла) переводится в расстояние, для ``time_min`` — по медианной скорости на рёбрах графа (``length_meter / time_min``):"
 
-msgid "``\"radius\"`` (default): union of buffers around the reachable nodes with their residual distance as radius;"
-msgstr "``\"radius\"`` (по умолчанию): объединение буферов вокруг достижимых узлов с остаточным расстоянием в качестве радиуса;"
+# | msgid "``\"radius\"`` (default): union of buffers around the reachable
+# nodes
+# | with their residual distance as radius;"
+msgid "``\"radius\"`` (default): union of buffers around the reachable nodes; the radius of a buffer is the residual distance of its node, but at most ``off_network_distance`` (150 m by default);"
+msgstr "``\"radius\"`` (по умолчанию): объединение буферов вокруг достижимых узлов; радиус буфера — остаточное расстояние узла, но не больше ``off_network_distance`` (по умолчанию 150 м);"
 
-msgid "``\"ways\"``: reachable edges buffered by ``road_buffer_size`` metres, limited by the residual-radius buffers;"
-msgstr "``\"ways\"``: достижимые рёбра с буфером ``road_buffer_size`` метров, ограниченные буферами остаточного расстояния;"
+# | msgid "``\"ways\"``: reachable edges buffered by ``road_buffer_size``
+# | metres, limited by the residual-radius buffers;"
+msgid "``\"ways\"``: reachable edges buffered by ``road_buffer_size`` metres, limited by buffers of the full residual distance;"
+msgstr "``\"ways\"``: достижимые рёбра с буфером ``road_buffer_size`` метров, ограниченные буферами на всё остаточное расстояние;"
 
 msgid "``\"separate\"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes, merged into one polygon."
 msgstr "``\"separate\"``: буферы радиусом ``buffer_factor`` × остаточное расстояние вокруг достижимых узлов, объединённые в один полигон."
 
 msgid "The result is clipped to ``zone`` when it is given."
 msgstr "Если задан ``zone``, результат обрезается по нему."
+
+msgid "**Why the radius is capped.** A buffer by the whole residual distance assumes that a person can walk straight from a node in any direction for the rest of the budget, across blocks, courtyards and water. At the origin this is the whole budget, so a 10-minute walk isochrone becomes a disc of about 800 m whatever the street layout. The cap follows the approach of trip planners such as OpenTripPlanner and Conveyal R5: the search runs along the network, and only the last stretch from a street to a place, at most ``off_network_distance``, is walked off the network. The isochrone then follows the streets that are actually reachable and narrows where they end. ``off_network_distance=None`` gives the uncapped buffers."
+msgstr "**Почему радиус ограничен.** Буфер на всё остаточное расстояние предполагает, что из узла можно идти по прямой в любом направлении на весь остаток бюджета — через кварталы, дворы и воду. У точки отправления это весь бюджет, поэтому 10-минутная пешая изохрона превращается в круг радиусом около 800 м независимо от планировки улиц. Ограничение повторяет подход планировщиков поездок, таких как OpenTripPlanner и Conveyal R5: поиск идёт по сети, и только последний отрезок от улицы до места, не длиннее ``off_network_distance``, проходится вне сети. Тогда изохрона следует за действительно достижимыми улицами и сужается там, где они заканчиваются. ``off_network_distance=None`` даёт буферы без ограничения."
 
 msgid "On walk and intermodal graphs only pedestrian edges (``type == \"walk\"``) shape ``\"ways\"``, and only their end nodes shape any geometry: transit route nodes take part in the search, but their cost includes the boarding wait, and several route nodes can share one stop location."
 msgstr "На пешеходных и интермодальных графах форму ``\"ways\"`` задают только пешеходные рёбра (``type == \"walk\"``), а геометрию любого типа — только их концевые узлы: узлы маршрутов транспорта участвуют в поиске, но их стоимость включает ожидание посадки, и несколько узлов маршрутов могут совпадать с одной остановкой."
@@ -107,14 +115,22 @@ msgstr "``\"time_min\"``: доступность по времени в мину
 msgid "``\"length_meter\"``: distance-based accessibility in metres"
 msgstr "``\"length_meter\"``: доступность по расстоянию в метрах"
 
-msgid "Method used to build each isochrone:  - ``\"radius\"``: union of residual-radius buffers around reachable nodes - ``\"ways\"``: buffered reachable road geometry (walk edges only on   intermodal/walk graphs) - ``\"separate\"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes,   merged into one polygon"
-msgstr "Method used to build each isochrone:  - ``\"radius\"``: union of residual-radius buffers around reachable nodes - ``\"ways\"``: buffered reachable road geometry (walk edges only on   intermodal/walk graphs) - ``\"separate\"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes,   merged into one polygon"
+# | msgid "Method used to build each isochrone:  - ``\"radius\"``: union of
+# | residual-radius buffers around reachable nodes - ``\"ways\"``: buffered
+# | reachable road geometry (walk edges only on   intermodal/walk graphs) -
+# | ``\"separate\"``: buffers of ``buffer_factor`` × residual distance around
+# | the reachable nodes,   merged into one polygon"
+msgid "Method used to build each isochrone:  - ``\"radius\"``: union of buffers around the reachable nodes by their remaining budget as a   distance, at most ``off_network_distance`` - ``\"ways\"``: buffered reachable road geometry (walk edges only on   intermodal/walk graphs) - ``\"separate\"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes,   merged into one polygon"
+msgstr "Method used to build each isochrone:  - ``\"radius\"``: union of buffers around the reachable nodes by their remaining budget as a   distance, at most ``off_network_distance`` - ``\"ways\"``: buffered reachable road geometry (walk edges only on   intermodal/walk graphs) - ``\"separate\"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes,   merged into one polygon"
 
 msgid "Method used to build each isochrone:"
 msgstr "Способ построения каждой изохроны:"
 
-msgid "``\"radius\"``: union of residual-radius buffers around reachable nodes"
-msgstr "``\"radius\"``: объединение буферов остаточного расстояния вокруг достижимых узлов"
+# | msgid "``\"radius\"`` (default): union of buffers around the reachable
+# nodes
+# | with their residual distance as radius;"
+msgid "``\"radius\"``: union of buffers around the reachable nodes by their remaining budget as a distance, at most ``off_network_distance``"
+msgstr "``\"radius\"``: объединение буферов вокруг достижимых узлов радиусом в остаток бюджета, переведённый в расстояние, но не больше ``off_network_distance``"
 
 msgid "``\"ways\"``: buffered reachable road geometry (walk edges only on intermodal/walk graphs)"
 msgstr "``\"ways\"``: буферы достижимых улиц (на интермодальных и пешеходных графах только пешеходные рёбра)"
@@ -130,6 +146,9 @@ msgstr "Множитель буфера для ``geometry_type=\"separate\"`` (�
 
 msgid "Edge buffer for ``geometry_type=\"ways\"``, in metres (default 5.0)."
 msgstr "Буфер рёбер для ``geometry_type=\"ways\"``, в метрах (по умолчанию 5.0)."
+
+msgid "For ``geometry_type=\"radius\"``: how far from the network, in metres, a place may lie and still count as reached. Every reachable node is buffered by its remaining budget converted to a distance, but by no more than this, so the area follows the network instead of growing into a straight-line circle around the start. ``None`` buffers by the whole remaining budget. Defaults to 150."
+msgstr "Для ``geometry_type=\"radius\"``: насколько далеко от сети, в метрах, может лежать место, чтобы считаться достигнутым. Каждый достижимый узел получает буфер радиусом в остаток бюджета, переведённый в расстояние, но не больше этого значения, поэтому территория повторяет сеть, а не разрастается в круг по прямой вокруг начальной точки. ``None`` строит буферы на весь остаток бюджета. По умолчанию 150."
 
 msgid "Number of parallel Numba threads. Defaults to the Numba runtime."
 msgstr "Число параллельных потоков Numba. По умолчанию определяется средой Numba."
@@ -170,8 +189,14 @@ msgstr "Распределяет достижимые узлы по ступен
 msgid "Optionally clips the bands to ``zone``."
 msgstr "При необходимости обрезает пояса по ``zone``."
 
-msgid "Method used to build each step's geometry:  - ``None``: Voronoi cells around graph nodes - ``\"radius\"``: Voronoi cells clipped to residual-radius buffers - ``\"ways\"``: Voronoi cells clipped to buffered road geometry   (walk edges only on intermodal/walk graphs) - ``\"separate\"``: independent circular buffers per step"
-msgstr "Method used to build each step's geometry:  - ``None``: Voronoi cells around graph nodes - ``\"radius\"``: Voronoi cells clipped to residual-radius buffers - ``\"ways\"``: Voronoi cells clipped to buffered road geometry   (walk edges only on intermodal/walk graphs) - ``\"separate\"``: independent circular buffers per step"
+# | msgid "Method used to build each step's geometry:  - ``None``: Voronoi
+# cells
+# | around graph nodes - ``\"radius\"``: Voronoi cells clipped to
+# | residual-radius buffers - ``\"ways\"``: Voronoi cells clipped to buffered
+# | road geometry   (walk edges only on intermodal/walk graphs) -
+# | ``\"separate\"``: independent circular buffers per step"
+msgid "Method used to build each step's geometry:  - ``None``: Voronoi cells around graph nodes - ``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``) - ``\"ways\"``: Voronoi cells clipped to buffered road geometry   (walk edges only on intermodal/walk graphs) - ``\"separate\"``: independent circular buffers per step"
+msgstr "Method used to build each step's geometry:  - ``None``: Voronoi cells around graph nodes - ``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``) - ``\"ways\"``: Voronoi cells clipped to buffered road geometry   (walk edges only on intermodal/walk graphs) - ``\"separate\"``: independent circular buffers per step"
 
 msgid "Method used to build each step's geometry:"
 msgstr "Способ построения геометрии каждой ступени:"
@@ -179,8 +204,9 @@ msgstr "Способ построения геометрии каждой сту
 msgid "``None``: Voronoi cells around graph nodes"
 msgstr "``None``: ячейки Вороного вокруг узлов графа"
 
-msgid "``\"radius\"``: Voronoi cells clipped to residual-radius buffers"
-msgstr "``\"radius\"``: ячейки Вороного, обрезанные по буферам остаточного расстояния"
+# | msgid "``\"radius\"``: Voronoi cells clipped to residual-radius buffers"
+msgid "``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``)"
+msgstr "``\"radius\"``: ячейки Вороного, обрезанные по буферам радиуса (см. ``off_network_distance``)"
 
 msgid "``\"ways\"``: Voronoi cells clipped to buffered road geometry (walk edges only on intermodal/walk graphs)"
 msgstr "``\"ways\"``: ячейки Вороного, обрезанные по буферам улиц (на интермодальных и пешеходных графах только пешеходные рёбра)"
@@ -196,9 +222,6 @@ msgstr "Полигон границы, по которому обрезаютс�
 
 msgid "Width of each step, in units of ``weight_type``. Defaults to 100 metres for ``length_meter`` and 1 minute for ``time_min``."
 msgstr "Ширина каждой ступени в единицах ``weight_type``. По умолчанию 100 метров для ``length_meter`` и 1 минута для ``time_min``."
-
-msgid "Residual-radius multiplier for geometry construction (default 0.7)."
-msgstr "Множитель остаточного расстояния при построении геометрии (по умолчанию 0.7)."
 
 msgid "Stepped isochrone polygons with a ``dist`` column (the upper bound of each step, in units of ``weight_type``) and ``geometry``, returned in the CRS of ``gdf_origins`` (or the graph CRS)."
 msgstr "Полигоны ступенчатых изохрон со столбцом ``dist`` (верхняя граница каждой ступени в единицах ``weight_type``) и ``geometry`` в системе координат ``gdf_origins`` (или графа)."
@@ -233,8 +256,13 @@ msgstr "Ограничения"
 msgid "Travel times are those stored in the graph (``time_min``); congestion, timetables beyond the waiting times modelled by IduEdu, and turn penalties are not considered."
 msgstr "Время в пути берётся из графа (``time_min``); пробки, расписания (кроме времени ожидания, которое моделирует IduEdu) и штрафы за повороты не учитываются."
 
-msgid "The polygon outside the network is an interpolation: ``\"radius\"`` and ``\"separate\"`` assume straight-line movement at the median edge speed for the residual budget, which overestimates reach across blocks without paths."
-msgstr "Полигон вне сети — интерполяция: ``\"radius\"`` и ``\"separate\"`` предполагают движение по прямой с медианной скоростью на рёбрах в пределах остатка бюджета, что завышает достижимость через кварталы без проходов."
+# | msgid "The polygon outside the network is an interpolation: ``\"radius\"``
+# | and ``\"separate\"`` assume straight-line movement at the median edge
+# speed
+# | for the residual budget, which overestimates reach across blocks without
+# | paths."
+msgid "The polygon outside the network is an interpolation. ``\"radius\"`` assumes straight-line movement for at most ``off_network_distance`` from the streets; ``\"separate\"`` assumes it for the whole residual budget and therefore overestimates reach across blocks without paths."
+msgstr "Полигон вне сети — интерполяция. ``\"radius\"`` предполагает движение по прямой не дальше ``off_network_distance`` от улиц; ``\"separate\"`` — на весь остаток бюджета и поэтому завышает достижимость через кварталы без проходов."
 
 msgid "Origins are snapped to the nearest graph node; the access distance from the origin to that node is not added."
 msgstr "Точки отправления привязываются к ближайшему узлу графа; расстояние от точки до этого узла не добавляется."

@@ -35,7 +35,8 @@ extensions = [
 
 html_theme = "furo"
 html_static_path = ["_static"]
-html_css_files = ["lang.css"]
+html_css_files = ["objectnat.css"]
+html_js_files = ["lightbox.js"]
 templates_path = ["_templates"]
 # the language switch sits under the logo; the other entries are furo's defaults
 html_sidebars = {

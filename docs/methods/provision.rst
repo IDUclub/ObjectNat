@@ -27,17 +27,21 @@ Inputs
 Method
 ------
 
-The allocation is a gravity-based probabilistic model computed in ObjectNat's Rust extension over the sparse
-matrix entries:
+The allocation is a gravity-based probabilistic model; it runs in ObjectNat's Rust extension over the entries of
+the (sparse) matrix. Only building–service pairs with a finite cost ``d`` of at most ``3 * threshold`` can receive
+demand. Each such pair has a **gravity weight** ``1 / (d + 1)²``: the closer the building, the larger the weight,
+and a building twice as close gets on average about four times as much. The 1 is added so that a building at zero
+cost, in the same place as the service, gets a finite weight. The allocation runs in rounds:
 
-1. Candidate links are building–service pairs with a finite cost ``d <= 3 * threshold``; the model uses
-   ``a = d + 1``.
-2. In each iteration, every service with remaining capacity offers it to the buildings with remaining demand
-   within the current selection range. Of these candidates it keeps the buildings whose gravity weight ``1 / a²``
-   lies in the upper quantile and distributes its capacity over them by weighted random draws.
-3. Every building accepts at most its remaining demand from the offers, again by weighted draws.
-4. Buildings and services with no remaining demand, capacity or candidates drop out; the selection range grows by
-   a factor of 1.5, and the iterations continue until nothing can be allocated.
+1. **Search radius.** The first round considers the pairs with a cost of up to about half the threshold,
+   ``(threshold + 1) / 2``; every round widens this radius 1.5 times, so nearby buildings are served first.
+2. **Offers.** Every service with free places takes the buildings with unmet demand inside the radius, keeps the
+   ones with the largest weights (first the top tenth of them; the share grows as buildings and services drop
+   out) and distributes its free places among them at random, in proportion to their weights.
+3. **Acceptance.** A building that got more offers than it needs accepts its unmet demand, choosing among the
+   offers at random in proportion to their size; the rest of the places stay free.
+4. **Next round.** Buildings with no unmet demand and services with no free places drop out, and the rounds go on
+   until nothing more can be allocated.
 
 The random streams are seeded per object and iteration from ``seed``, so a fixed seed gives the same result
 regardless of the number of CPU cores. Different seeds give alternative allocations with the same model.
@@ -72,16 +76,16 @@ representative point of the building to the service, with ``building_index``, ``
 
 .. autofunction:: objectnat.get_provision_links
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_value_v2.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_value_v4.png
    :alt: Provision value of residential buildings
    :align: center
    :width: 100%
 
    Provision value of residential buildings for the example schools with a 10-minute threshold on the intermodal
-   travel-time matrix (``seed=0``); square size shows school capacity. Non-residential buildings and streets are
+   travel-time matrix (``seed=0``); dots are schools. Non-residential buildings and streets are
    grey; the black line is the district boundary.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_links_v2.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_links_v4.png
    :alt: Provision with building–school links
    :align: center
    :width: 100%
@@ -104,7 +108,7 @@ and the services the links refer to. All four inputs must share one CRS.
 
 .. autofunction:: objectnat.clip_provision
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_recalculated_v2.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_recalculated_v4.png
    :alt: Provision after recalculate_links
    :align: center
    :width: 100%
@@ -112,7 +116,7 @@ and the services the links refer to. All four inputs must share one CRS.
    ``recalculate_links(result, 10)``: the links longer than 10 minutes are removed and the metrics are rebuilt;
    their demand stays unallocated.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_clipped_v2.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_clipped_v4.png
    :alt: Provision clipped to a selection zone
    :align: center
    :width: 100%

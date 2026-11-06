@@ -56,15 +56,16 @@ Object-oriented Network Analysis Tools
 **Изохроны** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/isochrones.html>`__, `пример <https://iduclub.github.io/ObjectNat/ru/methods/examples/isochrones.html>`__).
 ``get_graph_isochrones`` и ``get_stepped_graph_isochrones`` возвращают территорию, достижимую из точек отправления
 за заданное время (мин) или сетевое расстояние (м) по графу ``iduedu.UrbanGraph``: один полигон на точку или
-пояса шириной ``step``. Полигон строится по буферам остаточного расстояния вокруг достижимых узлов
-(``"radius"``), по буферам достижимых улиц (``"ways"``) или по объединённым буферам (``"separate"``).
+пояса шириной ``step``. Полигон строится по буферам остаточного расстояния вокруг достижимых узлов, не дальше
+``off_network_distance`` (150 м) от улиц (``"radius"``), по буферам достижимых улиц (``"ways"``) или по
+объединённым буферам (``"separate"``).
 
 **Зоны покрытия** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/coverage.html>`__, `пример <https://iduclub.github.io/ObjectNat/ru/methods/examples/coverage.html>`__).
 ``get_graph_coverage`` и ``get_stepped_graph_coverage`` относят каждое место к сервису, до которого сетевая
 стоимость в пределах заданного бюджета минимальна (поиск по обращённому графу, ячейки Вороного узлов графа),
 поэтому зоны не перекрываются. ``get_radius_coverage`` строит зоны без графа, по фиксированному радиусу.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v3.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v4.png
    :align: center
    :width: 100%
    :alt: Пояса изохрон с geometry_type ways, radius и separate, шаг 3 минуты
@@ -77,7 +78,7 @@ Object-oriented Network Analysis Tools
 Вспомогательные функции присоединяют показатели к GeoDataFrame, строят линии связей, удаляют связи длиннее
 нового порога и обрезают результат по территории.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_links_v2.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_links_v4.png
    :align: center
    :width: 100%
    :alt: Показатель обеспеченности жилых зданий и связи здание–школа в пределах и за пределами порога 10 минут

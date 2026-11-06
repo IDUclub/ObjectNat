@@ -53,8 +53,13 @@ msgstr "`target_height` — высота над землёй того, на чт
 msgid "3. Catchment zones of many observers"
 msgstr "3\\. Зоны охвата для множества наблюдателей"
 
-msgid "Observers are usually placed along streets with `get_observer_points(urban_graph, spacing=15)` on an IduEdu walk graph. To keep this notebook independent of OpenStreetMap downloads, observers are placed every 15 m on open ground within 12 m of a building, which approximates sidewalks and yards."
-msgstr "Обычно наблюдателей расставляют вдоль улиц функцией `get_observer_points(urban_graph, spacing=15)` на пешеходном графе IduEdu. Чтобы ноутбук не зависел от загрузки данных OpenStreetMap, наблюдатели размещены через 15 м на открытой территории не дальше 12 м от зданий, что приближённо соответствует тротуарам и дворам."
+# | msgid "Observers are usually placed along streets with
+# | `get_observer_points(urban_graph, spacing=15)` on an IduEdu walk graph. To
+# | keep this notebook independent of OpenStreetMap downloads, observers are
+# | placed every 15 m on open ground within 12 m of a building, which
+# | approximates sidewalks and yards."
+msgid "Observers are usually placed along streets with `get_observer_points(urban_graph, spacing=15)` on an IduEdu walk graph. To keep this notebook independent of OpenStreetMap downloads, observers are placed every 15 m on open ground within 12 m of a building, which approximates sidewalks and yards. They cover the shown area extended by the view distance (250 m): a cell near the edge of the area is also seen by observers outside it, and without them its count would come out too low."
+msgstr "Обычно наблюдателей расставляют вдоль улиц функцией `get_observer_points(urban_graph, spacing=15)` на пешеходном графе IduEdu. Чтобы ноутбук не зависел от загрузки данных OpenStreetMap, наблюдатели размещены через 15 м на открытой территории не дальше 12 м от зданий, что приближённо соответствует тротуарам и дворам. Они покрывают показанную территорию, расширенную на дальность обзора (250 м): ячейку у края территории видят и наблюдатели за её пределами, и без них её счёт получился бы заниженным."
 
 msgid "Each cell gets the number of observers that see it. Explicit class bounds (`classes=[1, 5, 20, 50]`) put both results on one scale. The 2.5D catchment uses `target_height=10`: it counts the observers that see a point 10 m above the ground."
 msgstr "Каждая ячейка получает число наблюдателей, которые её видят. Явные границы классов (`classes=[1, 5, 20, 50]`) приводят оба результата к одной шкале. Охват 2.5D использует `target_height=10`: он считает наблюдателей, которые видят точку на высоте 10 м над землёй."

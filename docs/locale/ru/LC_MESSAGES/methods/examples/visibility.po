@@ -83,11 +83,17 @@ msgstr "4\\. Зоны охвата видимости"
 msgid "`get_visibility_catchment` counts, for every `cell_size` cell, the observers whose visibility polygon contains the cell centre and merges cells into classes. Observers along streets are usually placed with `get_observer_points(urban_graph, spacing=15)`; for example, with a walk graph from IduEdu:"
 msgstr "`get_visibility_catchment` подсчитывает для каждой ячейки размером `cell_size` наблюдателей, полигон видимости которых содержит центр ячейки, и объединяет ячейки в классы. Наблюдателей вдоль улиц обычно расставляют функцией `get_observer_points(urban_graph, spacing=15)`; например, с пешеходным графом из IduEdu:"
 
-msgid "Here, to stay independent of downloads, observers are placed every 15 m on open ground within 12 m of a building."
-msgstr "Здесь, чтобы не зависеть от загрузок, наблюдатели размещены через 15 м на открытой территории не дальше 12 м от зданий."
+msgid "Here, to stay independent of downloads, observers are placed every 15 m on open ground within 12 m of a building, over the area extended by the view distance (250 m): a cell near the edge of the area is also seen by observers outside it, and without them its count would come out too low."
+msgstr "Здесь, чтобы не зависеть от загрузок, наблюдатели размещены через 15 м на открытой территории не дальше 12 м от зданий, по территории, расширенной на дальность обзора (250 м): ячейку у края территории видят и наблюдатели за её пределами, и без них её счёт получился бы заниженным."
 
 msgid "Quantile classes adapt to the data and are comparable only within one run; explicit bounds give the same scale for different areas or scenarios. `weight_column` replaces counts by sums of observer weights, for example pedestrian flow."
 msgstr "Классы по квантилям подстраиваются под данные и сравнимы только в пределах одного расчёта; явные границы дают одну шкалу для разных территорий или сценариев. `weight_column` заменяет число наблюдателей суммой их весов, например пешеходного потока."
+
+msgid "Isovist metrics of your own observers"
+msgstr "Метрики изовист для своих наблюдателей"
+
+msgid "`get_isovist_grid` places observers on a grid. For observers placed in another way, for example along the streets, `get_visibility(observers, obstacles, view_distance, isovist_metrics=True)` returns the same metrics, one row per observer; draw them as points. Unlike catchment counts, these values have no edge effect: each describes its own observer."
+msgstr "`get_isovist_grid` ставит наблюдателей по сетке. Для наблюдателей, расставленных иначе, например вдоль улиц, `get_visibility(observers, obstacles, view_distance, isovist_metrics=True)` возвращает те же метрики, по строке на наблюдателя; рисуйте их точками. В отличие от счёта охвата, у этих значений нет краевого эффекта: каждое описывает своего наблюдателя."
 
 msgid "5. Your own area"
 msgstr "5\\. Своя территория"

@@ -29,8 +29,12 @@ msgstr "`get_stepped_graph_coverage` поясами по 2 минуты с че�
 msgid "the graph-free `get_radius_coverage`."
 msgstr "`get_radius_coverage` без графа."
 
-msgid "The method is described on the [coverage page](../coverage.rst). The interactive maps are not stored in the notebook because of their size; the figures on that page show the same results."
-msgstr "Метод описан на [странице зон покрытия](../coverage.rst). Интерактивные карты не сохраняются в ноутбуке из-за размера; рисунки на той странице показывают те же результаты."
+# | msgid "The method is described on the [coverage page](../coverage.rst).
+# The
+# | interactive maps are not stored in the notebook because of their size; the
+# | figures on that page show the same results."
+msgid "The method is described on the [coverage page](../coverage.rst). The interactive maps show a light copy of every result (`for_map`: outlines simplified by 2 m), which keeps the notebook small."
+msgstr "Метод описан на [странице зон покрытия](../coverage.rst). Интерактивные карты показывают облегчённую копию каждого результата (`for_map`: контуры упрощены на 2 м), чтобы ноутбук оставался небольшим."
 
 msgid "The last section, *Your own area*, shows what to replace to get the same pictures for another territory."
 msgstr "Последний раздел, *Своя территория*, показывает, что заменить, чтобы получить такие же картинки для другой территории."

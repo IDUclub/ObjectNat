@@ -29,8 +29,8 @@ msgstr "`get_stepped_graph_isochrones` с поясами шириной `step` �
 msgid "an animation of stepped isochrones."
 msgstr "анимацию ступенчатых изохрон."
 
-msgid "The method is described on the [isochrones page](../isochrones.rst). The interactive maps of the stepped isochrones are not stored in the notebook because of their size; the figures on that page show the same results."
-msgstr "Метод описан на [странице изохрон](../isochrones.rst). Интерактивные карты ступенчатых изохрон не сохраняются в ноутбуке из-за размера; рисунки на той странице показывают те же результаты."
+msgid "The method is described on the [isochrones page](../isochrones.rst). The interactive maps show a light copy of every result (`for_map`: outlines simplified by 2 m), which keeps the notebook small."
+msgstr "Метод описан на [странице изохрон](../isochrones.rst). Интерактивные карты показывают облегчённую копию каждого результата (`for_map`: контуры упрощены на 2 м), чтобы ноутбук оставался небольшим."
 
 msgid "The last section, *Your own area*, shows what to replace to get the same pictures for another territory."
 msgstr "Последний раздел, *Своя территория*, показывает, что заменить, чтобы получить такие же картинки для другой территории."
@@ -103,6 +103,16 @@ msgstr "`buffer_factor` (`\"separate\"`) и `road_buffer_size` (`\"ways\"`, ме
 
 msgid "9. Animation of stepped isochrones"
 msgstr "9\\. Анимация ступенчатых изохрон"
+
+msgid "The saved animation, a frame per step:"
+msgstr "Сохранённая анимация, по кадру на шаг:"
+
+msgid "![Stepped isochrones with steps of 0.1–5 minutes](https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/isochrones_steps_animation.gif)"
+msgstr "![Ступенчатые изохроны с шагом от 0,1 до 5 минут](https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/isochrones_steps_animation.gif)"
+
+# | msgid "8. Stepped isochrones, separate"
+msgid "Stepped isochrones with steps of 0.1–5 minutes"
+msgstr "Ступенчатые изохроны с шагом от 0,1 до 5 минут"
 
 msgid "10. Your own area"
 msgstr "10\\. Своя территория"

@@ -118,6 +118,18 @@ observers stand. :func:`objectnat.rasterize` turns any metric into a raster (see
 every place what an observer standing there would see. Time is proportional to the number of observers: the field
 below, 7,889 observers with a view distance of 200 m, takes 0.7 s.
 
+The field has no edge effect: a value describes its own observer only, and buildings outside the area are taken
+into account. For observers placed in another way, for example along the streets, compute the same metrics with
+:func:`objectnat.get_visibility`:
+
+.. code-block:: python
+
+   from objectnat import get_observer_points, get_visibility
+
+   observers = get_observer_points(walk_graph, spacing=15)            # a point every 15 m along the streets
+   metrics = get_visibility(observers, buildings, view_distance=200, isovist_metrics=True)
+   metrics.set_geometry(observers.geometry).plot(column="visible_share", markersize=4)
+
 .. autofunction:: objectnat.get_isovist_grid
 
 .. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_isovist_field_v2.png
@@ -175,15 +187,30 @@ Visibility catchment zones
 Method
 ~~~~~~
 
-:func:`objectnat.get_visibility_catchment` estimates how often each place is seen. Observers are typically placed
-every 10–20 m along streets with :func:`objectnat.get_observer_points`, which splits every street edge of the graph
-(pedestrian edges on walk and intermodal graphs) into pieces of about ``spacing`` metres and puts one point in the
-middle of each piece. The area around the observers is divided into square cells of ``cell_size`` metres; each
-cell gets the number of observers whose visibility polygon contains its centre, or the sum of their weights when
-``weight_column`` is given (for example, pedestrian flow). Visibility polygons are accumulated in the Rust extension
-without building them in Python. Cells seen by no observer, including cells inside obstacles, are left out.
+:func:`objectnat.get_visibility_catchment` answers the question *from how many places is this place seen?* It
+takes a set of observers, for example pedestrians every 15 m along the streets, and counts for every small piece of
+the area how many of them can see it:
 
-The remaining cells are grouped into classes, and every class becomes one zone:
+1. **Observers.** :func:`objectnat.get_observer_points` places them along the streets of a graph: it splits every
+   street edge (on walk and intermodal graphs, every pedestrian edge) into pieces of about ``spacing`` metres and
+   puts a point in the middle of each piece. Any points will do.
+2. **Grid.** The area within ``view_distance`` of the observers is divided into square cells of ``cell_size``
+   metres.
+3. **Counting.** For every observer the visibility polygon is computed as in :func:`objectnat.get_visibility`, and
+   every cell whose centre lies inside it gets one more observer (or the observer's weight from ``weight_column``,
+   for example pedestrian flow). The value of a cell is therefore the number of observers that see it. The polygons
+   are only counted, not returned, which keeps memory low.
+4. **Zones.** Cells that no observer sees, including cells inside buildings, are left out; the others are grouped
+   into classes by their value, and the cells of one class are merged into one zone.
+
+For example, with observers every 15 m and a view distance of 250 m, a square that several streets open onto is seen
+by a hundred observers or more, and a closed courtyard only by the few observers inside it.
+
+**Place observers beyond the analysed area.** A cell near the edge of the area is also seen by observers outside
+it, up to ``view_distance`` away. If the observers stop at the boundary of the area, the counts near the boundary
+come out too low. Place observers over the area extended by ``view_distance`` and clip the result to the area.
+
+Classes:
 
 - ``classes=5`` (default) builds class bounds from quantiles of the non-zero cell values. The bounds depend on the
   data, so class numbers are comparable only within one run;
@@ -209,12 +236,13 @@ street level only where the terrain or ``observer_height`` lifts the eye above t
 
 .. autofunction:: objectnat.get_observer_points
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_catchment_v2.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_catchment_v3.png
    :alt: 2D visibility catchment and 2.5D viewshed catchment
    :align: center
    :width: 100%
 
-   Catchment zones of 376 observers on open ground within 12 m of buildings, ``view_distance=250``,
+   Catchment zones of 1,805 observers on open ground within 12 m of buildings, placed over the shown area extended
+   by the view distance, ``view_distance=250``,
    ``cell_size=4``, ``classes=[1, 5, 20, 50]``; the classes count the observers that see a cell. Left: 2D. Right:
    2.5D with ``target_height=10``, the number of observers that see a point 10 m above the ground. Such a point is
    seen over buildings lower than the line of sight, so more cells reach the upper classes.
