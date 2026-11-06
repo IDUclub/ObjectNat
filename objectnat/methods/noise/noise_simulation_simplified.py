@@ -23,7 +23,6 @@ def calculate_simplified_noise_frame(
     db_sim_step: int = 5,
     linestring_point_radius: int = 15,
     polygon_point_radius: int = 5,
-    visibility_parallel: bool = True,
     visibility_max_workers: int | None = None,
 ) -> gpd.GeoDataFrame:
     """
@@ -75,10 +74,6 @@ def calculate_simplified_noise_frame(
             The point spacing (in metres) for distributing sources within Polygon geometries.
             Default is 5. Points are sampled across the polygon’s surface and perimeter to
             represent the full sound-emitting area.
-
-        visibility_parallel (bool, optional):
-            Deprecated and ignored: visibility for all sample points is always computed
-            in parallel threads by the Rust extension.
 
         visibility_max_workers (int | None, optional):
             Maximum number of threads for the visibility computation. None uses all cores.
@@ -202,8 +197,6 @@ def calculate_simplified_noise_frame(
         point_from=all_points_gdf,
         obstacles=obstacles,
         view_distance=None,
-        method="accurate",
-        parallel=visibility_parallel,
         max_workers=visibility_max_workers,
     )
 

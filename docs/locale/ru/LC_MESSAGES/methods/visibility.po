@@ -149,15 +149,6 @@ msgstr "GeoDataFrame с геометриями препятствий (Polygon, 
 msgid "Global view distance for all points (in metres). Used when the ``\"visibility_distance\"`` column is not present in ``point_from``. If ``None`` and the column is also missing, a ``ValueError`` is raised."
 msgstr "Общая дальность обзора для всех точек (в метрах). Используется, если в ``point_from`` нет столбца ``\"visibility_distance\"``. Если ``None`` и столбца тоже нет, возникает ``ValueError``."
 
-msgid "Deprecated and ignored: the result is always exact."
-msgstr "Устарел и игнорируется: результат всегда точный."
-
-msgid "Deprecated and ignored."
-msgstr "Устарел и игнорируется."
-
-msgid "Deprecated and ignored: the calculation is always multi-threaded."
-msgstr "Устарел и игнорируется: расчёт всегда многопоточный."
-
 msgid "Maximum number of threads (``None`` uses all cores)."
 msgstr "Максимальное число потоков (``None`` — все ядра)."
 
@@ -179,8 +170,8 @@ msgstr "Исключения"
 msgid "If ``point_from`` is not a GeoDataFrame."
 msgstr "Если ``point_from`` не GeoDataFrame."
 
-msgid "If ``method`` is not ``\"accurate\"`` or ``\"simple\"``, if     ``point_from`` is empty, has no CRS, or if neither     ``view_distance`` nor the ``\"visibility_distance\"`` column is     provided."
-msgstr "Если ``method`` не ``\"accurate\"`` и не ``\"simple\"``, если     ``point_from`` пуст или не имеет системы координат, или если не задан ни     ``view_distance``, ни столбец ``\"visibility_distance\"``."
+msgid "If ``point_from`` is empty, has no CRS, or if neither     ``view_distance`` nor the ``\"visibility_distance\"`` column is     provided."
+msgstr "Если ``point_from`` пуст или не имеет системы координат, или если не задан ни     ``view_distance``, ни столбец ``\"visibility_distance\"``."
 
 msgid "Notes"
 msgstr "Примечания"

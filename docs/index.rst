@@ -10,6 +10,7 @@
     methods/insolation
     methods/rasters
     methods/examples/index
+    upgrading
 
 ObjectNat
 =========
@@ -102,10 +103,10 @@ Installation
 
    pip install objectnat
 
-ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.1 or newer within the 2.x
+ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.2 or newer within the 2.x
 series. Wheels contain the compiled extension, so ``pip`` needs no compiler; building from a source checkout requires
 a Rust toolchain (`rustup <https://rustup.rs>`__). Reading GeoTIFF terrain for insolation and viewsheds requires the
-optional ``rasterio`` package.
+optional ``rasterio`` package. Changes for code written for 2.x are listed in :doc:`upgrading`.
 
 ----
 
@@ -148,7 +149,7 @@ Methods without a graph take GeoDataFrames directly, for example sun hours among
 
    from objectnat import get_insolation
 
-   zones = get_insolation(buildings, "2026-06-21", height_column=None, storeys_column="storeys_count")
+   receivers = get_insolation(buildings, "2026-06-21", height_column=None, storeys_column="storeys_count")
 
 Configuration
 -------------

@@ -109,7 +109,7 @@ objectnat/
                        noise_reduce helpers
     insolation/      — get_insolation (sun hours on a ground grid), get_facade_insolation (per floor on facades);
                        buildings with heights + terrain, NOAA sun position, single days or periods
-    visibility/      — get_visibility (exact visibility; method="simple" is a deprecated alias), get_isovist_grid
+    visibility/      — get_visibility (exact visibility polygons, isovist metrics), get_isovist_grid
                        (isovist metrics on a grid), get_viewshed / get_viewshed_catchment (2.5D: lines of sight
                        over building heights and terrain), visibility catchment
     utils/
