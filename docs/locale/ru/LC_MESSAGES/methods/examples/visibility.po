@@ -14,8 +14,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-msgid "2D visibility: visibility polygons, isovist metrics and catchment zones"
-msgstr "Видимость 2D: полигоны видимости, метрики изовист и зоны охвата"
+# | msgid "2D visibility: visibility polygons, isovist metrics and catchment
+# | zones"
+msgid "2D visibility: visibility polygons, isovist metrics and catchment"
+msgstr "Видимость 2D: полигоны видимости, метрики изовист и охват"
 
 msgid "`get_visibility` computes the exact visibility polygon (isovist) of each observer within a view distance; obstacles are walls of infinite height. This notebook shows"
 msgstr "`get_visibility` вычисляет точный полигон видимости (изовисту) каждого наблюдателя в пределах дальности обзора; препятствия — стены бесконечной высоты. Этот ноутбук показывает"
@@ -26,8 +28,9 @@ msgstr "полигон видимости одного наблюдателя и
 msgid "isovist metrics (`isovist_metrics=True`) and an isovist field over an area (`get_isovist_grid`, `rasterize`);"
 msgstr "метрики изовист (`isovist_metrics=True`) и поле изовист по территории (`get_isovist_grid`, `rasterize`);"
 
-msgid "visibility catchment zones (`get_visibility_catchment`)."
-msgstr "зоны охвата видимости (`get_visibility_catchment`)."
+# | msgid "visibility catchment zones (`get_visibility_catchment`)."
+msgid "the visibility catchment, how many observers see every cell (`get_visibility_catchment`)."
+msgstr "охват видимости — сколько наблюдателей видят каждую ячейку (`get_visibility_catchment`)."
 
 msgid "2.5D viewsheds over building heights are covered in the [viewshed notebook](viewshed.ipynb)."
 msgstr "Области видимости 2.5D с учётом высот зданий разобраны в [ноутбуке областей видимости](viewshed.ipynb)."
@@ -77,17 +80,29 @@ msgstr "`get_isovist_grid` строит карту метрик по терри�
 msgid "Every cell shows what an observer standing at its centre sees. Open squares and wide streets have a high `visible_share`, narrow yards a low one. `compactness` is high where the visible area is a simple, nearly convex shape, in an open square or inside a closed courtyard, and low where long narrow views between buildings make it spiky. `occlusivity` is high where many building corners hide space close to the observer, at crossings of passages between buildings. `drift` is high next to walls that face an open area: the observer sees mostly to one side."
 msgstr "Каждая ячейка показывает, что видит наблюдатель, стоящий в её центре. У открытых площадей и широких улиц высокий `visible_share`, у узких дворов — низкий. `compactness` высока там, где видимая область простой, почти выпуклой формы, — на открытой площади или внутри закрытого двора, и низка там, где длинные узкие взгляды между зданиями делают её звездообразной. `occlusivity` высока там, где много углов зданий скрывают пространство рядом с наблюдателем, — на пересечениях проходов между зданиями. `drift` велик у стен, обращённых к открытому пространству: наблюдатель видит в основном одну сторону."
 
-msgid "4. Visibility catchment zones"
-msgstr "4\\. Зоны охвата видимости"
+# | msgid "4. Visibility catchment zones"
+msgid "4. Visibility catchment"
+msgstr "4\\. Охват видимости"
 
-msgid "`get_visibility_catchment` counts, for every `cell_size` cell, the observers whose visibility polygon contains the cell centre and merges cells into classes. Observers along streets are usually placed with `get_observer_points(urban_graph, spacing=15)`; for example, with a walk graph from IduEdu:"
-msgstr "`get_visibility_catchment` подсчитывает для каждой ячейки размером `cell_size` наблюдателей, полигон видимости которых содержит центр ячейки, и объединяет ячейки в классы. Наблюдателей вдоль улиц обычно расставляют функцией `get_observer_points(urban_graph, spacing=15)`; например, с пешеходным графом из IduEdu:"
+# | msgid "`get_visibility_catchment` counts, for every `cell_size` cell, the
+# | observers whose visibility polygon contains the cell centre and merges
+# cells
+# | into classes. Observers along streets are usually placed with
+# | `get_observer_points(urban_graph, spacing=15)`; for example, with a walk
+# | graph from IduEdu:"
+msgid "`get_visibility_catchment` counts, for every `cell_size` cell, the observers whose visibility polygon contains the cell centre, and returns the seen cells with their `count`; `rasterize` draws them. Observers along streets are usually placed with `get_observer_points(urban_graph, spacing=15)`; for example, with a walk graph from IduEdu:"
+msgstr "`get_visibility_catchment` подсчитывает для каждой ячейки размером `cell_size` наблюдателей, полигон видимости которых содержит центр ячейки, и возвращает видимые ячейки с их `count`; `rasterize` их рисует. Наблюдателей вдоль улиц обычно расставляют функцией `get_observer_points(urban_graph, spacing=15)`; например, с пешеходным графом из IduEdu:"
 
 msgid "Here, to stay independent of downloads, observers are placed every 15 m on open ground within 12 m of a building, over the area extended by the view distance (250 m): a cell near the edge of the area is also seen by observers outside it, and without them its count would come out too low."
 msgstr "Здесь, чтобы не зависеть от загрузок, наблюдатели размещены через 15 м на открытой территории не дальше 12 м от зданий, по территории, расширенной на дальность обзора (250 м): ячейку у края территории видят и наблюдатели за её пределами, и без них её счёт получился бы заниженным."
 
-msgid "Quantile classes adapt to the data and are comparable only within one run; explicit bounds give the same scale for different areas or scenarios. `weight_column` replaces counts by sums of observer weights, for example pedestrian flow."
-msgstr "Классы по квантилям подстраиваются под данные и сравнимы только в пределах одного расчёта; явные границы дают одну шкалу для разных территорий или сценариев. `weight_column` заменяет число наблюдателей суммой их весов, например пешеходного потока."
+# | msgid "Quantile classes adapt to the data and are comparable only within
+# one
+# | run; explicit bounds give the same scale for different areas or scenarios.
+# | `weight_column` replaces counts by sums of observer weights, for example
+# | pedestrian flow."
+msgid "The counts are in observers, so rasters of different areas or scenarios with the same observer spacing share one colour scale. `weight_column` replaces counts by sums of observer weights, for example pedestrian flow."
+msgstr "Значения выражены в числе наблюдателей, поэтому растры разных территорий или сценариев с одинаковым шагом наблюдателей можно рисовать в одной цветовой шкале. `weight_column` заменяет число наблюдателей суммой их весов, например пешеходного потока."
 
 msgid "Isovist metrics of your own observers"
 msgstr "Метрики изовист для своих наблюдателей"
@@ -98,8 +113,19 @@ msgstr "`get_isovist_grid` ставит наблюдателей по сетке
 msgid "5. Your own area"
 msgstr "5\\. Своя территория"
 
-msgid "Building footprints and observers: the catchment of the observers as a raster of observer counts, in the same units and on the same colour scale as the 2.5D raster in the [viewshed notebook](viewshed.ipynb). `output=\"cells\"` returns the cells seen by at least one observer with their `count`, and `rasterize` puts them back on the calculation grid. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
-msgstr "Контуры зданий и наблюдатели: охват наблюдателей в виде растра числа наблюдателей, в тех же единицах и в той же цветовой шкале, что и растр 2.5D в [ноутбуке областей видимости](viewshed.ipynb). `output=\"cells\"` возвращает ячейки, которые видит хотя бы один наблюдатель, с их `count`, а `rasterize` возвращает их на расчётную сетку. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
+# | msgid "Building footprints and observers: the catchment of the observers
+# as
+# | a raster of observer counts, in the same units and on the same colour
+# scale
+# | as the 2.5D raster in the [viewshed notebook](viewshed.ipynb).
+# | `output=\"cells\"` returns the cells seen by at least one observer with
+# | their `count`, and `rasterize` puts them back on the calculation grid.
+# | `Raster.plot` draws the raster, `Raster.explore` shows it on a web map
+# with
+# | a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires
+# | `rasterio`)."
+msgid "Building footprints and observers: the catchment of the observers as a raster of observer counts, in the same units and on the same colour scale as the 2.5D raster in the [viewshed notebook](viewshed.ipynb). The function returns the cells seen by at least one observer with their `count`, and `rasterize` puts them back on the calculation grid. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
+msgstr "Контуры зданий и наблюдатели: охват наблюдателей в виде растра числа наблюдателей, в тех же единицах и в той же цветовой шкале, что и растр 2.5D в [ноутбуке областей видимости](viewshed.ipynb). Функция возвращает ячейки, которые видит хотя бы один наблюдатель, с их `count`, а `rasterize` возвращает их на расчётную сетку. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
 
 msgid "The isovist field of section 3 is obtained for any area in the same way, for example `rasterize(get_isovist_grid(my_obstacles, my_area, view_distance=200, cell_size=5), \"visible_share\")`. Its value in a cell describes what an observer standing there sees, whereas the catchment counts the observers that see the cell."
 msgstr "Поле изовист из раздела 3 строится для любой территории так же, например `rasterize(get_isovist_grid(my_obstacles, my_area, view_distance=200, cell_size=5), \"visible_share\")`. Его значение в ячейке описывает, что видит стоящий там наблюдатель, а охват считает наблюдателей, которые видят эту ячейку."

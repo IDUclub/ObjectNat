@@ -87,7 +87,7 @@ compactness, occlusivity, radial statistics, drift and visible share; ``get_isov
 an area. ``get_viewshed`` uses building heights and terrain: a grid cell is visible when the line of sight from the
 eye (by default 1.6 m above the ground or a roof) to the cell passes above every wall and the ground.
 ``get_visibility_catchment`` and ``get_viewshed_catchment`` count, for every cell, the observers that see it
-(``get_observer_points`` places observers along streets) and return zones of equal visibility class.
+(``get_observer_points`` places observers along streets); ``rasterize`` draws the counts as a raster.
 
 .. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/viewshed_vs_visibility_v2.png
    :align: center

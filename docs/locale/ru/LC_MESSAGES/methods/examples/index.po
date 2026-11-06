@@ -53,8 +53,10 @@ msgstr "Обеспеченность сервисами, пересчёт с м�
 msgid ":doc:`visibility`"
 msgstr ":doc:`visibility`"
 
-msgid "Exact 2D visibility polygons, isovist metrics and isovist fields, visibility catchment zones"
-msgstr "Точные полигоны видимости 2D, метрики изовист и поля изовист, зоны охвата видимости"
+# | msgid "Exact 2D visibility polygons, isovist metrics and isovist fields,
+# | visibility catchment zones"
+msgid "Exact 2D visibility polygons, isovist metrics and isovist fields, visibility catchment"
+msgstr "Точные полигоны видимости 2D, метрики изовист и поля изовист, охват видимости"
 
 msgid ":doc:`viewshed`"
 msgstr ":doc:`viewshed`"

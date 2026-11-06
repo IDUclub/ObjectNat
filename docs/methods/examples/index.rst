@@ -22,7 +22,7 @@ for another territory.
    * - :doc:`provision`
      - Service provision, recalculation with a shorter threshold, clipping, sparse matrices
    * - :doc:`visibility`
-     - Exact 2D visibility polygons, isovist metrics and isovist fields, visibility catchment zones
+     - Exact 2D visibility polygons, isovist metrics and isovist fields, visibility catchment
    * - :doc:`viewshed`
      - 2.5D viewsheds over building heights, comparison with 2D visibility, viewshed catchment, terrain
    * - :doc:`noise`

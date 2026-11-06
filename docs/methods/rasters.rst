@@ -20,15 +20,15 @@ Several methods compute values on a regular grid of square cells and return the 
      - ``output="receivers"`` or ``"both"``
      - ``noise_level``: sound level at the receiver, dB
    * - :func:`objectnat.get_visibility_catchment`, :func:`objectnat.get_viewshed_catchment`
-     - ``output="cells"`` or ``"both"``
-     - ``count``: the number of observers that see the cell (``weight``: the sum of their weights);
-       ``visibility_class``
+     - always
+     - ``count``: the number of observers that see the cell (``weight``: the sum of their weights)
    * - :func:`objectnat.get_isovist_grid`
      - always
      - isovist metrics of an observer standing in the cell: ``visible_share`` (share of the view disc),
        ``compactness``, ``occlusivity`` (m), ``drift`` (m), ...
 
-``output="receivers"`` (``"cells"``) skips the zone polygons, which is faster when only the values are needed:
+For insolation and noise, ``output="receivers"`` skips the zone polygons, which is faster when only the values are
+needed:
 for a single day of insolation the polygons take most of the run time.
 
 :func:`objectnat.rasterize` turns one column of such points into a :class:`objectnat.Raster`: a 2-D array with an

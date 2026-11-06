@@ -15,8 +15,8 @@ observers, how often each place is seen. ObjectNat provides two models:
   which the line of sight from the eye is clear, merged into one (Multi)Polygon per observer. Its outline follows
   the cells, so its accuracy is ``cell_size``.
 
-The catchment functions count, for every cell of a grid, the observers that see it and merge cells into
-**catchment zones** of equal visibility class. :func:`objectnat.get_observer_points` places observers along the
+The **catchment** functions count, for every cell of a grid, the observers that see it; the counts are drawn as a
+raster. :func:`objectnat.get_observer_points` places observers along the
 streets of an IduEdu graph. All calculations run in parallel threads in ObjectNat's Rust extension.
 
 Grid results answer two different questions, and their values have different units. An **isovist field**
@@ -181,8 +181,8 @@ a roof, from a hill, or when the target is above the ground (``target_height``).
    ``include_roofs=True``; the viewshed covers 9.6 ha of ground and roofs. Grey shades show building height;
    ``cell_size=2``.
 
-Visibility catchment zones
---------------------------
+Visibility catchment
+--------------------
 
 Method
 ~~~~~~
@@ -200,8 +200,10 @@ the area how many of them can see it:
    every cell whose centre lies inside it gets one more observer (or the observer's weight from ``weight_column``,
    for example pedestrian flow). The value of a cell is therefore the number of observers that see it. The polygons
    are only counted, not returned, which keeps memory low.
-4. **Zones.** Cells that no observer sees, including cells inside buildings, are left out; the others are grouped
-   into classes by their value, and the cells of one class are merged into one zone.
+4. **Result.** The cells that at least one observer sees are returned as points at the cell centres with their
+   ``count`` (and ``weight``); cells inside buildings and cells nobody sees are left out.
+   :func:`objectnat.rasterize` turns them back into the grid, a raster that shows the counts as a continuous
+   colour scale.
 
 For example, with observers every 15 m and a view distance of 250 m, a square that several streets open onto is seen
 by a hundred observers or more, and a closed courtyard only by the few observers inside it.
@@ -210,24 +212,14 @@ by a hundred observers or more, and a closed courtyard only by the few observers
 it, up to ``view_distance`` away. If the observers stop at the boundary of the area, the counts near the boundary
 come out too low. Place observers over the area extended by ``view_distance`` and clip the result to the area.
 
-Classes:
-
-- ``classes=5`` (default) builds class bounds from quantiles of the non-zero cell values. The bounds depend on the
-  data, so class numbers are comparable only within one run;
-- ``classes=[1, 10, 50, 100]`` sets the lower class bounds explicitly, in observer counts (or weight sums), so that
-  areas or scenarios share one scale.
-
-Each zone has ``visibility_class`` (``1`` is the least visible class) and the range of cell values in it,
-``count_min`` / ``count_max`` (``weight_min`` / ``weight_max`` with weights). Zone outlines follow the cell grid;
-time and memory grow with the number of cells. ``output="cells"`` returns the seen cells as points with their
-``count`` (and ``weight``) and class instead of the zones (``"both"`` returns both); :func:`objectnat.rasterize`
-turns them into a raster of counts. Visibility is symmetric, so the value of a cell is also the number
-of observers visible from that cell.
+Time and memory grow with the number of cells. Counts are in observers, so two areas or two scenarios with the
+same observer spacing can be drawn on one colour scale. Visibility is symmetric, so the value of a cell is also the
+number of observers visible from that cell.
 
 :func:`objectnat.get_viewshed_catchment` is the 2.5D counterpart: a cell counts an observer when the line of sight
 from the observer's eye to the cell target is clear, as in :func:`objectnat.get_viewshed`. Observers inside
 building footprints are left out. Building footprints are rasterized once, and the lines of sight of all observers
-are counted in the Rust extension. With ``include_roofs=True`` roof cells are classified too; roofs are seen from
+are counted in the Rust extension. With ``include_roofs=True`` roof cells are counted too; roofs are seen from
 street level only where the terrain or ``observer_height`` lifts the eye above them.
 
 .. autofunction:: objectnat.get_visibility_catchment
@@ -236,16 +228,16 @@ street level only where the terrain or ``observer_height`` lifts the eye above t
 
 .. autofunction:: objectnat.get_observer_points
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_catchment_v3.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_catchment_v4.png
    :alt: 2D visibility catchment and 2.5D viewshed catchment
    :align: center
    :width: 100%
 
-   Catchment zones of 1,805 observers on open ground within 12 m of buildings, placed over the shown area extended
-   by the view distance, ``view_distance=250``,
-   ``cell_size=4``, ``classes=[1, 5, 20, 50]``; the classes count the observers that see a cell. Left: 2D. Right:
-   2.5D with ``target_height=10``, the number of observers that see a point 10 m above the ground. Such a point is
-   seen over buildings lower than the line of sight, so more cells reach the upper classes.
+   Number of observers that see each cell: 1,805 observers on open ground within 12 m of buildings, placed over the
+   shown area extended by the view distance, ``view_distance=250``, ``cell_size=4``, the counts rasterized with
+   :func:`objectnat.rasterize` on one colour scale. Left: 2D. Right: 2.5D with ``target_height=10``, the number of
+   observers that see a point 10 m above the ground. Such a point is seen over buildings lower than the line of
+   sight, so more observers see it.
 
 Limitations
 -----------
@@ -255,10 +247,9 @@ Limitations
   Results are discrete at ``cell_size``.
 - Neither model accounts for atmospheric conditions, lighting or the visual acuity of the observer; a cell is
   visible if the geometric line of sight is clear within the view distance.
-- Catchment class bounds built from quantiles (``classes`` as an integer) are relative to one run.
 
 Example notebooks
 -----------------
 
-:doc:`examples/visibility` (2D visibility, isovist metrics, catchment zones) and :doc:`examples/viewshed` (2.5D
+:doc:`examples/visibility` (2D visibility, isovist metrics, catchment) and :doc:`examples/viewshed` (2.5D
 viewsheds and viewshed catchment).
