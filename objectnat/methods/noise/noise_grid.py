@@ -305,7 +305,7 @@ def _diffraction_corners(geometries: np.ndarray) -> tuple[np.ndarray, np.ndarray
         exterior = np.r_[True, ring_outline[1:] != ring_outline[:-1]]
         for ring, is_exterior in zip(rings, exterior):
             xy = shapely.get_coordinates(ring)[:-1]
-            corners, kept = _vertex_corners(xy, closed=True, two_sided=False)
+            corners, _ = _vertex_corners(xy, closed=True, two_sided=False)
             hull_links = np.full((len(corners), 2), -1, dtype=np.int64)
             if is_exterior and len(corners) > 2:
                 # hull vertices are corners of the outline: link each to the hull corners beside it
