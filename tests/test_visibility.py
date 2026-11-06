@@ -93,16 +93,6 @@ def test_observer_inside_obstacle_gets_empty_polygon():
     assert not result.geometry.iloc[1].is_empty
 
 
-def test_simple_method_is_deprecated_and_exact():
-    obstacles = gpd.GeoDataFrame(geometry=[box(X0 + 30, Y0 - 500, X0 + 31, Y0 + 500)], crs=CRS)
-    point = gpd.GeoDataFrame(geometry=[Point(X0, Y0)], crs=CRS)
-    with pytest.warns(DeprecationWarning):
-        simple = get_visibility(point, obstacles, 100, "simple").geometry.iloc[0]
-    assert simple.equals(get_visibility(point, obstacles, 100).geometry.iloc[0])
-    with pytest.raises(ValueError):
-        get_visibility(point, obstacles, 100, "fast")
-
-
 def test_invalid_ring_repair_keeps_the_part_around_the_observer():
     # near-coincident walls can leave a micro bow-tie in the kernel's ring; make_valid splits it
     bowtie = Polygon([(0, 0), (10, 10), (10, 0), (0, 10)])

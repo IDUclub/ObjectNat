@@ -1,6 +1,3 @@
-import warnings
-from typing import Literal
-
 import geopandas as gpd
 import numpy as np
 import shapely
@@ -10,7 +7,6 @@ from objectnat.methods.utils.raster import grid_attrs
 from objectnat.methods.visibility._native import geometries_to_segments, native_visibility_polygons
 from objectnat.methods.visibility.isovist import ISOVIST_METRICS, add_isovist_metrics
 
-VISIBILITY_METHODS = ("accurate", "simple")
 VIEW_DISC_QUAD_SEGS = 16  # matches Point.buffer(): the view polygon the kernel clips to
 
 
@@ -74,10 +70,7 @@ def get_visibility(
     point_from: gpd.GeoDataFrame,
     obstacles: gpd.GeoDataFrame,
     view_distance: float | None = None,
-    method: Literal["accurate", "simple"] = "accurate",
     *,
-    resolution: int = 32,  # pylint: disable=unused-argument
-    parallel: bool = False,  # pylint: disable=unused-argument
     max_workers: int | None = None,
     isovist_metrics: bool = False,
 ) -> gpd.GeoDataFrame:
@@ -102,12 +95,6 @@ def get_visibility(
             Global view distance for all points (in metres). Used when the
             ``"visibility_distance"`` column is not present in ``point_from``.
             If ``None`` and the column is also missing, a ``ValueError`` is raised.
-        method (Literal["accurate", "simple"], optional):
-            Deprecated and ignored: the result is always exact.
-        resolution (int, optional):
-            Deprecated and ignored.
-        parallel (bool, optional):
-            Deprecated and ignored: the calculation is always multi-threaded.
         max_workers (int | None, optional):
             Maximum number of threads (``None`` uses all cores).
         isovist_metrics (bool, optional):
@@ -130,8 +117,7 @@ def get_visibility(
         TypeError:
             If ``point_from`` is not a GeoDataFrame.
         ValueError:
-            If ``method`` is not ``"accurate"`` or ``"simple"``, if
-            ``point_from`` is empty, has no CRS, or if neither
+            If ``point_from`` is empty, has no CRS, or if neither
             ``view_distance`` nor the ``"visibility_distance"`` column is
             provided.
 
@@ -145,15 +131,6 @@ def get_visibility(
 
     if point_from.empty:
         raise ValueError("GeoDataFrame 'point_from' is empty.")
-
-    if method not in VISIBILITY_METHODS:
-        raise ValueError(f"method must be one of: {', '.join(repr(m) for m in VISIBILITY_METHODS)}; got {method!r}")
-    if method == "simple":
-        warnings.warn(
-            "method='simple' is deprecated and computes the exact visibility; omit the argument.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
 
     original_crs = point_from.crs
     local_crs = point_from.estimate_utm_crs()
