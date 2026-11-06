@@ -77,6 +77,11 @@ Object-oriented Network Analysis Tools
 Вспомогательные функции присоединяют показатели к GeoDataFrame, строят линии связей, удаляют связи длиннее
 нового порога и обрезают результат по территории.
 
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_links_v2.png
+   :align: center
+   :width: 100%
+   :alt: Показатель обеспеченности жилых зданий и связи здание–школа в пределах и за пределами порога 10 минут
+
 **Видимость** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/visibility.html>`__, примеры: `2D <https://iduclub.github.io/ObjectNat/ru/methods/examples/visibility.html>`__,
 `2.5D <https://iduclub.github.io/ObjectNat/ru/methods/examples/viewshed.html>`__). ``get_visibility`` вычисляет точный полигон видимости (изовисту)
 каждого наблюдателя среди препятствий, которые считаются стенами бесконечной высоты, а при
@@ -100,6 +105,11 @@ Object-oriented Network Analysis Tools
 ``calculate_simplified_noise_frame`` — быстрая оценка по маскам видимости и затуханию с расстоянием. Влияние
 земли не моделируется.
 Подробнее: `вики <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__.
+
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_grid_paths_v2.png
+   :align: center
+   :width: 100%
+   :alt: Уровни шума на сетке приёмников и прибавка от отражений и от дифракции
 
 **Инсоляция** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/insolation.html>`__, `пример <https://iduclub.github.io/ObjectNat/ru/methods/examples/insolation.html>`__).
 ``get_insolation`` прослеживает положение солнца (алгоритм NOAA) в течение дня или периода и возвращает для

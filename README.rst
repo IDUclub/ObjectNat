@@ -74,6 +74,11 @@ probabilistic model over a dense or pandas-sparse cost matrix and a normative th
 share of demand supplied within the threshold); helpers join the metrics to GeoDataFrames, build link lines,
 drop links beyond a shorter threshold and clip the result to an area.
 
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/provision_map_links_v2.png
+   :align: center
+   :width: 100%
+   :alt: Provision value of residential buildings and building–school links within and beyond a 10-minute threshold
+
 **Visibility** (`docs <https://iduclub.github.io/ObjectNat/methods/visibility.html>`__, examples: `2D <https://iduclub.github.io/ObjectNat/methods/examples/visibility.html>`__,
 `2.5D <https://iduclub.github.io/ObjectNat/methods/examples/viewshed.html>`__). ``get_visibility`` computes the exact visibility polygon (isovist) of
 each observer among obstacles treated as walls of infinite height and, with ``isovist_metrics=True``, area,
@@ -94,6 +99,11 @@ reflections with geometric spreading, air absorption, wall absorption and vegeta
 around building corners into their shadows, summed as energies. ``simulate_noise`` is a wave-front model for point
 sources with multiple reflections, and ``calculate_simplified_noise_frame`` a fast estimate from visibility masks and
 distance decay. Ground effect is not modelled. Background: `wiki <https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation>`__.
+
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_grid_paths_v2.png
+   :align: center
+   :width: 100%
+   :alt: Noise levels on a receiver grid and the levels added by reflections and by diffraction
 
 **Insolation** (`docs <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__, `example <https://iduclub.github.io/ObjectNat/methods/examples/insolation.html>`__).
 ``get_insolation`` follows the sun (NOAA solar position) through a day or a period and returns, on a ground grid
