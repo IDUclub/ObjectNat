@@ -308,9 +308,6 @@ msgstr "Шаг (в метрах) при разбиении геометрий Li
 msgid "The point spacing (in metres) for distributing sources within Polygon geometries. Default is 5. Points are sampled across the polygon’s surface and perimeter to represent the full sound-emitting area."
 msgstr "Шаг точек (в метрах) при размещении источников внутри геометрий Polygon. По умолчанию 5. Точки ставятся по площади и по контуру полигона, чтобы представить всю излучающую поверхность."
 
-msgid "Deprecated and ignored: visibility for all sample points is always computed in parallel threads by the Rust extension."
-msgstr "Устарел и игнорируется: видимость для всех точек всегда вычисляется в параллельных потоках расширением на Rust."
-
 msgid "Maximum number of threads for the visibility computation. None uses all cores."
 msgstr "Максимальное число потоков для расчёта видимости. None — все ядра."
 

@@ -131,7 +131,7 @@ Installation
 
     pip install objectnat
 
-ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.1 or newer within the 2.x
+ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.2 or newer within the 2.x
 series. Wheels include the compiled extension ``objectnat._rust``, so ``pip`` needs no compiler. Installing from a
 source checkout (``pip install .``) builds the extension and requires a Rust toolchain
 (`rustup <https://rustup.rs>`__). GeoTIFF terrain requires the optional ``rasterio`` package.

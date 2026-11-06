@@ -128,8 +128,8 @@ msgstr "Ресурсоёмкие части (точная видимость, л
 msgid "Installation"
 msgstr "Установка"
 
-msgid "ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.1 or newer within the 2.x series. Wheels contain the compiled extension, so ``pip`` needs no compiler; building from a source checkout requires a Rust toolchain (`rustup <https://rustup.rs>`__). Reading GeoTIFF terrain for insolation and viewsheds requires the optional ``rasterio`` package."
-msgstr "ObjectNat поддерживает Python 3.11–3.14 в Linux, macOS и Windows и устанавливает IduEdu версии 2.4.1 или новее в пределах серии 2.x. Колёса (wheels) содержат скомпилированное расширение, поэтому ``pip`` не нужен компилятор; сборка из исходного кода требует инструментов Rust (`rustup <https://rustup.rs>`__). Для чтения рельефа из GeoTIFF в инсоляции и областях видимости нужен необязательный пакет ``rasterio``."
+msgid "ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.2 or newer within the 2.x series. Wheels contain the compiled extension, so ``pip`` needs no compiler; building from a source checkout requires a Rust toolchain (`rustup <https://rustup.rs>`__). Reading GeoTIFF terrain for insolation and viewsheds requires the optional ``rasterio`` package. Changes for code written for 2.x are listed in :doc:`upgrading`."
+msgstr "ObjectNat поддерживает Python 3.11–3.14 в Linux, macOS и Windows и устанавливает IduEdu версии 2.4.2 или новее в пределах серии 2.x. Колёса (wheels) содержат скомпилированное расширение, поэтому ``pip`` не нужен компилятор; сборка из исходного кода требует инструментов Rust (`rustup <https://rustup.rs>`__). Для чтения рельефа из GeoTIFF в инсоляции и областях видимости нужен необязательный пакет ``rasterio``. Изменения для кода, написанного под 2.x, перечислены на странице :doc:`upgrading`."
 
 msgid "Quickstart"
 msgstr "Быстрый старт"

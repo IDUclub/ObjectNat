@@ -1,0 +1,106 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-07 01:54+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Upgrading to 3.0"
+msgstr "Переход на 3.0"
+
+msgid "ObjectNat 3.0 runs its computationally intensive parts in a compiled Rust engine, ``objectnat._rust``, and adds 2.5D and grid methods on top of it. No function is removed or renamed, but the parameters of the former Python implementations are removed, some results differ and installing from source needs a Rust toolchain. Release 2.2.0 already has the new engine and still accepts the removed parameters with a warning, so this page applies to upgrades from any 2.x release."
+msgstr "ObjectNat 3.0 выполняет ресурсоёмкие расчёты в скомпилированном движке на Rust, ``objectnat._rust``, и добавляет на его основе методы 2.5D и расчёты на сетке. Ни одна функция не удалена и не переименована, но параметры прежних реализаций на Python удалены, часть результатов изменилась, а установка из исходного кода требует инструментов Rust. Версия 2.2.0 уже содержит новый движок и ещё принимает удалённые параметры с предупреждением, поэтому эта страница относится к переходу с любой версии 2.x."
+
+msgid "What changes for existing code"
+msgstr "Что меняется для существующего кода"
+
+msgid "Change"
+msgstr "Изменение"
+
+msgid "Effect"
+msgstr "Следствие"
+
+msgid "What to do"
+msgstr "Что сделать"
+
+msgid "Radius isochrones and coverage follow the network"
+msgstr "Изохроны и зоны покрытия типа radius следуют за сетью"
+
+msgid "With ``geometry_type=\"radius\"`` every reachable node is buffered by its remaining budget, but by no more than ``off_network_distance`` (default 150 m), so the area no longer grows into a straight-line circle around the start"
+msgstr "При ``geometry_type=\"radius\"`` каждый достижимый узел окружается буфером по оставшемуся бюджету, но не больше ``off_network_distance`` (по умолчанию 150 м), поэтому область больше не разрастается в круг по прямой вокруг начальной точки"
+
+msgid "``off_network_distance=None`` keeps the 2.x shape"
+msgstr "``off_network_distance=None`` сохраняет форму из 2.x"
+
+msgid ":func:`~objectnat.get_visibility` has one exact method"
+msgstr "У :func:`~objectnat.get_visibility` один точный метод"
+
+msgid "``method``, ``resolution`` and ``parallel`` are removed: the visibility is always exact and computed in parallel threads; ``max_workers`` limits the threads"
+msgstr "``method``, ``resolution`` и ``parallel`` удалены: видимость всегда точная и считается в параллельных потоках; ``max_workers`` ограничивает число потоков"
+
+msgid "Remove these arguments; ``get_visibility(points, obstacles, 100)`` replaces ``get_visibility(points, obstacles, 100, \"simple\")``"
+msgstr "Уберите эти аргументы; ``get_visibility(points, obstacles, 100)`` заменяет ``get_visibility(points, obstacles, 100, \"simple\")``"
+
+msgid ":func:`~objectnat.calculate_simplified_noise_frame` always runs the visibility in parallel threads"
+msgstr ":func:`~objectnat.calculate_simplified_noise_frame` всегда считает видимость в параллельных потоках"
+
+msgid "``visibility_parallel`` is removed"
+msgstr "``visibility_parallel`` удалён"
+
+msgid "Remove the argument; ``visibility_max_workers`` limits the threads"
+msgstr "Уберите аргумент; ``visibility_max_workers`` ограничивает число потоков"
+
+msgid "Provision allocation runs in Rust"
+msgstr "Распределение обеспеченности выполняется на Rust"
+
+msgid "For a given ``seed`` the allocation differs from 2.1, but matches it statistically, and is the same on any number of cores; :func:`~objectnat.get_service_provision` also accepts a pandas sparse OD matrix"
+msgstr "При заданном ``seed`` распределение отличается от 2.1, но статистически с ним совпадает и одинаково на любом числе ядер; :func:`~objectnat.get_service_provision` также принимает разреженную OD-матрицу pandas"
+
+msgid "None needed: the model and the signature are unchanged"
+msgstr "Ничего: модель и сигнатура не изменились"
+
+msgid "Noise reflections are deterministic"
+msgstr "Отражения шума детерминированы"
+
+msgid ":func:`~objectnat.simulate_noise` gives the same result on every run"
+msgstr ":func:`~objectnat.simulate_noise` даёт одинаковый результат при каждом запуске"
+
+msgid "None needed"
+msgstr "Ничего"
+
+msgid "Installation"
+msgstr "Установка"
+
+msgid "Wheels contain the compiled extension; building from source requires Rust; IduEdu 2.4.2 or newer"
+msgstr "Колёса (wheels) содержат скомпилированное расширение; сборка из исходного кода требует Rust; нужен IduEdu 2.4.2 или новее"
+
+msgid "``pip install -U objectnat`` installs a wheel, no compiler needed"
+msgstr "``pip install -U objectnat`` устанавливает колесо, компилятор не нужен"
+
+msgid "What is new"
+msgstr "Что нового"
+
+msgid ":doc:`methods/insolation`: direct sun hours on the ground (:func:`~objectnat.get_insolation`) and on facades floor by floor (:func:`~objectnat.get_facade_insolation`), among buildings and terrain, for a day or a period."
+msgstr ":doc:`methods/insolation`: часы прямого солнца на земле (:func:`~objectnat.get_insolation`) и на фасадах по этажам (:func:`~objectnat.get_facade_insolation`) среди зданий и рельефа, за день или период."
+
+msgid ":doc:`methods/visibility`: 2.5D viewsheds over building heights and terrain (:func:`~objectnat.get_viewshed`), isovist metrics in :func:`~objectnat.get_visibility`, isovist fields on a grid (:func:`~objectnat.get_isovist_grid`), catchments of many observers in 2D and 2.5D (:func:`~objectnat.get_visibility_catchment`, :func:`~objectnat.get_viewshed_catchment`) and observers along a pedestrian graph (:func:`~objectnat.get_observer_points`)."
+msgstr ":doc:`methods/visibility`: области видимости 2.5D с учётом высот зданий и рельефа (:func:`~objectnat.get_viewshed`), метрики изовист в :func:`~objectnat.get_visibility`, поля изовист на сетке (:func:`~objectnat.get_isovist_grid`), охват множества наблюдателей в 2D и 2.5D (:func:`~objectnat.get_visibility_catchment`, :func:`~objectnat.get_viewshed_catchment`) и наблюдатели вдоль пешеходного графа (:func:`~objectnat.get_observer_points`)."
+
+msgid ":doc:`methods/noise`: :func:`~objectnat.simulate_noise_grid`, sound levels on a receiver grid around point, line and polygon sources with reflections and diffraction around building corners."
+msgstr ":doc:`methods/noise`: :func:`~objectnat.simulate_noise_grid`, уровни звука на сетке приёмников вокруг точечных, линейных и площадных источников с отражениями и дифракцией на углах зданий."
+
+msgid ":doc:`methods/rasters`: :func:`~objectnat.rasterize` and :class:`~objectnat.Raster` turn grid results into matplotlib plots, GeoTIFF files and web maps."
+msgstr ":doc:`methods/rasters`: :func:`~objectnat.rasterize` и :class:`~objectnat.Raster` превращают результаты на сетке в графики matplotlib, файлы GeoTIFF и веб-карты."
+
+msgid "Speed: exact visibility and provision allocation are many times faster (provision on the example data takes 0.06 s instead of 2.6 s), and isochrones for many origins are faster with the same geometry."
+msgstr "Скорость: точная видимость и распределение обеспеченности стали во много раз быстрее (обеспеченность на данных примера считается за 0,06 с вместо 2,6 с), а изохроны для многих начальных точек строятся быстрее с той же геометрией."
+
