@@ -260,7 +260,7 @@ def build_separated_dist_polygons(
     Build independent per-step buffer polygons over reachable graph nodes.
 
     ``points`` must contain point geometry and a ``dist`` column in units of
-    ``weight_type``. For ``time_min`` the buffer size is converted to meters via
+    ``weight_type``. For ``time_min`` the buffer size is converted to metres via
     ``speed_m_per_min``.
     """
 

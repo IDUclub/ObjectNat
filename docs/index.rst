@@ -70,7 +70,7 @@ computed, the algorithm, the parameters and outputs with units, an example figur
      - :func:`~objectnat.get_graph_coverage`, :func:`~objectnat.get_stepped_graph_coverage`,
        :func:`~objectnat.get_radius_coverage`
    * - :doc:`methods/provision`
-     - Allocation of building demand to services with capacity under a cost threshold
+     - Allocation of building demand to services of limited capacity within a cost threshold
      - :func:`~objectnat.get_service_provision` and helpers
    * - :doc:`methods/visibility`
      - Visibility polygons and isovist metrics (2D), viewsheds over building heights and terrain (2.5D), catchment
@@ -89,9 +89,9 @@ computed, the algorithm, the parameters and outputs with units, an example figur
      - :func:`~objectnat.rasterize`, :class:`~objectnat.Raster`
 
 The computationally intensive parts (exact visibility, 2.5D lines of sight, insolation, receiver-grid noise and
-provision allocation) run in a compiled Rust extension, ``objectnat._rust``, multi-threaded; graph searches use
-IduEdu's Numba-accelerated Dijkstra routines. :doc:`methods/examples/index` holds an executable notebook for every
-method.
+provision allocation) run in parallel threads in a compiled Rust extension, ``objectnat._rust``; graph searches use
+IduEdu's Numba-accelerated Dijkstra routines. :doc:`methods/examples/index` contains an executable notebook for
+every method.
 
 ----
 
@@ -113,7 +113,7 @@ Quickstart
 ----------
 
 Graph-based methods take an ``iduedu.UrbanGraph``. IduEdu can download a Geofabrik extract, cut the
-territory out of it and build the graph from the local file instead of the Overpass API (cutting needs
+territory out of it and build the graph from the local file instead of the Overpass API (cutting requires
 ``pip install "iduedu[pbf]"``):
 
 .. code-block:: python
@@ -142,7 +142,7 @@ territory out of it and build the graph from the local file instead of the Overp
 
 Without the ``with`` block the same calls query the Overpass API.
 
-Methods that need no graph take GeoDataFrames directly, for example sun hours among buildings with a storeys column:
+Methods without a graph take GeoDataFrames directly, for example sun hours among buildings with a storeys column:
 
 .. code-block:: python
 

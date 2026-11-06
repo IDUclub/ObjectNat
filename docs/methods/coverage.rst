@@ -32,9 +32,9 @@ Method
 On walk and intermodal graphs only pedestrian (``type == "walk"``) edges shape ``"ways"``, and only their end nodes
 shape any geometry, as for isochrones.
 
-Stepped coverage labels every node with the cost to its nearest service and builds one geometry per cost interval
-of width ``step``: Voronoi cells (``geometry_type=None``), cells clipped to residual-radius buffers or streets (``"radius"``,
-``"ways"``) or independent buffers (``"separate"``).
+Stepped coverage labels every node with the cost to its nearest service and builds one band per cost interval of
+width ``step``: Voronoi cells (``geometry_type=None``), cells clipped to residual-radius buffers or streets
+(``"radius"``, ``"ways"``) or independent buffers (``"separate"``).
 
 :func:`objectnat.get_radius_coverage` reprojects the services to a local UTM zone, builds their Voronoi polygons,
 clips them to the union of ``radius``-metre buffers around the services and smooths every polygon by an inward
@@ -58,22 +58,23 @@ in minutes or metres). All results are in the CRS of the input services.
 Figures
 -------
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_v2.png
    :alt: Coverage zones by time, by distance and by radius
    :align: center
    :width: 100%
 
    Coverage zones of the example services: within 10 minutes on the intermodal graph clipped to the district,
    within 600 m of network distance, and the graph-free :func:`objectnat.get_radius_coverage` with ``radius=800``.
+   Background: pedestrian streets of the graph and the district boundary.
 
-.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_stepped_4types.png
+.. figure:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_coverage_stepped_4types_v2.png
    :alt: Stepped coverage zones for geometry_type None, radius, ways and separate
    :align: center
    :width: 100%
 
    Stepped coverage zones up to 15 minutes in bands of 2 minutes for the four values of ``geometry_type``:
    ``None`` (Voronoi cells of the graph nodes) and ``"radius"``, both clipped to the district with ``zone``,
-   ``"ways"`` (buffered streets) and ``"separate"`` (independent buffers).
+   ``"ways"`` (buffered streets) and ``"separate"`` (independent buffers). Background: pedestrian streets of the graph and the district boundary.
 
 Limitations
 -----------

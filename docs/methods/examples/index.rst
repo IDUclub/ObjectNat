@@ -3,8 +3,9 @@ Examples
 
 Each notebook runs end to end on the example data in ``docs/methods/examples/examples_data/`` (buildings with
 ``storeys_count``, services with ``capacity``, vegetation polygons and a building-to-service travel-time matrix for
-Vasilyevsky Island, Saint Petersburg). Notebooks that need a street graph build it with IduEdu from a Geofabrik
-extract.
+Vasilyevsky Island, Saint Petersburg). Notebooks that use a street graph build it with IduEdu from a Geofabrik
+extract. Every notebook ends with a section *Your own area*, which shows what to replace to get the same results
+for another territory.
 
 .. list-table::
    :header-rows: 1
@@ -21,7 +22,7 @@ extract.
    * - :doc:`provision`
      - Service provision, recalculation with a shorter threshold, clipping, sparse matrices
    * - :doc:`visibility`
-     - Exact 2D visibility polygons, isovist metrics, visibility catchment zones
+     - Exact 2D visibility polygons, isovist metrics and isovist fields, visibility catchment zones
    * - :doc:`viewshed`
      - 2.5D viewsheds over building heights, comparison with 2D visibility, viewshed catchment, terrain
    * - :doc:`noise`

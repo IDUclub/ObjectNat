@@ -62,7 +62,7 @@ bands of width ``step``. The polygon is built from residual-distance buffers aro
 network cost within a budget (search on the reversed graph, Voronoi cells of graph nodes), so zones do not overlap.
 ``get_radius_coverage`` is a graph-free variant with a fixed radius.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v2.png
    :align: center
    :width: 100%
    :alt: Stepped isochrones with geometry_type ways, radius and separate, bands of 3 minutes
@@ -77,13 +77,13 @@ drop links beyond a shorter threshold and clip the result to an area.
 **Visibility** (`docs <https://iduclub.github.io/ObjectNat/methods/visibility.html>`__, examples: `2D <https://iduclub.github.io/ObjectNat/methods/examples/visibility.html>`__,
 `2.5D <https://iduclub.github.io/ObjectNat/methods/examples/viewshed.html>`__). ``get_visibility`` computes the exact visibility polygon (isovist) of
 each observer among obstacles treated as walls of infinite height and, with ``isovist_metrics=True``, area,
-compactness, occlusivity, radial statistics, drift and view share. ``get_viewshed`` uses building heights and
-terrain: a grid cell is visible when the line of sight from the eye (1.6 m by default, or on a roof) to the cell
-passes above every wall and the ground. ``get_visibility_catchment`` and ``get_viewshed_catchment`` count, for every
-cell, the observers that see it (observers along streets come from ``get_observer_points``) and return zones of
-equal visibility class.
+compactness, occlusivity, radial statistics, drift and visible share; ``get_isovist_grid`` maps these metrics over
+an area. ``get_viewshed`` uses building heights and terrain: a grid cell is visible when the line of sight from the
+eye (by default 1.6 m above the ground or a roof) to the cell passes above every wall and the ground.
+``get_visibility_catchment`` and ``get_viewshed_catchment`` count, for every cell, the observers that see it
+(``get_observer_points`` places observers along streets) and return zones of equal visibility class.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/viewshed_vs_visibility.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/viewshed_vs_visibility_v2.png
    :align: center
    :width: 100%
    :alt: 2D visibility polygon, street-level viewshed and roof-level viewshed
@@ -98,18 +98,18 @@ distance decay. Ground effect is not modelled. Background: `wiki <https://github
 **Insolation** (`docs <https://iduclub.github.io/ObjectNat/methods/insolation.html>`__, `example <https://iduclub.github.io/ObjectNat/methods/examples/insolation.html>`__).
 ``get_insolation`` follows the sun (NOAA solar position) through a day or a period and returns, on a ground grid
 among buildings of known height and optional terrain (GeoDataFrame, GeoTIFF or array), zones of daily direct sun
-hours, including ground with no direct sun. Receivers also carry the hours on the worst day and the longest
-continuous sunlit period, which insolation norms restrict. ``get_facade_insolation`` computes the same quantities
+hours, including ground with no direct sun. The receiver points also give the hours on the worst day and the
+longest continuous sunlit period, for which insolation norms set a minimum. ``get_facade_insolation`` computes the same quantities
 for facade points on every floor and checks them against a norm.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21.gif
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21_v2.gif
    :align: center
    :width: 520
    :alt: Ground shadows of a residential district on 21 June, 15-minute frames
 
 **Rasters.** Grid results (insolation and noise receivers, catchment cells, isovist fields from
-``get_isovist_grid``) turn into rasters with ``rasterize``: a ``Raster`` is drawn with matplotlib, written to
-GeoTIFF or shown on a folium web map with ``explore``.
+``get_isovist_grid``) are converted to rasters with ``rasterize``; a ``Raster`` can be drawn with matplotlib,
+written to a GeoTIFF file or shown on a folium web map with ``explore``.
 
 ----
 
@@ -132,8 +132,8 @@ Street graphs from IduEdu
 
 Graph-based methods take an ``iduedu.UrbanGraph`` (nodes and edges as GeoDataFrames, edge weights ``time_min`` and
 ``length_meter``) and use IduEdu's Dijkstra routines; ObjectNat does not build graphs itself. IduEdu
-can download a Geofabrik extract and cut the territory out of it, so no Overpass request is needed (cutting needs
-``pip install "iduedu[pbf]"``)::
+can download a Geofabrik extract and cut the territory out of it, so no Overpass request is needed (cutting
+requires ``pip install "iduedu[pbf]"``)::
 
     from iduedu import config, download_osm_pbf, get_4326_boundary, get_intermodal_graph
 

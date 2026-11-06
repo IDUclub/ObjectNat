@@ -98,7 +98,7 @@ def dist_to_target_db(
             are within valid ranges.
 
     Returns:
-        float or str: If `return_desc` is `False`, the function returns the distance (in meters) over which the sound
+        float or str: If `return_desc` is `False`, the function returns the distance (in metres) over which the sound
         decays from `init_noise_db` to `target_noise_db`. If `return_desc` is `True`, a descriptive string is returned
         explaining the calculation and the conditions.
     """
@@ -110,7 +110,7 @@ def dist_to_target_db(
             f"Noise level of {init_noise_db} dB "
             f"with a geometric mean frequency of {geometric_mean_freq_hz} Hz "
             f"at an air temperature of {air_temperature}°C decays to {target_noise_db} dB "
-            f"over a distance of {distance} meters. Air resistance coefficient: {k}."
+            f"over a distance of {distance} metres. Air resistance coefficient: {k}."
         )
     return distance
 
@@ -146,7 +146,7 @@ def green_noise_reduce_db(geometric_mean_freq_hz, r_tree) -> float:
 
     Args:
         geometric_mean_freq_hz (float): The geometric mean frequency of the sound (in Hz).
-        r_tree (float): The thickness or density of the vegetation (in meters).
+        r_tree (float): The thickness or density of the vegetation (in metres).
 
     Returns:
         float: The noise reduction (in dB) achieved by the vegetation. This value indicates how much quieter the sound

@@ -14,7 +14,7 @@ def get_radius_coverage(gdf_from: gpd.GeoDataFrame, radius: float, resolution: i
             Source points for which coverage zones are calculated.
 
         radius (float):
-            Maximum coverage radius in meters.
+            Maximum coverage radius in metres.
 
         resolution (int):
             Number of segments used to approximate quarter-circle in buffer (default=32).

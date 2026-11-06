@@ -78,7 +78,7 @@ def simulate_noise(
         dead_area_r (float, optional): A debugging parameter that defines the radius of the "dead zone" for reflections.
             Points within this area will not generate reflections. This is useful to prevent the algorithm from getting
             stuck in corners or along building walls.
-        source_position_buffer_r (float, optional): Radius in meters to cut from a containing obstacle or tree around
+        source_position_buffer_r (float, optional): Radius in metres to cut from a containing obstacle or tree around
             the initial source point. Default is 0, which keeps source geometries unchanged.
         use_parallel (bool, optional): Whether to use ProcessPool for task distribution or not. Default is True.
 

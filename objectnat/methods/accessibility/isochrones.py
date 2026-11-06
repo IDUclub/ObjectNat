@@ -105,7 +105,7 @@ def get_graph_isochrones(
             City graph with node and edge tables.
 
         weight_value_cutoff (float):
-            Maximum travel time (minutes) or distance (meters) defining the
+            Maximum travel time (minutes) or distance (metres) defining the
             isochrone extent.
 
         gdf_origins (gpd.GeoDataFrame, optional):
@@ -123,7 +123,7 @@ def get_graph_isochrones(
             Type of edge weight used for path calculation:
 
             - ``"time_min"``: time-based accessibility in minutes
-            - ``"length_meter"``: distance-based accessibility in meters
+            - ``"length_meter"``: distance-based accessibility in metres
 
         geometry_type:
             Method used to build each isochrone:
@@ -140,7 +140,7 @@ def get_graph_isochrones(
             Buffer multiplier used by ``geometry_type="separate"`` (default 0.7).
 
         road_buffer_size:
-            Edge buffer for ``geometry_type="ways"``, in meters (default 5.0).
+            Edge buffer for ``geometry_type="ways"``, in metres (default 5.0).
 
         max_workers (int, optional):
             Number of parallel Numba threads. Defaults to the Numba runtime.
@@ -297,7 +297,7 @@ def get_stepped_graph_isochrones(
             Type of edge weight used for path calculation:
 
             - ``"time_min"``: time-based accessibility in minutes
-            - ``"length_meter"``: distance-based accessibility in meters
+            - ``"length_meter"``: distance-based accessibility in metres
 
         geometry_type:
             Method used to build each step's geometry:
@@ -317,13 +317,13 @@ def get_stepped_graph_isochrones(
 
         step (float, optional):
             Width of each step, in units of ``weight_type``. Defaults to
-            100 meters for ``length_meter`` and 1 minute for ``time_min``.
+            100 metres for ``length_meter`` and 1 minute for ``time_min``.
 
         buffer_factor:
             Residual-radius multiplier for geometry construction (default 0.7).
 
         road_buffer_size:
-            Edge buffer for ``geometry_type="ways"``, in meters (default 5.0).
+            Edge buffer for ``geometry_type="ways"``, in metres (default 5.0).
 
     Returns:
         gpd.GeoDataFrame:

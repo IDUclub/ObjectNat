@@ -68,7 +68,7 @@ def get_graph_coverage(
             Type of edge weight used for path calculation:
 
             - ``"time_min"``: edge travel time in minutes
-            - ``"length_meter"``: edge length in meters
+            - ``"length_meter"``: edge length in metres
 
         geometry_type:
             Optional refinement of the coverage shape:
@@ -95,7 +95,7 @@ def get_graph_coverage(
             (default 0.7).
 
         road_buffer_size:
-            Buffer applied to graph edges for ``geometry_type="ways"``, in meters
+            Buffer applied to graph edges for ``geometry_type="ways"``, in metres
             (default 5.0).
 
     Returns:
@@ -243,7 +243,7 @@ def get_stepped_graph_coverage(
             Type of edge weight used for path calculation:
 
             - ``"time_min"``: edge travel time in minutes
-            - ``"length_meter"``: edge length in meters
+            - ``"length_meter"``: edge length in metres
 
         geometry_type:
             Method used to build each step's geometry:
@@ -263,14 +263,14 @@ def get_stepped_graph_coverage(
 
         step (float, optional):
             Width of each step, in units of ``weight_type``. Defaults to
-            100 meters for ``length_meter`` and 1 minute for ``time_min``.
+            100 metres for ``length_meter`` and 1 minute for ``time_min``.
 
         buffer_factor:
             Residual-radius multiplier for ``"radius"``, ``"ways"`` and
             ``"separate"`` (default 0.7).
 
         road_buffer_size:
-            Edge buffer for ``geometry_type="ways"``, in meters (default 5.0).
+            Edge buffer for ``geometry_type="ways"``, in metres (default 5.0).
 
     Returns:
         gpd.GeoDataFrame:

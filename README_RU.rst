@@ -64,7 +64,7 @@ Object-oriented Network Analysis Tools
 стоимость в пределах заданного бюджета минимальна (поиск по обращённому графу, ячейки Вороного узлов графа),
 поэтому зоны не перекрываются. ``get_radius_coverage`` строит зоны без графа, по фиксированному радиусу.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/accessibility_isochrones_stepped_v2.png
    :align: center
    :width: 100%
    :alt: Пояса изохрон с geometry_type ways, radius и separate, шаг 3 минуты
@@ -87,7 +87,7 @@ Object-oriented Network Analysis Tools
 число наблюдателей, которые её видят (наблюдателей вдоль улиц размещает ``get_observer_points``), и возвращают
 зоны одного класса видимости.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/viewshed_vs_visibility.png
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/viewshed_vs_visibility_v2.png
    :align: center
    :width: 100%
    :alt: Полигон видимости 2D, область видимости с уровня улицы и с крыши
@@ -109,7 +109,7 @@ Object-oriented Network Analysis Tools
 инсоляции, которую ограничивают нормативы. ``get_facade_insolation`` рассчитывает те же величины для точек на
 фасадах по этажам и проверяет их по нормативу.
 
-.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21.gif
+.. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21_v2.gif
    :align: center
    :width: 520
    :alt: Тени жилого района 21 июня, кадры через 15 минут
