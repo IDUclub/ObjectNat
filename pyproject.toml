@@ -97,7 +97,7 @@ test = [
     "matplotlib>=3.10.7,<4.0.0; python_version >= '3.14'",
     "pyarrow>=18.1.0,<26.0.0; python_version < '3.14'",
     "pyarrow>=22.0.0,<26.0.0; python_version >= '3.14'",
-    "pytest>=8.3.5,<9.0.0",
+    "pytest>=9.0.3,<10.0.0",
     "pytest-cov>=6.0.0,<7.0.0",
 ]
 viz = [
