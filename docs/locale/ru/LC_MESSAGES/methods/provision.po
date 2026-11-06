@@ -161,12 +161,6 @@ msgstr ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~geopandas.geodataf
 msgid "Provision value of residential buildings"
 msgstr "Показатель обеспеченности жилых зданий"
 
-# | msgid "Provision value of residential buildings for the example schools
-# with
-# | a 10-minute threshold on the intermodal travel-time matrix (``seed=0``);
-# | square size shows school capacity. Non-residential buildings and streets
-# are
-# | grey; the black line is the district boundary."
 msgid "Provision value of residential buildings for the example schools with a 10-minute threshold on the intermodal travel-time matrix (``seed=0``); dots are schools. Non-residential buildings and streets are grey; the black line is the district boundary."
 msgstr "Показатель обеспеченности жилых зданий школами из примера с порогом 10 минут по интермодальной матрице времени в пути (``seed=0``); точки — школы. Нежилые здания и улицы серые; чёрная линия — граница района."
 

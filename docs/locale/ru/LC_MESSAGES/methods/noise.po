@@ -257,7 +257,6 @@ msgstr "Использовать ли ProcessPool для распределен�
 msgid "Noise levels (``noise_level``, dB) with the geometries of the areas they cover; the results of all source points are merged into one GeoDataFrame."
 msgstr "Уровни шума (``noise_level``, дБ) с геометрией охватываемых ими территорий; результаты всех точечных источников объединены в один GeoDataFrame."
 
-# | msgid "Wave-front simulation for one point source"
 msgid "Level bands of the wave-front simulation for two point sources"
 msgstr "Полосы уровней моделирования волнового фронта для двух точечных источников"
 
@@ -330,7 +329,6 @@ msgstr "Разрешение и точность результата сильн
 msgid "Results are useful for quick noise mapping or for generating initial noise envelopes prior to more detailed simulations."
 msgstr "Результаты подходят для быстрого картирования шума или для первичных огибающих перед более подробным моделированием."
 
-# | msgid "Simplified noise frame for point, line and polygon sources."
 msgid "Simplified noise frame for a street and two point sources"
 msgstr "Упрощённый шумовой каркас для улицы и двух точечных источников"
 

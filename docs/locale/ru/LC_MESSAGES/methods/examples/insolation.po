@@ -20,12 +20,9 @@ msgstr "Инсоляция: часы солнца на земле и на фас
 msgid "This notebook computes hours of direct sunlight among buildings of known height with `get_insolation` (ground receivers) and `get_facade_insolation` (facade points per floor):"
 msgstr "Этот ноутбук рассчитывает часы прямого солнечного света среди зданий известной высоты функциями `get_insolation` (приёмники на земле) и `get_facade_insolation` (точки на фасадах по этажам):"
 
-# | msgid "sun-hour zones for a single day (equinox and summer solstice);"
 msgid "sun hours for a single day (equinox and summer solstice) as rasters (`rasterize`);"
 msgstr "часы солнца за один день (равноденствие и летнее солнцестояние) в виде растров (`rasterize`);"
 
-# | msgid "a period (22 April – 22 August) with the longest continuous sunlit
-# | period on the worst day, as rasters (`rasterize`);"
 msgid "a period (22 April – 22 August) with the longest continuous sunlit period on the worst day;"
 msgstr "период (22 апреля – 22 августа) с наибольшей непрерывной продолжительностью инсоляции в худший день;"
 
@@ -50,25 +47,12 @@ msgstr "Жилая территория 500 × 400 м с дворами. В фу
 msgid "2. One day"
 msgstr "2\\. Один день"
 
-# | msgid "`date` is a single day. Receivers are placed every `grid_step`
-# metres
-# | outside footprints, and the sun position is sampled every `time_step_min`
-# | minutes. The result has one zone per class of daily sun hours
-# | (`hour_breaks`); class `0` is ground with no direct sun at all. `attrs`
-# | contain the simulated days and the day length."
 msgid "`date` is a single day. Receivers are placed every `grid_step` metres outside footprints, and the sun position is sampled every `time_step_min` minutes. The result is the receiver points with `sun_hours` (`0` for ground with no direct sun at all); `attrs` contain the simulated days, the day length and the grid. `rasterize` turns a column into a `Raster` on the grid of the calculation, whatever CRS the receivers are in, and `plot` draws it with matplotlib."
 msgstr "`date` — один день. Приёмники размещаются с шагом `grid_step` метров вне контуров зданий, а положение солнца вычисляется каждые `time_step_min` минут. Результат — точки приёмников с `sun_hours` (`0` — земля совсем без прямого солнца); `attrs` содержат моделируемые дни, продолжительность дня и сетку. `rasterize` превращает столбец в `Raster` на расчётной сетке, в какой бы системе координат ни были приёмники, а `plot` рисует его средствами matplotlib."
 
 msgid "3. A period and the worst day"
 msgstr "3\\. Период и худший день"
 
-# | msgid "`date=(start, end)` simulates every `day_step`-th day of the period
-# | and its last day. With `output=\"receivers\"` the receiver points have
-# | `sun_hours` (mean over the simulated days), `min_sun_hours` (worst day)
-# and
-# | `max_continuous_hours` (longest continuous sunlit period on the worst
-# day),
-# | for which insolation norms usually set a minimum."
 msgid "`date=(start, end)` simulates every `day_step`-th day of the period and its last day. The receiver points have `sun_hours` (mean over the simulated days), `min_sun_hours` (worst day) and `max_continuous_hours` (longest continuous sunlit period on the worst day), for which insolation norms usually set a minimum."
 msgstr "`date=(start, end)` моделирует каждый `day_step`-й день периода и его последний день. У точек приёмников есть `sun_hours` (среднее за моделируемые дни), `min_sun_hours` (худший день) и `max_continuous_hours` (наибольшая непрерывная продолжительность инсоляции в худший день), для которой нормативы инсоляции обычно задают минимум."
 
@@ -105,11 +89,6 @@ msgstr "Здания с наименьшей долей точек на фаса
 msgid "6. Your own area"
 msgstr "6\\. Своя территория"
 
-# | msgid "Building footprints with heights or storeys and an area. The
-# | buildings around the area cast shadows into it, so pass them too.
-# | `output=\"receivers\"` skips the zone polygons; `Raster.plot` draws the
-# | raster, `Raster.explore` shows it on a web map with a colour bar and
-# | `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
 msgid "Building footprints with heights or storeys and an area. The buildings around the area cast shadows into it, so pass them too. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
 msgstr "Контуры зданий с высотами или этажностью и территория. Здания вокруг территории отбрасывают на неё тени, поэтому передайте и их. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
 

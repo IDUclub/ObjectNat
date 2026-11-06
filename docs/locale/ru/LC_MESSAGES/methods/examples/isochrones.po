@@ -23,8 +23,6 @@ msgstr "Этот ноутбук строит изохроны на интерм�
 msgid "`get_graph_isochrones` with `geometry_type=\"radius\"` and `\"ways\"` for one origin;"
 msgstr "`get_graph_isochrones` с `geometry_type=\"radius\"` и `\"ways\"` для одной точки отправления;"
 
-# | msgid "`get_stepped_graph_isochrones` with bands of width `step` for
-# | `\"radius\"`, `\"ways\"` and `\"separate\"`;"
 msgid "`get_stepped_graph_isochrones` with bands of width `step` for `\"radius\"`, `\"ways\"` and `\"separate\"`."
 msgstr "`get_stepped_graph_isochrones` с поясами шириной `step` для `\"radius\"`, `\"ways\"` и `\"separate\"`."
 
@@ -100,7 +98,6 @@ msgstr "`step`: ширина пояса для ступенчатых изохр
 msgid "`buffer_factor` (`\"separate\"`) and `road_buffer_size` (`\"ways\"`, metres)."
 msgstr "`buffer_factor` (`\"separate\"`) и `road_buffer_size` (`\"ways\"`, метры)."
 
-# | msgid "10. Your own area"
 msgid "9. Your own area"
 msgstr "9\\. Своя территория"
 

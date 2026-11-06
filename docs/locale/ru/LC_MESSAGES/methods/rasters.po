@@ -53,9 +53,6 @@ msgstr "``noise_level``: уровень звука в приёмнике, дБ"
 msgid ":func:`objectnat.get_visibility_catchment`, :func:`objectnat.get_viewshed_catchment`"
 msgstr ":func:`objectnat.get_visibility_catchment`, :func:`objectnat.get_viewshed_catchment`"
 
-# | msgid "``count``: the number of observers that see the cell (``weight``:
-# the
-# | sum of their weights); ``visibility_class``"
 msgid "``count``: the number of observers that see the cell (``weight``: the sum of their weights)"
 msgstr "``count``: число наблюдателей, которые видят ячейку (``weight``: сумма их весов)"
 
@@ -65,13 +62,6 @@ msgstr ":func:`objectnat.get_isovist_grid`"
 msgid "isovist metrics of an observer standing in the cell: ``visible_share`` (share of the view disc), ``compactness``, ``occlusivity`` (m), ``drift`` (m), ..."
 msgstr "метрики изовисты наблюдателя, стоящего в ячейке: ``visible_share`` (доля круга обзора), ``compactness``, ``occlusivity`` (м), ``drift`` (м), ..."
 
-# | msgid "``output=\"receivers\"`` (``\"cells\"``) skips the zone polygons,
-# | which is faster when only the values are needed: for a single day of
-# | insolation the polygons take most of the run time."
-# | msgid "For insolation and noise, ``output=\"receivers\"`` skips the zone
-# | polygons, which is faster when only the values are needed: for a single
-# day
-# | of insolation the polygons take most of the run time."
 msgid "For noise, ``output=\"receivers\"`` skips the level bands, which is faster when only the values are needed."
 msgstr "Для шума ``output=\"receivers\"`` не строит полосы уровней, это быстрее, когда нужны только значения."
 
@@ -102,23 +92,6 @@ msgstr "``explore(m=None, cmap=..., vmin=..., vmax=..., name=...)`` делает
 msgid "Turn grid points with values into a :class:`Raster`, one cell per point."
 msgstr "Превращает точки сетки со значениями в :class:`Raster`, по одной ячейке на точку."
 
-# | msgid "Grid points are what the grid methods return: receivers of
-# | :func:`get_insolation` and :func:`simulate_noise_grid`
-# | (``output=\"receivers\"`` or ``\"both\"``), cells of
-# | :func:`get_visibility_catchment` and :func:`get_viewshed_catchment`
-# | (``output=\"cells\"`` or ``\"both\"``) and the points of
-# | :func:`get_isovist_grid`. Their ``attrs`` record the grid (CRS, cell size,
-# | position), so the raster reproduces it exactly in the local metric CRS of
-# | the calculation, whatever CRS the points were returned in, and also after
-# | filtering rows."
-# | (``output=\"receivers\"`` or ``\"both\"``), the cells of
-# | :func:`get_visibility_catchment` and :func:`get_viewshed_catchment` and
-# the
-# | points of :func:`get_isovist_grid`. Their ``attrs`` record the grid (CRS,
-# | cell size, position), so the raster reproduces it exactly in the local
-# | metric CRS of the calculation, whatever CRS the points were returned in,
-# and
-# | also after filtering rows."
 msgid "Grid points are what the grid methods return: receivers of :func:`get_insolation` and of :func:`simulate_noise_grid` (``output=\"receivers\"`` or ``\"both\"``), the cells of :func:`get_visibility_catchment` and :func:`get_viewshed_catchment` and the points of :func:`get_isovist_grid`. Their ``attrs`` record the grid (CRS, cell size, position), so the raster reproduces it exactly in the local metric CRS of the calculation, whatever CRS the points were returned in, and also after filtering rows."
 msgstr "Точки сетки — это то, что возвращают методы на сетке: приёмники :func:`get_insolation` и :func:`simulate_noise_grid` (``output=\"receivers\"`` или ``\"both\"``), ячейки :func:`get_visibility_catchment` и :func:`get_viewshed_catchment` и точки :func:`get_isovist_grid`. Их ``attrs`` записывают сетку (систему координат, размер ячейки, положение), поэтому растр точно воспроизводит её в локальной метрической системе координат расчёта, в какой бы системе координат ни были возвращены точки, в том числе после фильтрации строк."
 

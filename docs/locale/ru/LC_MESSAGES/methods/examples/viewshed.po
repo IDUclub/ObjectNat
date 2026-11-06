@@ -50,23 +50,12 @@ msgstr "2\\. Высота цели и рельеф"
 msgid "`target_height` is the height above the ground of what is looked at: 0 m for the ground surface, 10 m for the upper part of a facade or a sign. Terrain is given as for insolation (GeoDataFrame, GeoTIFF or array); here a synthetic Gaussian hill, 20 m high under the street observer, is passed as an array with an affine transform. The buildings stand on the hill as well. From the rounded summit the ground falls away ever more steeply (a convex slope), so the lines of sight from an eye 1.6 m above it pass over the lower slopes and the visible ground shrinks to the hilltop: the terrain hides the ground below, as the walls do."
 msgstr "`target_height` — высота над землёй того, на что смотрят: 0 м для поверхности земли, 10 м для верхней части фасада или вывески. Рельеф задаётся так же, как для инсоляции (GeoDataFrame, GeoTIFF или массив); здесь синтетический гауссов холм высотой 20 м под наблюдателем на улице передаётся массивом с аффинным преобразованием. Здания тоже стоят на холме. От скруглённой вершины земля уходит вниз всё круче (выпуклый склон), поэтому лучи зрения от глаз на высоте 1,6 м проходят над нижними частями склона, и видимая земля сжимается до вершины: рельеф скрывает землю ниже, как это делают стены."
 
-# | msgid "3. Catchment zones of many observers"
 msgid "3. Catchment of many observers"
 msgstr "3\\. Охват множества наблюдателей"
 
-# | msgid "Observers are usually placed along streets with
-# | `get_observer_points(urban_graph, spacing=15)` on an IduEdu walk graph. To
-# | keep this notebook independent of OpenStreetMap downloads, observers are
-# | placed every 15 m on open ground within 12 m of a building, which
-# | approximates sidewalks and yards."
 msgid "Observers are usually placed along streets with `get_observer_points(urban_graph, spacing=15)` on an IduEdu walk graph. To keep this notebook independent of OpenStreetMap downloads, observers are placed every 15 m on open ground within 12 m of a building, which approximates sidewalks and yards. They cover the shown area extended by the view distance (250 m): a cell near the edge of the area is also seen by observers outside it, and without them its count would come out too low."
 msgstr "Обычно наблюдателей расставляют вдоль улиц функцией `get_observer_points(urban_graph, spacing=15)` на пешеходном графе IduEdu. Чтобы ноутбук не зависел от загрузки данных OpenStreetMap, наблюдатели размещены через 15 м на открытой территории не дальше 12 м от зданий, что приближённо соответствует тротуарам и дворам. Они покрывают показанную территорию, расширенную на дальность обзора (250 м): ячейку у края территории видят и наблюдатели за её пределами, и без них её счёт получился бы заниженным."
 
-# | msgid "Each cell gets the number of observers that see it. Explicit class
-# | bounds (`classes=[1, 5, 20, 50]`) put both results on one scale. The 2.5D
-# | catchment uses `target_height=10`: it counts the observers that see a
-# point
-# | 10 m above the ground."
 msgid "Each cell gets the number of observers that see it; both rasters are drawn on one colour scale. The 2.5D catchment uses `target_height=10`: it counts the observers that see a point 10 m above the ground."
 msgstr "Каждая ячейка получает число наблюдателей, которые её видят; оба растра нарисованы в одной цветовой шкале. Охват 2.5D использует `target_height=10`: он считает наблюдателей, которые видят точку на высоте 10 м над землёй."
 

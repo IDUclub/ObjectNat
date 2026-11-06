@@ -14,8 +14,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-# | msgid "2D visibility: visibility polygons, isovist metrics and catchment
-# | zones"
 msgid "2D visibility: visibility polygons, isovist metrics and catchment"
 msgstr "Видимость 2D: полигоны видимости, метрики изовист и охват"
 
@@ -28,7 +26,6 @@ msgstr "полигон видимости одного наблюдателя и
 msgid "isovist metrics (`isovist_metrics=True`) and an isovist field over an area (`get_isovist_grid`, `rasterize`);"
 msgstr "метрики изовист (`isovist_metrics=True`) и поле изовист по территории (`get_isovist_grid`, `rasterize`);"
 
-# | msgid "visibility catchment zones (`get_visibility_catchment`)."
 msgid "the visibility catchment, how many observers see every cell (`get_visibility_catchment`)."
 msgstr "охват видимости — сколько наблюдателей видят каждую ячейку (`get_visibility_catchment`)."
 
@@ -80,27 +77,15 @@ msgstr "`get_isovist_grid` строит карту метрик по терри�
 msgid "Every cell shows what an observer standing at its centre sees. Open squares and wide streets have a high `visible_share`, narrow yards a low one. `compactness` is high where the visible area is a simple, nearly convex shape, in an open square or inside a closed courtyard, and low where long narrow views between buildings make it spiky. `occlusivity` is high where many building corners hide space close to the observer, at crossings of passages between buildings. `drift` is high next to walls that face an open area: the observer sees mostly to one side."
 msgstr "Каждая ячейка показывает, что видит наблюдатель, стоящий в её центре. У открытых площадей и широких улиц высокий `visible_share`, у узких дворов — низкий. `compactness` высока там, где видимая область простой, почти выпуклой формы, — на открытой площади или внутри закрытого двора, и низка там, где длинные узкие взгляды между зданиями делают её звездообразной. `occlusivity` высока там, где много углов зданий скрывают пространство рядом с наблюдателем, — на пересечениях проходов между зданиями. `drift` велик у стен, обращённых к открытому пространству: наблюдатель видит в основном одну сторону."
 
-# | msgid "4. Visibility catchment zones"
 msgid "4. Visibility catchment"
 msgstr "4\\. Охват видимости"
 
-# | msgid "`get_visibility_catchment` counts, for every `cell_size` cell, the
-# | observers whose visibility polygon contains the cell centre and merges
-# cells
-# | into classes. Observers along streets are usually placed with
-# | `get_observer_points(urban_graph, spacing=15)`; for example, with a walk
-# | graph from IduEdu:"
 msgid "`get_visibility_catchment` counts, for every `cell_size` cell, the observers whose visibility polygon contains the cell centre, and returns the seen cells with their `count`; `rasterize` draws them. Observers along streets are usually placed with `get_observer_points(urban_graph, spacing=15)`; for example, with a walk graph from IduEdu:"
 msgstr "`get_visibility_catchment` подсчитывает для каждой ячейки размером `cell_size` наблюдателей, полигон видимости которых содержит центр ячейки, и возвращает видимые ячейки с их `count`; `rasterize` их рисует. Наблюдателей вдоль улиц обычно расставляют функцией `get_observer_points(urban_graph, spacing=15)`; например, с пешеходным графом из IduEdu:"
 
 msgid "Here, to stay independent of downloads, observers are placed every 15 m on open ground within 12 m of a building, over the area extended by the view distance (250 m): a cell near the edge of the area is also seen by observers outside it, and without them its count would come out too low."
 msgstr "Здесь, чтобы не зависеть от загрузок, наблюдатели размещены через 15 м на открытой территории не дальше 12 м от зданий, по территории, расширенной на дальность обзора (250 м): ячейку у края территории видят и наблюдатели за её пределами, и без них её счёт получился бы заниженным."
 
-# | msgid "Quantile classes adapt to the data and are comparable only within
-# one
-# | run; explicit bounds give the same scale for different areas or scenarios.
-# | `weight_column` replaces counts by sums of observer weights, for example
-# | pedestrian flow."
 msgid "The counts are in observers, so rasters of different areas or scenarios with the same observer spacing share one colour scale. `weight_column` replaces counts by sums of observer weights, for example pedestrian flow."
 msgstr "Значения выражены в числе наблюдателей, поэтому растры разных территорий или сценариев с одинаковым шагом наблюдателей можно рисовать в одной цветовой шкале. `weight_column` заменяет число наблюдателей суммой их весов, например пешеходного потока."
 
@@ -113,17 +98,6 @@ msgstr "`get_isovist_grid` ставит наблюдателей по сетке
 msgid "5. Your own area"
 msgstr "5\\. Своя территория"
 
-# | msgid "The catchment of the whole district: observers every 20 m along the
-# | pedestrian graph of IduEdu (`get_observer_points`) and all building
-# | footprints. Tens of thousands of observers take a few seconds. The cells
-# are
-# | then kept inside the district boundary; rows of the result can be
-# filtered,
-# | `rasterize` still restores the grid. Counts depend on the observer
-# spacing,
-# | so compare rasters made with the same spacing. `Raster.plot` draws the
-# | raster, `Raster.explore` shows it on a web map with a colour bar and
-# | `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
 msgid "Observers every 20 m along the pedestrian graph of the district from IduEdu (`get_observer_points`); the buildings are only obstacles, they add no observers. Some 44 thousand observers take a few seconds. The raster covers everything the observers see, also beyond the district boundary. Counts depend on the observer spacing, so compare rasters made with the same spacing. `Raster.plot` draws the raster, `Raster.explore` shows it on a web map with a colour bar and `Raster.to_geotiff` writes a GeoTIFF for GIS (requires `rasterio`)."
 msgstr "Наблюдатели через каждые 20 м вдоль пешеходного графа района из IduEdu (`get_observer_points`); здания служат только препятствиями и наблюдателей не добавляют. Около 44 тысяч наблюдателей рассчитываются за несколько секунд. Растр покрывает всё, что видят наблюдатели, в том числе за границей района. Значения зависят от шага наблюдателей, поэтому сравнивайте растры, построенные с одинаковым шагом. `Raster.plot` рисует растр, `Raster.explore` показывает его на веб-карте с цветовой шкалой, а `Raster.to_geotiff` записывает GeoTIFF для ГИС (нужен `rasterio`)."
 

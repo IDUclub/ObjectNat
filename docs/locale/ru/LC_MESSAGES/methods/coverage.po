@@ -44,15 +44,6 @@ msgstr "Многоисточниковый поиск Дейкстры выпо�
 msgid "Voronoi cells are built around the graph nodes, and the cells of the nodes labelled with one service are dissolved into its zone."
 msgstr "Вокруг узлов графа строятся ячейки Вороного, и ячейки узлов, помеченных одним сервисом, объединяются в его зону."
 
-# | msgid "The zones are clipped to ``zone`` (for example, a city boundary)
-# or,
-# | without it, to the concave hull of the reachable nodes.
-# | ``geometry_type=\"radius\"`` additionally clips them to buffers of the
-# | residual distance around the reachable nodes, and
-# ``geometry_type=\"ways\"``
-# | to the buffered streets inside these buffers. For ``time_min`` the
-# residual
-# | time is converted to a distance with the median edge speed of the graph."
 msgid "The zones are clipped to ``zone`` (for example, a city boundary) or, without it, to the concave hull of the reachable nodes. ``geometry_type=\"radius\"`` additionally clips them to buffers around the reachable nodes by the residual distance, at most ``off_network_distance`` (150 m by default, as for isochrones), and ``geometry_type=\"ways\"`` to the buffered streets. For ``time_min`` the residual time is converted to a distance with the median edge speed of the graph."
 msgstr "Зоны обрезаются по ``zone`` (например, по границе города), а без него — по вогнутой оболочке достижимых узлов. ``geometry_type=\"radius\"`` дополнительно обрезает их по буферам вокруг достижимых узлов радиусом в остаточное расстояние, но не больше ``off_network_distance`` (по умолчанию 150 м, как для изохрон), а ``geometry_type=\"ways\"`` — по буферам улиц. Для ``time_min`` остаток времени переводится в расстояние по медианной скорости на рёбрах графа."
 
@@ -119,13 +110,6 @@ msgstr "``\"time_min\"``: время проезда по ребру в мину�
 msgid "``\"length_meter\"``: edge length in metres"
 msgstr "``\"length_meter\"``: длина ребра в метрах"
 
-# | msgid "Optional refinement of the coverage shape:  - ``None``: raw Voronoi
-# | cells clipped to ``zone`` or the concave hull - ``\"radius\"``:
-# additionally
-# | clip to residual-radius buffers around   reachable nodes (remaining budget
-# | converted to distance) - ``\"ways\"``: additionally clip to buffered road
-# | geometry inside the   residual radii (walk edges only on intermodal/walk
-# | graphs)  Requires ``weight_value_cutoff`` when set."
 msgid "Optional refinement of the coverage shape:  - ``None``: raw Voronoi cells clipped to ``zone`` or the concave hull - ``\"radius\"``: additionally clip to buffers around the reachable nodes   (remaining budget as a distance, at most ``off_network_distance``) - ``\"ways\"``: additionally clip to buffered road geometry inside the   residual radii (walk edges only on intermodal/walk graphs)  Requires ``weight_value_cutoff`` when set."
 msgstr "Optional refinement of the coverage shape:  - ``None``: raw Voronoi cells clipped to ``zone`` or the concave hull - ``\"radius\"``: additionally clip to buffers around the reachable nodes   (remaining budget as a distance, at most ``off_network_distance``) - ``\"ways\"``: additionally clip to buffered road geometry inside the   residual radii (walk edges only on intermodal/walk graphs)  Requires ``weight_value_cutoff`` when set."
 
@@ -135,8 +119,6 @@ msgstr "Необязательное уточнение формы зон:"
 msgid "``None``: raw Voronoi cells clipped to ``zone`` or the concave hull"
 msgstr "``None``: исходные ячейки Вороного, обрезанные по ``zone`` или по вогнутой оболочке"
 
-# | msgid "``\"radius\"``: additionally clip to residual-radius buffers around
-# | reachable nodes (remaining budget converted to distance)"
 msgid "``\"radius\"``: additionally clip to buffers around the reachable nodes (remaining budget as a distance, at most ``off_network_distance``)"
 msgstr "``\"radius\"``: дополнительная обрезка по буферам вокруг достижимых узлов (остаток бюджета в виде расстояния, не больше ``off_network_distance``)"
 
@@ -206,12 +188,6 @@ msgstr "Пункты назначения, *до* которых измеряе�
 msgid "Name of the graph node id column in ``gdf_destinations``."
 msgstr "Имя столбца с идентификаторами узлов графа в ``gdf_destinations``."
 
-# | msgid "Method used to build each step's geometry:  - ``None``: Voronoi
-# cells
-# | around graph nodes - ``\"radius\"``: Voronoi cells clipped to
-# | residual-radius buffers - ``\"ways\"``: Voronoi cells clipped to buffered
-# | road geometry   (walk edges only on intermodal/walk graphs) -
-# | ``\"separate\"``: independent circular buffers per step"
 msgid "Method used to build each step's geometry:  - ``None``: Voronoi cells around graph nodes - ``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``) - ``\"ways\"``: Voronoi cells clipped to buffered road geometry   (walk edges only on intermodal/walk graphs) - ``\"separate\"``: independent circular buffers per step"
 msgstr "Method used to build each step's geometry:  - ``None``: Voronoi cells around graph nodes - ``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``) - ``\"ways\"``: Voronoi cells clipped to buffered road geometry   (walk edges only on intermodal/walk graphs) - ``\"separate\"``: independent circular buffers per step"
 
@@ -221,7 +197,6 @@ msgstr "Способ построения геометрии каждой сту
 msgid "``None``: Voronoi cells around graph nodes"
 msgstr "``None``: ячейки Вороного вокруг узлов графа"
 
-# | msgid "``\"radius\"``: Voronoi cells clipped to residual-radius buffers"
 msgid "``\"radius\"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``)"
 msgstr "``\"radius\"``: ячейки Вороного, обрезанные по буферам радиуса (см. ``off_network_distance``)"
 
@@ -240,8 +215,6 @@ msgstr "Полигон границы, по которому обрезаютс�
 msgid "Width of each step, in units of ``weight_type``. Defaults to 100 metres for ``length_meter`` and 1 minute for ``time_min``."
 msgstr "Ширина каждой ступени в единицах ``weight_type``. По умолчанию 100 метров для ``length_meter`` и 1 минута для ``time_min``."
 
-# | msgid "Edge buffer for ``geometry_type=\"ways\"``, in metres (default
-# 5.0)."
 msgid "Buffer multiplier used by ``geometry_type=\"separate\"`` (default 0.7)."
 msgstr "Множитель буфера для ``geometry_type=\"separate\"`` (по умолчанию 0.7)."
 
@@ -290,23 +263,9 @@ msgstr "Зоны покрытия по времени, по расстоянию
 msgid "Coverage zones of the example services: within 10 minutes on the intermodal graph clipped to the district, within 600 m of network distance, and the graph-free :func:`objectnat.get_radius_coverage` with ``radius=800``. Background: pedestrian streets of the graph and the district boundary."
 msgstr "Зоны покрытия сервисов из примера: в пределах 10 минут на интермодальном графе с обрезкой по району, в пределах 600 м сетевого расстояния и без графа, :func:`objectnat.get_radius_coverage` с ``radius=800``. Фон: пешеходные улицы графа и граница района."
 
-# | msgid "Stepped coverage zones for geometry_type None, radius, ways and
-# | separate"
 msgid "Stepped coverage zones for geometry_type None and separate"
 msgstr "Ступенчатые зоны покрытия для geometry_type None и separate"
 
-# | msgid "Stepped coverage zones up to 15 minutes in bands of 2 minutes for
-# the
-# | four values of ``geometry_type``: ``None`` (Voronoi cells of the graph
-# | nodes) and ``\"radius\"``, both clipped to the district with ``zone``,
-# | ``\"ways\"`` (buffered streets) and ``\"separate\"`` (independent
-# buffers).
-# | Background: pedestrian streets of the graph and the district boundary."
-# | nodes, clipped to the district with ``zone``), ``\"radius\"`` (the cells
-# | clipped to the radius buffers and to the district), ``\"ways\"`` (buffered
-# | streets) and ``\"separate\"`` (independent buffers). Background:
-# pedestrian
-# | streets of the graph and the district boundary."
 msgid "Stepped coverage zones up to 15 minutes in bands of 2 minutes: ``geometry_type=None`` (Voronoi cells of the graph nodes, clipped to the district with ``zone``) and ``\"separate\"`` (independent buffers). ``\"radius\"`` and ``\"ways\"`` clip the same Voronoi bands to the radius buffers or to the buffered streets. Background: pedestrian streets of the graph and the district boundary."
 msgstr "Ступенчатые зоны покрытия до 15 минут поясами по 2 минуты: ``geometry_type=None`` (ячейки Вороного узлов графа, обрезанные по району через ``zone``) и ``\"separate\"`` (независимые буферы). ``\"radius\"`` и ``\"ways\"`` обрезают те же пояса Вороного по буферам радиуса или по буферам улиц. Фон: пешеходные улицы графа и граница района."
 

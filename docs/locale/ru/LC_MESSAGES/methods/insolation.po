@@ -155,29 +155,12 @@ msgstr "Число потоков (``None`` — все ядра)."
 msgid "Returns"
 msgstr "Возвращает"
 
-# | msgid "Zones of equal class of daily sun hours (the mean over the
-# simulated
-# | days) in the CRS of ``buildings``, with ``sun_hours_min``,
-# ``sun_hours_max``
-# | (``inf`` for the last class) and ``label``. The zone ``0`` is ground that
-# | gets no direct sun on any simulated day. Buildings are cut out. With
-# | ``output=\"receivers\"`` (or ``\"both\"``) the receiver points with:  -
-# | ``sun_hours``: mean hours of direct sun per day; - ``min_sun_hours``:
-# hours
-# | on the worst day; - ``max_continuous_hours``: the longest uninterrupted
-# | sunlit period on the worst day (the least   of the daily longest periods),
-# | for which insolation norms usually set a minimum.  ``attrs`` contain
-# | ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun
-# | is above ``min_sun_elevation``); the receivers' ``attrs`` also record the
-# | grid, so :func:`rasterize` turns any of their columns into a
-# | :class:`Raster`."
 msgid "Receiver points in the CRS of ``buildings``; points inside buildings are left out. Columns:  - ``sun_hours``: mean hours of direct sun per day (``0`` for ground that gets no direct sun on any   simulated day); - ``min_sun_hours``: hours on the worst day; - ``max_continuous_hours``: the longest uninterrupted sunlit period on the worst day (the least   of the daily longest periods), for which insolation norms usually set a minimum.  ``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is above ``min_sun_elevation``) and record the grid, so :func:`rasterize` turns any column into a :class:`Raster`."
 msgstr "Receiver points in the CRS of ``buildings``; points inside buildings are left out. Columns:  - ``sun_hours``: mean hours of direct sun per day (``0`` for ground that gets no direct sun on any   simulated day); - ``min_sun_hours``: hours on the worst day; - ``max_continuous_hours``: the longest uninterrupted sunlit period on the worst day (the least   of the daily longest periods), for which insolation norms usually set a minimum.  ``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is above ``min_sun_elevation``) and record the grid, so :func:`rasterize` turns any column into a :class:`Raster`."
 
 msgid "Receiver points in the CRS of ``buildings``; points inside buildings are left out. Columns:"
 msgstr "Точки приёмников в системе координат ``buildings``; точки внутри зданий исключаются. Столбцы:"
 
-# | msgid "``sun_hours``: mean daily direct sun over the simulated days;"
 msgid "``sun_hours``: mean hours of direct sun per day (``0`` for ground that gets no direct sun on any simulated day);"
 msgstr "``sun_hours``: среднесуточное прямое солнце в часах (``0`` для земли, куда прямое солнце не попадает ни в один моделируемый день);"
 
@@ -187,12 +170,6 @@ msgstr "``min_sun_hours``: часы в худший день;"
 msgid "``max_continuous_hours``: the longest uninterrupted sunlit period on the worst day (the least of the daily longest periods), for which insolation norms usually set a minimum."
 msgstr "``max_continuous_hours``: наибольшая непрерывная продолжительность инсоляции в худший день (наименьший из суточных наибольших отрезков), для которой нормативы инсоляции обычно задают минимум."
 
-# | msgid "``attrs`` contain ``days`` (the simulated dates) and
-# | ``day_length_hours`` (mean time the sun is above ``min_sun_elevation``);
-# the
-# | receivers' ``attrs`` also record the grid, so :func:`rasterize` turns any
-# of
-# | their columns into a :class:`Raster`."
 msgid "``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is above ``min_sun_elevation``) and record the grid, so :func:`rasterize` turns any column into a :class:`Raster`."
 msgstr "``attrs`` содержат ``days`` (моделируемые даты) и ``day_length_hours`` (среднее время, когда солнце выше ``min_sun_elevation``) и записывают сетку, поэтому :func:`rasterize` превращает любой столбец в :class:`Raster`."
 
@@ -208,13 +185,9 @@ msgstr "При отсутствии системы координат, пуст�
 msgid "If ``terrain`` is a file path and ``rasterio`` is not installed."
 msgstr "Если ``terrain`` — путь к файлу, а ``rasterio`` не установлен."
 
-# | msgid "Sun-hour zones on 21 March and 21 June"
 msgid "Direct sun hours on 21 March and 21 June"
 msgstr "Часы прямого солнца 21 марта и 21 июня"
 
-# | msgid "Classes of direct sun hours on 21 March and 21 June 2026 in a 500 ×
-# | 400 m area (outlined), ``grid_step=2``, ``time_step_min=10``. Building
-# | heights are ``storeys_count`` × 3 m."
 msgid "Direct sun hours on 21 March and 21 June 2026 in a 500 × 400 m area (outlined), ``grid_step=2``, ``time_step_min=10``, receivers rasterized with :func:`objectnat.rasterize` on one colour scale. Building heights are ``storeys_count`` × 3 m."
 msgstr "Часы прямого солнца 21 марта и 21 июня 2026 года на территории 500 × 400 м (обведена), ``grid_step=2``, ``time_step_min=10``; приёмники растеризованы функцией :func:`objectnat.rasterize` в одной цветовой шкале. Высота зданий — ``storeys_count`` × 3 м."
 
