@@ -1,0 +1,590 @@
+<!doctype html>
+<html class="no-js" lang="ru" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Алфавитный указатель" href="../genindex.html"><link rel="search" title="Поиск" href="../search.html"><link rel="next" title="Примеры" href="examples/index.html"><link rel="prev" title="Инсоляция" href="insolation.html">
+        <link rel="prefetch" href="../_static/ONlogo.svg" as="image">
+
+    <link rel="shortcut icon" href="../_static/ONFavicon.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>Растры - документация ObjectNat 3.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/objectnat.css?v=bf0f6754" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">документация ObjectNat 3.0.0</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/ONlogo.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">документация ObjectNat 3.0.0</span>
+  
+</a><div class="lang-switch">
+  <a href="../../methods/rasters.html" hreflang="en" lang="en">English</a>
+  <span class="lang-switch-current" lang="ru">Русский</span>
+</div><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Поиск" name="q" aria-label="Поиск">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="isochrones.html">Изохроны</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverage.html">Зоны покрытия</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provision.html">Обеспеченность сервисами</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visibility.html">Анализ видимости</a></li>
+<li class="toctree-l1"><a class="reference internal" href="noise.html">Моделирование шума</a></li>
+<li class="toctree-l1"><a class="reference internal" href="insolation.html">Инсоляция</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Растры</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples/index.html">Примеры</a><input aria-label="Toggle navigation of Примеры" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/isochrones.html">Изохроны</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/coverage.html">Зоны покрытия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/calculate_od_matrix.html">Матрица времени в пути от зданий до сервисов</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/provision.html">Обеспеченность сервисами</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/visibility.html">Видимость 2D: полигоны видимости, метрики изовист и охват</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/viewshed.html">Видимость 2.5D: области видимости и их охват</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/noise.html">Моделирование шума</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/insolation.html">Инсоляция: часы солнца на земле и на фасадах</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../upgrading.html">Переход на 3.0</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/methods/rasters.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="rasters">
+<h1>Растры<a class="headerlink" href="#rasters" title="Ссылка на этот заголовок">¶</a></h1>
+<section id="overview">
+<h2>Обзор<a class="headerlink" href="#overview" title="Ссылка на этот заголовок">¶</a></h2>
+<p>Несколько методов вычисляют значения на регулярной сетке квадратных ячеек и возвращают сетку в виде точек:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 30.0%" />
+<col style="width: 30.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Функция</p></th>
+<th class="head"><p>Точки возвращаются при</p></th>
+<th class="head"><p>Столбцы и значение в ячейке</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_insolation()</span></code></a></p></td>
+<td><p>всегда</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sun_hours</span></code>, <code class="docutils literal notranslate"><span class="pre">min_sun_hours</span></code>, <code class="docutils literal notranslate"><span class="pre">max_continuous_hours</span></code>: прямое солнце в приёмнике, часов в сутки</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="noise.html#objectnat.simulate_noise_grid" title="objectnat.simulate_noise_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise_grid()</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">output=&quot;receivers&quot;</span></code> или <code class="docutils literal notranslate"><span class="pre">&quot;both&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">noise_level</span></code>: уровень звука в приёмнике, дБ</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="visibility.html#objectnat.get_visibility_catchment" title="objectnat.get_visibility_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_visibility_catchment()</span></code></a>, <a class="reference internal" href="visibility.html#objectnat.get_viewshed_catchment" title="objectnat.get_viewshed_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_viewshed_catchment()</span></code></a></p></td>
+<td><p>всегда</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">count</span></code>: число наблюдателей, которые видят ячейку (<code class="docutils literal notranslate"><span class="pre">weight</span></code>: сумма их весов)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="visibility.html#objectnat.get_isovist_grid" title="objectnat.get_isovist_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_isovist_grid()</span></code></a></p></td>
+<td><p>всегда</p></td>
+<td><p>метрики изовисты наблюдателя, стоящего в ячейке: <code class="docutils literal notranslate"><span class="pre">visible_share</span></code> (доля круга обзора), <code class="docutils literal notranslate"><span class="pre">compactness</span></code>, <code class="docutils literal notranslate"><span class="pre">occlusivity</span></code> (м), <code class="docutils literal notranslate"><span class="pre">drift</span></code> (м), …</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Для шума <code class="docutils literal notranslate"><span class="pre">output=&quot;receivers&quot;</span></code> не строит полосы уровней, это быстрее, когда нужны только значения.</p>
+<p><a class="reference internal" href="#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a> превращает один столбец таких точек в <a class="reference internal" href="#objectnat.Raster" title="objectnat.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">objectnat.Raster</span></code></a>: двумерный массив с аффинным преобразованием и системой координат. Растр показывает непрерывную величину по ячейкам, без границ классов полигонов зон, и его можно нарисовать в matplotlib, записать в файл GeoTIFF или показать на веб-карте folium.</p>
+</section>
+<section id="method">
+<h2>Метод<a class="headerlink" href="#method" title="Ссылка на этот заголовок">¶</a></h2>
+<p>Методы на сетке записывают свою сетку в <code class="docutils literal notranslate"><span class="pre">attrs</span></code> возвращаемых точек: локальную метрическую систему координат расчёта (зону UTM), размер ячейки и положение центра одной ячейки. <a class="reference internal" href="#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a> перепроецирует точки в эту систему координат, относит каждую точку к её ячейке и заполняет ячейки без точек (здания, ячейки ниже <code class="docutils literal notranslate"><span class="pre">target_noise_db</span></code>, ячейки, которые никто не видит) значением <code class="docutils literal notranslate"><span class="pre">NaN</span></code>. Растр точно воспроизводит расчётную сетку, в какой бы системе координат ни были возвращены точки, в том числе после фильтрации строк. Точкам без такой записи, например прочитанным из файла, нужен <code class="docutils literal notranslate"><span class="pre">cell_size</span></code>; тогда они размещаются в собственной проекции или в оценённой зоне UTM.</p>
+<p><a class="reference internal" href="#objectnat.Raster" title="objectnat.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">objectnat.Raster</span></code></a> — кортеж <code class="docutils literal notranslate"><span class="pre">(values,</span> <span class="pre">transform,</span> <span class="pre">crs)</span></code>. В <code class="docutils literal notranslate"><span class="pre">values</span></code> первой идёт северная строка; <code class="docutils literal notranslate"><span class="pre">transform</span></code> содержит аффинные коэффициенты <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c,</span> <span class="pre">d,</span> <span class="pre">e,</span> <span class="pre">f)</span></code> в порядке rasterio и GDAL. В том же формате задаются аргументы <code class="docutils literal notranslate"><span class="pre">terrain</span></code>, поэтому растр можно передать обратно как рельеф.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">plot(ax,</span> <span class="pre">**imshow_kwargs)</span></code> рисует растр через <code class="docutils literal notranslate"><span class="pre">imshow</span></code> в его системе координат. Другие слои на тех же осях нужно перепроецировать в <code class="docutils literal notranslate"><span class="pre">raster.crs</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">to_geotiff(path)</span></code> записывает GeoTIFF float32 (нужен <code class="docutils literal notranslate"><span class="pre">rasterio</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">to_folium(cmap=...,</span> <span class="pre">vmin=...,</span> <span class="pre">vmax=...,</span> <span class="pre">opacity=...)</span></code> возвращает <code class="docutils literal notranslate"><span class="pre">folium.raster_layers.ImageOverlay</span></code>. Веб-карты рисуют изображения в проекции Web Mercator, поэтому сетка пересчитывается на сетку Меркатора примерно с тем же числом ячеек (по ближайшей ячейке) и раскрашивается палитрой matplotlib; ячейки без значения прозрачны. Слой можно добавить на любую карту folium, в том числе на карты <code class="docutils literal notranslate"><span class="pre">GeoDataFrame.explore()</span></code> (нужны <code class="docutils literal notranslate"><span class="pre">folium</span></code> и <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">explore(m=None,</span> <span class="pre">cmap=...,</span> <span class="pre">vmin=...,</span> <span class="pre">vmax=...,</span> <span class="pre">name=...)</span></code> делает то же на новой карте (или на <code class="docutils literal notranslate"><span class="pre">m</span></code>) и добавляет цветовую шкалу, как <code class="docutils literal notranslate"><span class="pre">GeoDataFrame.explore()</span></code>.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">objectnat</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_insolation</span><span class="p">,</span> <span class="n">rasterize</span>
+
+<span class="n">receivers</span> <span class="o">=</span> <span class="n">get_insolation</span><span class="p">(</span><span class="n">buildings</span><span class="p">,</span> <span class="s2">&quot;2026-03-21&quot;</span><span class="p">,</span> <span class="n">area</span><span class="o">=</span><span class="n">area</span><span class="p">)</span>
+<span class="n">sun</span> <span class="o">=</span> <span class="n">rasterize</span><span class="p">(</span><span class="n">receivers</span><span class="p">,</span> <span class="s2">&quot;sun_hours&quot;</span><span class="p">)</span>
+
+<span class="n">image</span> <span class="o">=</span> <span class="n">sun</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;inferno&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>          <span class="c1"># matplotlib</span>
+<span class="n">sun</span><span class="o">.</span><span class="n">to_geotiff</span><span class="p">(</span><span class="s2">&quot;sun_hours_2026-03-21.tif&quot;</span><span class="p">)</span>                 <span class="c1"># GIS</span>
+<span class="n">sun</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;inferno&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;sun hours&quot;</span><span class="p">)</span>   <span class="c1"># web map with a colour bar</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">buildings</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">)</span>                               <span class="c1"># or on top of another map</span>
+<span class="n">sun</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;inferno&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;sun hours&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.rasterize">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">rasterize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/utils/raster.html#rasterize"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#objectnat.rasterize" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Превращает точки сетки со значениями в <a class="reference internal" href="#objectnat.Raster" title="objectnat.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a>, по одной ячейке на точку.</p>
+<p>Точки сетки — это то, что возвращают методы на сетке: приёмники <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a> и <a class="reference internal" href="noise.html#objectnat.simulate_noise_grid" title="objectnat.simulate_noise_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate_noise_grid()</span></code></a> (<code class="docutils literal notranslate"><span class="pre">output=&quot;receivers&quot;</span></code> или <code class="docutils literal notranslate"><span class="pre">&quot;both&quot;</span></code>), ячейки <a class="reference internal" href="visibility.html#objectnat.get_visibility_catchment" title="objectnat.get_visibility_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_visibility_catchment()</span></code></a> и <a class="reference internal" href="visibility.html#objectnat.get_viewshed_catchment" title="objectnat.get_viewshed_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_viewshed_catchment()</span></code></a> и точки <a class="reference internal" href="visibility.html#objectnat.get_isovist_grid" title="objectnat.get_isovist_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_isovist_grid()</span></code></a>. Их <code class="docutils literal notranslate"><span class="pre">attrs</span></code> записывают сетку (систему координат, размер ячейки, положение), поэтому растр точно воспроизводит её в локальной метрической системе координат расчёта, в какой бы системе координат ни были возвращены точки, в том числе после фильтрации строк.</p>
+<p>Точкам без такой записи (например, прочитанным из файла) нужен <code class="docutils literal notranslate"><span class="pre">cell_size</span></code>; тогда они размещаются в собственной системе координат, если она проецированная, или в оценённой зоне UTM, а центром ячейки служит первая точка.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Параметры<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a></span>) – GeoDataFrame точек на регулярной сетке.</p></li>
+<li><p><strong>column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Числовой (или логический) столбец, значения которого записываются в ячейки.</p></li>
+<li><p><strong>cell_size</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Сторона ячейки в метрах, для точек без <code class="docutils literal notranslate"><span class="pre">attrs</span></code> сетки.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Тип результата<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#objectnat.Raster" title="objectnat.methods.utils.raster.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Результат<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#objectnat.Raster" title="objectnat.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a>, покрывающий точки; ячейки без точки — <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Примеры</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">receivers</span> <span class="o">=</span> <span class="n">get_insolation</span><span class="p">(</span><span class="n">buildings</span><span class="p">,</span> <span class="s2">&quot;2026-03-21&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raster</span> <span class="o">=</span> <span class="n">rasterize</span><span class="p">(</span><span class="n">receivers</span><span class="p">,</span> <span class="s2">&quot;sun_hours&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raster</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;inferno&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raster</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;inferno&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;sun hours&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raster</span><span class="o">.</span><span class="n">to_geotiff</span><span class="p">(</span><span class="s2">&quot;sun_hours.tif&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="objectnat.Raster">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">Raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/utils/raster.html#Raster"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#objectnat.Raster" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Значения на ориентированной на север сетке квадратных ячеек, как их возвращает <a class="reference internal" href="#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">rasterize()</span></code></a>.</p>
+<p>Это кортеж <code class="docutils literal notranslate"><span class="pre">(values,</span> <span class="pre">transform,</span> <span class="pre">crs)</span></code>, который принимают аргументы <code class="docutils literal notranslate"><span class="pre">terrain</span></code>, поэтому его можно передать обратно как рельеф, записать через rasterio или нарисовать в matplotlib.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Параметры<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(в NumPy v2.5)"><em>ndarray</em></a>)</p></li>
+<li><p><strong>transform</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(в Python v3.15)"><em>tuple</em></a>)</p></li>
+<li><p><strong>crs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(в Python v3.15)"><em>Any</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="objectnat.Raster.values">
+<span class="sig-name descname"><span class="pre">values</span></span><a class="headerlink" href="#objectnat.Raster.values" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Массив float <code class="docutils literal notranslate"><span class="pre">(rows,</span> <span class="pre">cols)</span></code>; строка 0 — северный край, <code class="docutils literal notranslate"><span class="pre">NaN</span></code> отмечает ячейки без значения.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="objectnat.Raster.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><a class="headerlink" href="#objectnat.Raster.transform" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Аффинные коэффициенты <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c,</span> <span class="pre">d,</span> <span class="pre">e,</span> <span class="pre">f)</span></code>, как в rasterio и GDAL: верхний левый угол ячейки <code class="docutils literal notranslate"><span class="pre">(row,</span> <span class="pre">col)</span></code> — <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">c</span> <span class="pre">+</span> <span class="pre">a</span> <span class="pre">*</span> <span class="pre">col</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">f</span> <span class="pre">+</span> <span class="pre">e</span> <span class="pre">*</span> <span class="pre">row</span></code> (<code class="docutils literal notranslate"><span class="pre">b</span> <span class="pre">=</span> <span class="pre">d</span> <span class="pre">=</span> <span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">e</span> <span class="pre">=</span> <span class="pre">-a</span></code>).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="objectnat.Raster.crs">
+<span class="sig-name descname"><span class="pre">crs</span></span><a class="headerlink" href="#objectnat.Raster.crs" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Проецированная система координат сетки (метры).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="objectnat.Raster.cell_size">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cell_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><span class="pre">float</span></a></em><a class="headerlink" href="#objectnat.Raster.cell_size" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Сторона ячейки в метрах.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="objectnat.Raster.bounds">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bounds</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(в Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#objectnat.Raster.bounds" title="Ссылка на это определение">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">(minx,</span> <span class="pre">miny,</span> <span class="pre">maxx,</span> <span class="pre">maxy)</span></code> сетки.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="objectnat.Raster.extent">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(в Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#objectnat.Raster.extent" title="Ссылка на это определение">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">(left,</span> <span class="pre">right,</span> <span class="pre">bottom,</span> <span class="pre">top)</span></code>, аргумент <code class="docutils literal notranslate"><span class="pre">extent</span></code> функции <code class="docutils literal notranslate"><span class="pre">matplotlib.pyplot.imshow</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="objectnat.Raster.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/utils/raster.html#Raster.plot"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#objectnat.Raster.plot" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Рисует растр через <code class="docutils literal notranslate"><span class="pre">ax.imshow</span></code> в системе координат сетки (ячейки без значения остаются прозрачными).</p>
+<p>Именованные аргументы передаются в <code class="docutils literal notranslate"><span class="pre">imshow</span></code> (<code class="docutils literal notranslate"><span class="pre">cmap</span></code>, <code class="docutils literal notranslate"><span class="pre">vmin</span></code>, <code class="docutils literal notranslate"><span class="pre">vmax</span></code>, <code class="docutils literal notranslate"><span class="pre">alpha</span></code>, …). Слои на тех же осях должны быть в <a class="reference internal" href="#objectnat.Raster.crs" title="objectnat.Raster.crs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">crs</span></code></a>, например <code class="docutils literal notranslate"><span class="pre">buildings.to_crs(raster.crs).plot(ax=ax)</span></code>. Нужен matplotlib.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Результат<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">AxesImage</span></code>, например для <code class="docutils literal notranslate"><span class="pre">fig.colorbar</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="objectnat.Raster.to_geotiff">
+<span class="sig-name descname"><span class="pre">to_geotiff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/utils/raster.html#Raster.to_geotiff"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#objectnat.Raster.to_geotiff" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Записывает однополосный GeoTIFF float32; ячейки без значения получают <code class="docutils literal notranslate"><span class="pre">nodata</span></code>. Нужен rasterio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Тип результата<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+<dt class="field-even">Параметры<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>nodata</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><em>float</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="objectnat.Raster.to_folium">
+<span class="sig-name descname"><span class="pre">to_folium</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/utils/raster.html#Raster.to_folium"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#objectnat.Raster.to_folium" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Раскрашивает растр и возвращает его как <code class="docutils literal notranslate"><span class="pre">folium.raster_layers.ImageOverlay</span></code> для веб-карты.</p>
+<p>Веб-карты показывают изображения в проекции Web Mercator, поэтому перед раскраской сетка пересчитывается (по ближайшей ячейке) на сетку Меркатора примерно с тем же числом ячеек; после этого слой совпадает с подложкой. Добавьте его через <code class="docutils literal notranslate"><span class="pre">.add_to(m)</span></code>, например на карту из <code class="docutils literal notranslate"><span class="pre">GeoDataFrame.explore()</span></code>. Нужны folium и matplotlib.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Параметры<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cmap</strong> – Палитра matplotlib или её имя.</p></li>
+<li><p><strong>vmin</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Пределы цветовой шкалы (по умолчанию минимум и максимум значений).</p></li>
+<li><p><strong>vmax</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Пределы цветовой шкалы (по умолчанию минимум и максимум значений).</p></li>
+<li><p><strong>opacity</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Непрозрачность слоя, 0-1. Ячейки без значения прозрачны.</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Имя слоя в <code class="docutils literal notranslate"><span class="pre">folium.LayerControl</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Передаются в <code class="docutils literal notranslate"><span class="pre">ImageOverlay</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="objectnat.Raster.explore">
+<span class="sig-name descname"><span class="pre">explore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">caption</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/utils/raster.html#Raster.explore"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#objectnat.Raster.explore" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Показывает растр на интерактивной карте folium, как <code class="docutils literal notranslate"><span class="pre">GeoDataFrame.explore()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Параметры<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> – Существующая <code class="docutils literal notranslate"><span class="pre">folium.Map</span></code>, на которую добавляется слой, например <code class="docutils literal notranslate"><span class="pre">buildings.explore()</span></code>; если <code class="docutils literal notranslate"><span class="pre">None</span></code> — новая карта с центром на растре.</p></li>
+<li><p><strong>cmap</strong> – Как в <a class="reference internal" href="#objectnat.Raster.to_folium" title="objectnat.Raster.to_folium"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_folium()</span></code></a>.</p></li>
+<li><p><strong>vmin</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Как в <a class="reference internal" href="#objectnat.Raster.to_folium" title="objectnat.Raster.to_folium"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_folium()</span></code></a>.</p></li>
+<li><p><strong>vmax</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Как в <a class="reference internal" href="#objectnat.Raster.to_folium" title="objectnat.Raster.to_folium"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_folium()</span></code></a>.</p></li>
+<li><p><strong>opacity</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Как в <a class="reference internal" href="#objectnat.Raster.to_folium" title="objectnat.Raster.to_folium"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_folium()</span></code></a>.</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Как в <a class="reference internal" href="#objectnat.Raster.to_folium" title="objectnat.Raster.to_folium"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_folium()</span></code></a>.</p></li>
+<li><p><strong>legend</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Добавить цветовую шкалу.</p></li>
+<li><p><strong>caption</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Подпись цветовой шкалы (по умолчанию <code class="docutils literal notranslate"><span class="pre">name</span></code>).</p></li>
+<li><p><strong>tiles</strong> – Подложка новой карты: название или URL, как в <code class="docutils literal notranslate"><span class="pre">folium.Map</span></code>, либо <code class="docutils literal notranslate"><span class="pre">folium.TileLayer</span></code>. По умолчанию светло-серая карта (Esri World Light Gray Canvas), тайлы которой заканчиваются на масштабе 16 и дальше растягиваются.</p></li>
+<li><p><strong>**kwargs</strong> – Передаются в <code class="docutils literal notranslate"><span class="pre">folium.Map</span></code> при создании новой карты.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Результат<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">folium.Map</span></code>. Нужны folium и matplotlib.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="limitations">
+<h2>Ограничения<a class="headerlink" href="#limitations" title="Ссылка на этот заголовок">¶</a></h2>
+<ul class="simple">
+<li><p>Разрешение растра равно разрешению расчётной сетки; для более подробного растра нужен меньший <code class="docutils literal notranslate"><span class="pre">grid_step</span></code> или <code class="docutils literal notranslate"><span class="pre">cell_size</span></code> в самом расчёте.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">to_folium</span></code> встраивает изображение в карту как PNG, поэтому очень большие растры дают большие HTML-файлы; для больших территорий запишите GeoTIFF и публикуйте его тайлами.</p></li>
+<li><p>Точки без <code class="docutils literal notranslate"><span class="pre">attrs</span></code> сетки должны лежать на регулярной сетке с заданным <code class="docutils literal notranslate"><span class="pre">cell_size</span></code>.</p></li>
+</ul>
+</section>
+<section id="example-notebooks">
+<h2>Примеры в ноутбуках<a class="headerlink" href="#example-notebooks" title="Ссылка на этот заголовок">¶</a></h2>
+<p><a class="reference internal" href="examples/insolation.html"><span class="doc">Инсоляция: часы солнца на земле и на фасадах</span></a> (часы солнца в виде растров и на веб-карте), <a class="reference internal" href="examples/noise.html"><span class="doc">Моделирование шума</span></a> (уровни в приёмниках), <a class="reference internal" href="examples/visibility.html"><span class="doc">Видимость 2D: полигоны видимости, метрики изовист и охват</span></a> (поле изовист, растр охвата 2D) и <a class="reference internal" href="examples/viewshed.html"><span class="doc">Видимость 2.5D: области видимости и их охват</span></a> (растр охвата 2.5D).</p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="examples/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Примеры</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="insolation.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Инсоляция</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Donny
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Растры</a><ul>
+<li><a class="reference internal" href="#overview">Обзор</a></li>
+<li><a class="reference internal" href="#method">Метод</a><ul>
+<li><a class="reference internal" href="#objectnat.rasterize"><code class="docutils literal notranslate"><span class="pre">rasterize()</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.Raster"><code class="docutils literal notranslate"><span class="pre">Raster</span></code></a><ul>
+<li><a class="reference internal" href="#objectnat.Raster.values"><code class="docutils literal notranslate"><span class="pre">Raster.values</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.Raster.transform"><code class="docutils literal notranslate"><span class="pre">Raster.transform</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.Raster.crs"><code class="docutils literal notranslate"><span class="pre">Raster.crs</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.Raster.cell_size"><code class="docutils literal notranslate"><span class="pre">Raster.cell_size</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.Raster.bounds"><code class="docutils literal notranslate"><span class="pre">Raster.bounds</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.Raster.extent"><code class="docutils literal notranslate"><span class="pre">Raster.extent</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.Raster.plot"><code class="docutils literal notranslate"><span class="pre">Raster.plot()</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.Raster.to_geotiff"><code class="docutils literal notranslate"><span class="pre">Raster.to_geotiff()</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.Raster.to_folium"><code class="docutils literal notranslate"><span class="pre">Raster.to_folium()</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.Raster.explore"><code class="docutils literal notranslate"><span class="pre">Raster.explore()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#limitations">Ограничения</a></li>
+<li><a class="reference internal" href="#example-notebooks">Примеры в ноутбуках</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=c2c16d3a"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/translations.js?v=cd1d70c9"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/lightbox.js?v=dc29de6d"></script>
+    </body>
+</html>

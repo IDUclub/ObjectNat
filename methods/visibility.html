@@ -1,0 +1,876 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Noise Simulation" href="noise.html"><link rel="prev" title="Service Provision" href="provision.html">
+        <link rel="prefetch" href="../_static/ONlogo.svg" as="image">
+
+    <link rel="shortcut icon" href="../_static/ONFavicon.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>Visibility Analysis - ObjectNat 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/objectnat.css?v=bf0f6754" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">ObjectNat 3.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/ONlogo.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">ObjectNat 3.0.0 documentation</span>
+  
+</a><div class="lang-switch">
+  <span class="lang-switch-current" lang="en">English</span>
+  <a href="../ru/methods/visibility.html" hreflang="ru" lang="ru">Русский</a>
+</div><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="isochrones.html">Isochrones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverage.html">Coverage Zones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provision.html">Service Provision</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Visibility Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="noise.html">Noise Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="insolation.html">Insolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rasters.html">Rasters</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples/index.html">Examples</a><input aria-label="Toggle navigation of Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/isochrones.html">Isochrones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/coverage.html">Coverage zones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/calculate_od_matrix.html">Building-to-service travel-time matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/provision.html">Service provision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/visibility.html">2D visibility: visibility polygons, isovist metrics and catchment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/viewshed.html">2.5D visibility: viewsheds and viewshed catchment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/noise.html">Noise simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/insolation.html">Insolation: sun hours on the ground and on facades</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../upgrading.html">Upgrading to 3.0</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/methods/visibility.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="visibility-analysis">
+<h1>Visibility Analysis<a class="headerlink" href="#visibility-analysis" title="Link to this heading">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>Visibility analysis determines which parts of the urban space an <strong>observer</strong> can see and, aggregated over many
+observers, how often each place is seen. ObjectNat provides two models:</p>
+<ul class="simple">
+<li><p><strong>2D visibility</strong> (<a class="reference internal" href="#objectnat.get_visibility" title="objectnat.get_visibility"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_visibility()</span></code></a>, <a class="reference internal" href="#objectnat.get_isovist_grid" title="objectnat.get_isovist_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_isovist_grid()</span></code></a>,
+<a class="reference internal" href="#objectnat.get_visibility_catchment" title="objectnat.get_visibility_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_visibility_catchment()</span></code></a>): every obstacle is a wall of infinite height. The result for one
+observer is its <strong>visibility polygon</strong> (isovist), a vector polygon whose boundary is computed exactly.</p></li>
+<li><p><strong>2.5D visibility</strong> (<a class="reference internal" href="#objectnat.get_viewshed" title="objectnat.get_viewshed"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_viewshed()</span></code></a>, <a class="reference internal" href="#objectnat.get_viewshed_catchment" title="objectnat.get_viewshed_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_viewshed_catchment()</span></code></a>): buildings have
+heights, and terrain can raise the ground. The result for one observer is its <strong>viewshed</strong>, the grid cells to
+which the line of sight from the eye is clear, merged into one (Multi)Polygon per observer. Its outline follows
+the cells, so its accuracy is <code class="docutils literal notranslate"><span class="pre">cell_size</span></code>.</p></li>
+</ul>
+<p>The <strong>catchment</strong> functions count, for every cell of a grid, the observers that see it; the counts are drawn as a
+raster. <a class="reference internal" href="#objectnat.get_observer_points" title="objectnat.get_observer_points"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_observer_points()</span></code></a> places observers along the
+streets of an IduEdu graph. All calculations run in parallel threads in ObjectNat’s Rust extension.</p>
+<p>Grid results answer two different questions, and their values have different units. An <strong>isovist field</strong>
+(<a class="reference internal" href="#objectnat.get_isovist_grid" title="objectnat.get_isovist_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_isovist_grid()</span></code></a>) describes what an observer standing in each cell sees, for example the
+visible share of the view disc: it looks out of the place. A <strong>catchment</strong> counts the observers that see each cell:
+it looks at the place from the streets. Its unit is the number of observers (or the sum of their weights) in 2D and
+in 2.5D alike. The middle of a large square has a high visible share, but a low catchment if few streets lead to
+it.</p>
+</section>
+<section id="d-visibility-polygons">
+<h2>2D visibility polygons<a class="headerlink" href="#d-visibility-polygons" title="Link to this heading">¶</a></h2>
+<section id="method">
+<h3>Method<a class="headerlink" href="#method" title="Link to this heading">¶</a></h3>
+<p><a class="reference internal" href="#objectnat.get_visibility" title="objectnat.get_visibility"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_visibility()</span></code></a> returns, for each observer, the part of the view disc (radius <code class="docutils literal notranslate"><span class="pre">view_distance</span></code>
+or the per-observer column <code class="docutils literal notranslate"><span class="pre">visibility_distance</span></code>, in metres) that is not hidden behind obstacle walls. Obstacles
+may be polygons (with holes) or lines. Observers and obstacles are reprojected to an estimated UTM zone. Obstacle
+walls are clipped to the disc, every wall endpoint and wall intersection defines a critical direction, and one ray
+per angular interval finds the nearest wall. The boundary is therefore exact; no rays are sampled at fixed angles.
+Observers standing inside an obstacle get an empty polygon.</p>
+</section>
+<section id="isovist-metrics">
+<h3>Isovist metrics<a class="headerlink" href="#isovist-metrics" title="Link to this heading">¶</a></h3>
+<p>An isovist is the visibility polygon of one observer. With <code class="docutils literal notranslate"><span class="pre">isovist_metrics=True</span></code>,
+<a class="reference internal" href="#objectnat.get_visibility" title="objectnat.get_visibility"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_visibility()</span></code></a> describes every isovist with the measures below (Benedikt 1979; Turner et al.
+2001; Batty 2001): how much the observer sees, what shape the visible area has and how much space is hidden behind
+corners. Lengths are in metres and areas in square metres; observers inside an obstacle get <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p>
+<p>The boundary of an isovist consists of three kinds of edges: the visible parts of walls, arcs of the <strong>view
+limit</strong> (the circle of radius <code class="docutils literal notranslate"><span class="pre">view_distance</span></code>) and <strong>occluding edges</strong>. An occluding edge lies on a line of sight
+that passes a building corner. Beyond the corner the line of sight continues into space that the observer cannot
+see, so the edge separates the visible area from a hidden one.</p>
+<p>The examples in the table use a view distance R = 200 m and three simple places: an open field without obstacles,
+the middle of a straight street 20 m wide between continuous walls, and a closed square courtyard 40 m wide.</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 44.0%" />
+<col style="width: 36.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Columns</p></th>
+<th class="head"><p>What they measure</p></th>
+<th class="head"><p>Examples</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">area</span></code>, <code class="docutils literal notranslate"><span class="pre">visible_share</span></code></p></td>
+<td><p>How much the observer sees: the area of the isovist, and this area divided by the area of the view disc,
+π R².</p></td>
+<td><p>Open field: <code class="docutils literal notranslate"><span class="pre">visible_share</span></code> = 1. Street: a strip of about 20 × 400 m, so <code class="docutils literal notranslate"><span class="pre">area</span></code> ≈ 8,000 m² and
+<code class="docutils literal notranslate"><span class="pre">visible_share</span></code> ≈ 0.06.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">perimeter</span></code>, <code class="docutils literal notranslate"><span class="pre">compactness</span></code></p></td>
+<td><p>The length of the isovist boundary, and 4πA/P², which compares the shape with a circle: 1 for a disc,
+close to 0 for a long narrow or spiky shape.</p></td>
+<td><p>Open field: 1. Courtyard seen from inside: π/4 ≈ 0.79. Street: ≈ 0.14.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">n_occlusions</span></code>, <code class="docutils literal notranslate"><span class="pre">occlusivity</span></code></p></td>
+<td><p>The number of occluding edges and their total length: how many corners the observer sees past, and how
+far the hidden space extends behind them.</p></td>
+<td><p>Open field, street and courtyard: 0, since nothing is hidden. One building in an open field: two edges,
+the sides of its shadow. Crossings of narrow passages between buildings: high values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">min_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">max_radial</span></code></p></td>
+<td><p>The distance from the observer to the nearest point of the boundary, usually the nearest wall, and the
+length of the longest line of sight.</p></td>
+<td><p>Street: 10 m (the walls) and 200 m (along the street).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mean_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">std_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">skew_radial</span></code></p></td>
+<td><p>The distance from the observer to the end of the view (a wall, an occluding edge or the view limit) over
+all directions: its mean, standard deviation and skewness. They are integrated exactly over each boundary
+edge.</p></td>
+<td><p>Open field: mean 200 m, standard deviation 0. Street: mean ≈ 30 m and standard deviation ≈ 41 m; the
+skewness is positive, because a few long views along the street stand out among many short views to the
+walls.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">drift</span></code></p></td>
+<td><p>The distance from the observer to the centroid of the isovist: 0 when the visible area is balanced around
+the observer, large when most of it lies to one side.</p></td>
+<td><p>Centre of the courtyard: 0. Next to the middle of one courtyard wall: 20 m.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">open_share</span></code></p></td>
+<td><p>The share of the boundary length that lies on the view limit, that is, on neither walls nor occluding
+edges.</p></td>
+<td><p>Open field: 1. Courtyard: 0. Street: the two ends of the strip, 40 m of the 840 m boundary, ≈ 0.05.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The metrics add little time to the visibility calculation (about 0.8 s for 5,000 visibility polygons with 450,000
+vertices in total).</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.get_visibility">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">get_visibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isovist_metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/visibility/visibility_analysis.html#get_visibility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.get_visibility" title="Link to this definition">¶</a></dt>
+<dd><p>Compute visibility polygons for one or many observer points.</p>
+<p>Each observer gets the exact area visible within its view distance: the view disc minus everything
+hidden behind obstacle walls. Points and obstacles are reprojected to a locally estimated projected
+CRS (typically UTM) for the calculation, and observers are processed in parallel by ObjectNat’s Rust
+extension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_from</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – GeoDataFrame with point geometries representing observer locations.
+Must have a valid CRS. Any additional attributes are preserved in
+the output.</p></li>
+<li><p><strong>obstacles</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – GeoDataFrame with obstacle geometries (Polygon, MultiPolygon, LineString,
+MultiLineString) in any CRS. If empty or <code class="docutils literal notranslate"><span class="pre">None</span></code>, no occlusion is
+applied and visibility is limited only by the view distance.</p></li>
+<li><p><strong>view_distance</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Global view distance for all points (in metres). Used when the
+<code class="docutils literal notranslate"><span class="pre">&quot;visibility_distance&quot;</span></code> column is not present in <code class="docutils literal notranslate"><span class="pre">point_from</span></code>.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code> and the column is also missing, a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> is raised.</p></li>
+<li><p><strong>max_workers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Maximum number of threads (<code class="docutils literal notranslate"><span class="pre">None</span></code> uses all cores).</p></li>
+<li><p><strong>isovist_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, add isovist metric columns to the result, measured in metres in the local CRS:
+<code class="docutils literal notranslate"><span class="pre">area</span></code>, <code class="docutils literal notranslate"><span class="pre">perimeter</span></code>, <code class="docutils literal notranslate"><span class="pre">compactness</span></code> (4πA/P², 1 for the full disc), <code class="docutils literal notranslate"><span class="pre">occlusivity</span></code>
+(total length of the occluding edges), <code class="docutils literal notranslate"><span class="pre">n_occlusions</span></code>, <code class="docutils literal notranslate"><span class="pre">min_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">max_radial</span></code>,
+<code class="docutils literal notranslate"><span class="pre">mean_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">std_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">skew_radial</span></code> (moments of the distance to the boundary over
+all directions, integrated exactly), <code class="docutils literal notranslate"><span class="pre">drift</span></code> (distance from the observer to the centroid),
+<code class="docutils literal notranslate"><span class="pre">visible_share</span></code> (area / area of the view disc) and <code class="docutils literal notranslate"><span class="pre">open_share</span></code> (share of the boundary on the
+view limit). Observers inside an obstacle get NaN.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>GeoDataFrame with the same index and attributes as <code class="docutils literal notranslate"><span class="pre">point_from</span></code>,
+but with the geometry column replaced by visibility polygons. The
+result is returned in the original CRS of <code class="docutils literal notranslate"><span class="pre">point_from</span></code>. Observers
+inside an obstacle get an empty polygon.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gpd.GeoDataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.15)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">point_from</span></code> is not a GeoDataFrame.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">point_from</span></code> is empty, has no CRS, or if neither
+    <code class="docutils literal notranslate"><span class="pre">view_distance</span></code> nor the <code class="docutils literal notranslate"><span class="pre">&quot;visibility_distance&quot;</span></code> column is
+    provided.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If a column named <code class="docutils literal notranslate"><span class="pre">&quot;visibility_distance&quot;</span></code> is present in <code class="docutils literal notranslate"><span class="pre">point_from</span></code>,
+its values are used as per-point view distances and the <code class="docutils literal notranslate"><span class="pre">view_distance</span></code>
+argument is ignored.</p>
+</dd></dl>
+
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_polygons_v2.png"><img alt="Visibility polygons of one observer and of three observers with different radii" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_polygons_v2.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Left: visibility polygon of one observer within 800 m among the example buildings. Right: three observers with
+<code class="docutils literal notranslate"><span class="pre">visibility_distance</span></code> 300, 500 and 800 m.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="isovist-field">
+<h3>Isovist field<a class="headerlink" href="#isovist-field" title="Link to this heading">¶</a></h3>
+<p><a class="reference internal" href="#objectnat.get_isovist_grid" title="objectnat.get_isovist_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_isovist_grid()</span></code></a> maps the metrics over an area. It places an observer at the centre of every
+<code class="docutils literal notranslate"><span class="pre">cell_size</span></code> cell of the area outside the obstacles, computes the exact isovist of each observer and its metrics,
+and returns the observers as points with the metric columns. Obstacles outside the area but within
+<code class="docutils literal notranslate"><span class="pre">view_distance</span></code> of it still block the view. Every value is exact for its observer; the grid only sets where the
+observers stand. <a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a> turns any metric into a raster (see <a class="reference internal" href="rasters.html"><span class="doc">Rasters</span></a>), which shows for
+every place what an observer standing there would see. Time is proportional to the number of observers: the field
+below, 7,889 observers with a view distance of 200 m, takes 0.7 s.</p>
+<p>The field has no edge effect: a value describes its own observer only, and buildings outside the area are taken
+into account. For observers placed in another way, for example along the streets, compute the same metrics with
+<a class="reference internal" href="#objectnat.get_visibility" title="objectnat.get_visibility"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_visibility()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">objectnat</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_observer_points</span><span class="p">,</span> <span class="n">get_visibility</span>
+
+<span class="n">observers</span> <span class="o">=</span> <span class="n">get_observer_points</span><span class="p">(</span><span class="n">walk_graph</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>            <span class="c1"># a point every 15 m along the streets</span>
+<span class="n">metrics</span> <span class="o">=</span> <span class="n">get_visibility</span><span class="p">(</span><span class="n">observers</span><span class="p">,</span> <span class="n">buildings</span><span class="p">,</span> <span class="n">view_distance</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">isovist_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">metrics</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">observers</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="s2">&quot;visible_share&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.get_isovist_grid">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">get_isovist_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obstacles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/visibility/visibility_analysis.html#get_isovist_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.get_isovist_grid" title="Link to this definition">¶</a></dt>
+<dd><p>Isovist metrics on a regular grid of observers covering the open ground of an area (an isovist field).</p>
+<p>An observer is placed at the centre of every <code class="docutils literal notranslate"><span class="pre">cell_size</span></code> cell of <code class="docutils literal notranslate"><span class="pre">area</span></code> outside the obstacles, and its
+exact visibility polygon within <code class="docutils literal notranslate"><span class="pre">view_distance</span></code> is measured as with <code class="docutils literal notranslate"><span class="pre">get_visibility(...,</span>
+<span class="pre">isovist_metrics=True)</span></code>. Obstacles outside the area but within <code class="docutils literal notranslate"><span class="pre">view_distance</span></code> of it still block the view.
+<a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">rasterize()</span></code></a> turns any metric into a <a class="reference internal" href="rasters.html#objectnat.Raster" title="objectnat.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a>, which shows how openness, compactness or
+occlusion change across the area.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obstacles</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">gpd.GeoDataFrame</span> <span class="pre">|</span> <span class="pre">None</span></code>) – Obstacle geometries (Polygon, MultiPolygon, LineString, MultiLineString) in any CRS; <code class="docutils literal notranslate"><span class="pre">None</span></code> or
+empty for open ground.</p></li>
+<li><p><strong>area</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">gpd.GeoDataFrame</span> <span class="pre">|</span> <span class="pre">gpd.GeoSeries</span> <span class="pre">|</span> <span class="pre">shapely.Geometry</span></code>) – Area to cover. A shapely geometry is taken in the CRS of <code class="docutils literal notranslate"><span class="pre">obstacles</span></code>.</p></li>
+<li><p><strong>view_distance</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – View distance of every observer in metres. Defaults to 200.</p></li>
+<li><p><strong>cell_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Observer spacing in metres. Time grows with <code class="docutils literal notranslate"><span class="pre">(area</span> <span class="pre">/</span> <span class="pre">cell_size²)</span> <span class="pre">*</span> <span class="pre">view_distance</span></code>. Defaults to 5.</p></li>
+<li><p><strong>max_workers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Number of threads (<code class="docutils literal notranslate"><span class="pre">None</span></code> uses all cores).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One observer point per open cell, in the CRS of <code class="docutils literal notranslate"><span class="pre">area</span></code> (of <code class="docutils literal notranslate"><span class="pre">obstacles</span></code> for a shapely geometry),
+with the isovist metric columns of <a class="reference internal" href="#objectnat.get_visibility" title="objectnat.get_visibility"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_visibility()</span></code></a>: <code class="docutils literal notranslate"><span class="pre">area</span></code>, <code class="docutils literal notranslate"><span class="pre">perimeter</span></code>,
+<code class="docutils literal notranslate"><span class="pre">compactness</span></code>, <code class="docutils literal notranslate"><span class="pre">occlusivity</span></code>, <code class="docutils literal notranslate"><span class="pre">n_occlusions</span></code>, <code class="docutils literal notranslate"><span class="pre">min_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">max_radial</span></code>,
+<code class="docutils literal notranslate"><span class="pre">mean_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">std_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">skew_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">drift</span></code>, <code class="docutils literal notranslate"><span class="pre">visible_share</span></code> and <code class="docutils literal notranslate"><span class="pre">open_share</span></code>.
+<code class="docutils literal notranslate"><span class="pre">attrs</span></code> record the grid for <a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">rasterize()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gpd.GeoDataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">area</span></code> has no CRS or is empty, or <code class="docutils literal notranslate"><span class="pre">view_distance</span></code> or <code class="docutils literal notranslate"><span class="pre">cell_size</span></code> is not positive.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_isovist_field_v2.png"><img alt="Maps of four isovist metrics" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_isovist_field_v2.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">get_isovist_grid(buildings,</span> <span class="pre">area,</span> <span class="pre">view_distance=200,</span> <span class="pre">cell_size=5)</span></code> over a 500 × 500 m area (outlined) and
+<a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a> of four metrics: the visible share of the 200 m disc, compactness 4πA/P², the total
+length of occluding edges and drift. Colour scales span the 2nd–98th percentiles. Most of the disc is in view
+in the open space in the south; compactness is high there and inside closed courtyards; occluding edges are
+longest where passages between buildings cross; drift is large next to walls that face open space.</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="d-viewsheds">
+<h2>2.5D viewsheds<a class="headerlink" href="#d-viewsheds" title="Link to this heading">¶</a></h2>
+<section id="id1">
+<h3>Method<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p><a class="reference internal" href="#objectnat.get_viewshed" title="objectnat.get_viewshed"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_viewshed()</span></code></a> uses building heights and terrain. The eye of an observer is <code class="docutils literal notranslate"><span class="pre">observer_height</span></code>
+(default 1.6 m) above the terrain or, for an observer inside a building footprint, above the roof. The area within
+the view distance is divided into square cells of <code class="docutils literal notranslate"><span class="pre">cell_size</span></code> metres. A cell is visible when the straight line
+from the eye to the cell centre at <code class="docutils literal notranslate"><span class="pre">target_height</span></code> above the ground (0 m for the ground surface, about 1.6 m for
+people’s faces) passes above every wall it crosses and above the terrain. Visible cells are merged into one
+(Multi)Polygon per observer. With <code class="docutils literal notranslate"><span class="pre">include_roofs=True</span></code> cells on flat roofs are targets too, at the roof height.
+Building heights and terrain are specified as for <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_insolation()</span></code></a> (a height or storeys column; a
+terrain GeoDataFrame, GeoTIFF or array), and the line-of-sight test shares its Rust implementation with
+insolation.</p>
+<p>The output keeps the index and attributes of the observers and adds <code class="docutils literal notranslate"><span class="pre">visible_area</span></code> (m²) and <code class="docutils literal notranslate"><span class="pre">visible_share</span></code>,
+the share of target cells within the view distance that are visible, the 2.5D counterpart of the isovist metric of
+the same name. <code class="docutils literal notranslate"><span class="pre">visibility_distance</span></code> and <code class="docutils literal notranslate"><span class="pre">observer_height</span></code>
+columns override the arguments per observer. Computation time grows with <code class="docutils literal notranslate"><span class="pre">(view_distance</span> <span class="pre">/</span> <span class="pre">cell_size)</span> <span class="pre">**</span> <span class="pre">2</span></code>
+per observer.</p>
+<p>For an observer on flat ground whose eye is lower than all surrounding buildings, the viewshed coincides with the
+2D visibility polygon up to the cell size. The two differ where buildings are lower than the line of sight: from
+a roof, from a hill, or when the target is above the ground (<code class="docutils literal notranslate"><span class="pre">target_height</span></code>).</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.get_viewshed">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">get_viewshed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buildings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storeys_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storey_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain_height_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observer_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_roofs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/visibility/viewshed.html#get_viewshed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.get_viewshed" title="Link to this definition">¶</a></dt>
+<dd><p>Compute 2.5D visibility: the ground (and optionally the roofs) each observer can see from its eye height,
+among buildings of known height and terrain.</p>
+<p>Unlike <a class="reference internal" href="#objectnat.get_visibility" title="objectnat.get_visibility"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_visibility()</span></code></a>, which treats every obstacle as infinitely high, here a low building or a
+hill hides only what lies below the line of sight: an observer sees over a garage onto the street behind
+it, from a hill over the roofs, from a tower far across the district. The area within <code class="docutils literal notranslate"><span class="pre">view_distance</span></code>
+is split into <code class="docutils literal notranslate"><span class="pre">cell_size</span></code> cells, and a cell is visible when the straight line from the eye to the cell
+centre (at <code class="docutils literal notranslate"><span class="pre">target_height</span></code> above the ground) passes above every building wall it crosses and above the
+terrain. Visible cells are merged into one polygon per observer. The eye is <code class="docutils literal notranslate"><span class="pre">observer_height</span></code> above the
+terrain; observers standing inside a building footprint are placed on its roof.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_from</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – Observer points in any CRS. Optional columns <code class="docutils literal notranslate"><span class="pre">visibility_distance</span></code> and <code class="docutils literal notranslate"><span class="pre">observer_height</span></code>
+override <code class="docutils literal notranslate"><span class="pre">view_distance</span></code> and <code class="docutils literal notranslate"><span class="pre">observer_height</span></code> per point; other attributes are kept.</p></li>
+<li><p><strong>buildings</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">gpd.GeoDataFrame</span> <span class="pre">|</span> <span class="pre">None</span></code>) – Building footprints with heights (see <code class="docutils literal notranslate"><span class="pre">height_column</span></code>, <code class="docutils literal notranslate"><span class="pre">storeys_column</span></code>); <code class="docutils literal notranslate"><span class="pre">None</span></code> for terrain
+only.</p></li>
+<li><p><strong>view_distance</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – View distance in metres, unless <code class="docutils literal notranslate"><span class="pre">point_from</span></code> has <code class="docutils literal notranslate"><span class="pre">visibility_distance</span></code>.</p></li>
+<li><p><strong>height_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Building heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>storeys_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Building heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>storey_height</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Building heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>default_height</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Building heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>terrain</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathLike</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Ground heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>; without terrain the ground is flat.</p></li>
+<li><p><strong>terrain_height_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Ground heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>; without terrain the ground is flat.</p></li>
+<li><p><strong>terrain_cell</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Ground heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>; without terrain the ground is flat.</p></li>
+<li><p><strong>observer_height</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Eye height above the terrain (or the roof) in metres. Defaults to 1.6.</p></li>
+<li><p><strong>target_height</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Height above the ground of what is looked at, in metres: 0 for the ground itself, 1.6 to see
+people’s faces, more for the upper part of objects. Defaults to 0.</p></li>
+<li><p><strong>cell_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Cell size in metres; time grows with <code class="docutils literal notranslate"><span class="pre">(view_distance</span> <span class="pre">/</span> <span class="pre">cell_size)</span> <span class="pre">**</span> <span class="pre">2</span></code>. Defaults to 2.</p></li>
+<li><p><strong>include_roofs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – Also return the parts of roofs that can be seen (flat roofs at the building height). Defaults to
+<code class="docutils literal notranslate"><span class="pre">False</span></code>: building footprints are left out.</p></li>
+<li><p><strong>max_workers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Number of threads (<code class="docutils literal notranslate"><span class="pre">None</span></code> uses all cores).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Same index and attributes as <code class="docutils literal notranslate"><span class="pre">point_from</span></code> with the geometry replaced by the visible area (cells
+merged into polygons, an empty polygon when nothing is visible) in the CRS of <code class="docutils literal notranslate"><span class="pre">point_from</span></code>, plus
+<code class="docutils literal notranslate"><span class="pre">visible_area</span></code> (m²) and <code class="docutils literal notranslate"><span class="pre">visible_share</span></code> (the share of the target cells within the view distance
+that are visible).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gpd.GeoDataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">point_from</span></code> is empty or has no CRS, or no view distance is given.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<figure class="align-center" id="id5">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/viewshed_vs_visibility_v2.png"><img alt="2D visibility polygon, street-level viewshed and roof-level viewshed" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/viewshed_vs_visibility_v2.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">One observer on a street: 2D visibility polygon (left) and 2.5D viewshed at 1.6 m eye height (centre), both
+2.8 ha within 300 m (dotted circle). Right: an observer on the roof edge of a 17-storey building,
+<code class="docutils literal notranslate"><span class="pre">include_roofs=True</span></code>; the viewshed covers 9.6 ha of ground and roofs. Grey shades show building height;
+<code class="docutils literal notranslate"><span class="pre">cell_size=2</span></code>.</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="visibility-catchment">
+<h2>Visibility catchment<a class="headerlink" href="#visibility-catchment" title="Link to this heading">¶</a></h2>
+<section id="id2">
+<h3>Method<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<p><a class="reference internal" href="#objectnat.get_visibility_catchment" title="objectnat.get_visibility_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_visibility_catchment()</span></code></a> answers the question <em>from how many places is this place seen?</em> It
+takes a set of observers, for example pedestrians every 15 m along the streets, and counts for every small piece of
+the area how many of them can see it:</p>
+<ol class="arabic simple">
+<li><p><strong>Observers.</strong> <a class="reference internal" href="#objectnat.get_observer_points" title="objectnat.get_observer_points"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_observer_points()</span></code></a> places them along the streets of a graph: it splits every
+street edge (on walk and intermodal graphs, every pedestrian edge) into pieces of about <code class="docutils literal notranslate"><span class="pre">spacing</span></code> metres and
+puts a point in the middle of each piece. Any points will do.</p></li>
+<li><p><strong>Grid.</strong> The area within <code class="docutils literal notranslate"><span class="pre">view_distance</span></code> of the observers is divided into square cells of <code class="docutils literal notranslate"><span class="pre">cell_size</span></code>
+metres.</p></li>
+<li><p><strong>Counting.</strong> For every observer the visibility polygon is computed as in <a class="reference internal" href="#objectnat.get_visibility" title="objectnat.get_visibility"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_visibility()</span></code></a>, and
+every cell whose centre lies inside it gets one more observer (or the observer’s weight from <code class="docutils literal notranslate"><span class="pre">weight_column</span></code>,
+for example pedestrian flow). The value of a cell is therefore the number of observers that see it. The polygons
+are only counted, not returned, which keeps memory low.</p></li>
+<li><p><strong>Result.</strong> The cells that at least one observer sees are returned as points at the cell centres with their
+<code class="docutils literal notranslate"><span class="pre">count</span></code> (and <code class="docutils literal notranslate"><span class="pre">weight</span></code>); cells inside buildings and cells nobody sees are left out.
+<a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a> turns them back into the grid, a raster that shows the counts as a continuous
+colour scale.</p></li>
+</ol>
+<p>For example, with observers every 15 m and a view distance of 250 m, a square that several streets open onto is seen
+by a hundred observers or more, and a closed courtyard only by the few observers inside it.</p>
+<p><strong>Place observers beyond the analysed area.</strong> A cell near the edge of the area is also seen by observers outside
+it, up to <code class="docutils literal notranslate"><span class="pre">view_distance</span></code> away. If the observers stop at the boundary of the area, the counts near the boundary
+come out too low. Place observers over the area extended by <code class="docutils literal notranslate"><span class="pre">view_distance</span></code> and clip the result to the area.</p>
+<p>Time and memory grow with the number of cells. Counts are in observers, so two areas or two scenarios with the
+same observer spacing can be drawn on one colour scale. Visibility is symmetric, so the value of a cell is also the
+number of observers visible from that cell.</p>
+<p><a class="reference internal" href="#objectnat.get_viewshed_catchment" title="objectnat.get_viewshed_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_viewshed_catchment()</span></code></a> is the 2.5D counterpart: a cell counts an observer when the line of sight
+from the observer’s eye to the cell target is clear, as in <a class="reference internal" href="#objectnat.get_viewshed" title="objectnat.get_viewshed"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_viewshed()</span></code></a>. Observers inside
+building footprints are left out. Building footprints are rasterized once, and the lines of sight of all observers
+are counted in the Rust extension. With <code class="docutils literal notranslate"><span class="pre">include_roofs=True</span></code> roof cells are counted too; roofs are seen from
+street level only where the terrain or <code class="docutils literal notranslate"><span class="pre">observer_height</span></code> lifts the eye above them.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.get_visibility_catchment">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">get_visibility_catchment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacles</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/visibility/catchment.html#get_visibility_catchment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.get_visibility_catchment" title="Link to this definition">¶</a></dt>
+<dd><p>Count, for every place around the observers, how many of them see it (the visibility catchment).</p>
+<p>The area within <code class="docutils literal notranslate"><span class="pre">view_distance</span></code> of the observers is split into square cells. A cell counts an observer when
+its centre lies inside the observer’s exact visibility polygon (see <a class="reference internal" href="#objectnat.get_visibility" title="objectnat.get_visibility"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_visibility()</span></code></a>); with
+<code class="docutils literal notranslate"><span class="pre">weight_column</span></code> it sums the observers’ weights instead. With observers placed densely along streets (see
+<a class="reference internal" href="#objectnat.get_observer_points" title="objectnat.get_observer_points"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_observer_points()</span></code></a>) the counts show where objects are seen from most often: the visual catchment of
+facades, squares and landmarks. <a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">rasterize()</span></code></a> turns the result into a <a class="reference internal" href="rasters.html#objectnat.Raster" title="objectnat.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>observers</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – Observer points with a CRS.</p></li>
+<li><p><strong>obstacles</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">gpd.GeoDataFrame</span> <span class="pre">|</span> <span class="pre">None</span></code>) – Obstacle geometries (Polygon, MultiPolygon, LineString, MultiLineString) in any CRS. <code class="docutils literal notranslate"><span class="pre">None</span></code> or an
+empty frame means no occlusion.</p></li>
+<li><p><strong>view_distance</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – View distance of every observer, in metres. Used when <code class="docutils literal notranslate"><span class="pre">observers</span></code> has no
+<code class="docutils literal notranslate"><span class="pre">&quot;visibility_distance&quot;</span></code> column; one of the two is required.</p></li>
+<li><p><strong>cell_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Cell side in metres. Halving it gives four times as many cells, and memory and time grow with them.</p></li>
+<li><p><strong>weight_column</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Column of non-negative observer weights (e.g. pedestrian flow). Cells then sum the weights of the
+observers that see them instead of counting them. Observers with zero or missing weight are
+ignored.</p></li>
+<li><p><strong>max_workers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Number of threads (<code class="docutils literal notranslate"><span class="pre">None</span></code> uses all cores).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The cells seen by at least one observer, as points at the cell centres in the CRS of <code class="docutils literal notranslate"><span class="pre">observers</span></code>,
+with <code class="docutils literal notranslate"><span class="pre">count</span></code> (the number of observers that see the cell) and, with <code class="docutils literal notranslate"><span class="pre">weight_column</span></code>, <code class="docutils literal notranslate"><span class="pre">weight</span></code>
+(the sum of their weights). Cells seen by nobody, including cells inside obstacles, are left out.
+<code class="docutils literal notranslate"><span class="pre">attrs</span></code> record the grid, so <a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">rasterize()</span></code></a> rebuilds it exactly.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gpd.GeoDataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.15)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">observers</span></code> is not a GeoDataFrame.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">observers</span></code> is empty or has no CRS, if no view distance is given, if <code class="docutils literal notranslate"><span class="pre">cell_size</span></code> is
+    invalid, if <code class="docutils literal notranslate"><span class="pre">weight_column</span></code> is missing or contains negative values, or if the grid would exceed
+    200 million cells.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Visibility is symmetric, so the value of a cell is also the number of observers visible <em>from</em> it.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.get_viewshed_catchment">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">get_viewshed_catchment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buildings</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storeys_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storey_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain_height_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observer_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_roofs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/visibility/viewshed.html#get_viewshed_catchment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.get_viewshed_catchment" title="Link to this definition">¶</a></dt>
+<dd><p>Count, for every place around the observers, how many of them see it, over buildings of known height and
+terrain (the 2.5D visibility catchment).</p>
+<p>The 2.5D counterpart of <a class="reference internal" href="#objectnat.get_visibility_catchment" title="objectnat.get_visibility_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_visibility_catchment()</span></code></a>: every cell around the observers gets the number
+of observers (or the sum of their weights) whose line of sight to the cell centre at <code class="docutils literal notranslate"><span class="pre">target_height</span></code> is
+clear, as in <a class="reference internal" href="#objectnat.get_viewshed" title="objectnat.get_viewshed"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_viewshed()</span></code></a>. Observers stand on the ground with their eyes <code class="docutils literal notranslate"><span class="pre">observer_height</span></code> above
+the terrain; observers inside a building footprint are left out. With <code class="docutils literal notranslate"><span class="pre">include_roofs</span></code> roof cells are
+counted too, which shows the roofs and building tops seen from the streets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>observers</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – Observer points with a CRS, e.g. from <a class="reference internal" href="#objectnat.get_observer_points" title="objectnat.get_observer_points"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_observer_points()</span></code></a>. Optional columns
+<code class="docutils literal notranslate"><span class="pre">visibility_distance</span></code> and <code class="docutils literal notranslate"><span class="pre">observer_height</span></code> override <code class="docutils literal notranslate"><span class="pre">view_distance</span></code> and
+<code class="docutils literal notranslate"><span class="pre">observer_height</span></code> per point.</p></li>
+<li><p><strong>buildings</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">gpd.GeoDataFrame</span> <span class="pre">|</span> <span class="pre">None</span></code>) – Building footprints with heights; <code class="docutils literal notranslate"><span class="pre">None</span></code> for terrain only.</p></li>
+<li><p><strong>view_distance</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – View distance in metres, unless <code class="docutils literal notranslate"><span class="pre">observers</span></code> has <code class="docutils literal notranslate"><span class="pre">visibility_distance</span></code>.</p></li>
+<li><p><strong>height_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Building heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>storeys_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Building heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>storey_height</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Building heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>default_height</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Building heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>terrain</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathLike</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Ground heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>terrain_height_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Ground heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>terrain_cell</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Ground heights, as in <a class="reference internal" href="insolation.html#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>observer_height</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Eye height above the terrain in metres. Defaults to 1.6.</p></li>
+<li><p><strong>target_height</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Height above the ground of what is looked at, in metres. Defaults to 0.</p></li>
+<li><p><strong>cell_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Cell side in metres. Defaults to 5.</p></li>
+<li><p><strong>include_roofs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – Count roof cells too. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>weight_column</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Observer weights, as in <a class="reference internal" href="#objectnat.get_visibility_catchment" title="objectnat.get_visibility_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_visibility_catchment()</span></code></a>.</p></li>
+<li><p><strong>max_workers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Number of threads (<code class="docutils literal notranslate"><span class="pre">None</span></code> uses all cores).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The cells seen by at least one observer, as points at the cell centres in the CRS of <code class="docutils literal notranslate"><span class="pre">observers</span></code>,
+with <code class="docutils literal notranslate"><span class="pre">count</span></code> (and <code class="docutils literal notranslate"><span class="pre">weight</span></code>), as in <a class="reference internal" href="#objectnat.get_visibility_catchment" title="objectnat.get_visibility_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_visibility_catchment()</span></code></a>; <a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">rasterize()</span></code></a> turns
+them into a <a class="reference internal" href="rasters.html#objectnat.Raster" title="objectnat.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gpd.GeoDataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – On empty observers, a missing view distance, bad weights or a grid larger than 30 million
+    cells.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.get_observer_points">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">get_observer_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urban_graph</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/visibility/catchment.html#get_observer_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.get_observer_points" title="Link to this definition">¶</a></dt>
+<dd><p>Place observer points evenly along the streets of a graph.</p>
+<p>Each street segment (an edge, counted once for both directions) is split into pieces of about <code class="docutils literal notranslate"><span class="pre">spacing</span></code>
+metres and gets one point in the middle of every piece, so points never pile up at intersections. Walk and
+intermodal graphs use their pedestrian (<code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">==</span> <span class="pre">&quot;walk&quot;</span></code>) edges only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>urban_graph</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UrbanGraph</span></code>) – Street graph from IduEdu.</p></li>
+<li><p><strong>spacing</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Target distance between neighbouring points in metres.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Points in the CRS of <code class="docutils literal notranslate"><span class="pre">urban_graph</span></code>, ready for <a class="reference internal" href="#objectnat.get_visibility_catchment" title="objectnat.get_visibility_catchment"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_visibility_catchment()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gpd.GeoDataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">spacing</span></code> is not positive or the graph has no edge geometries.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<figure class="align-center" id="id6">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_catchment_v4.png"><img alt="2D visibility catchment and 2.5D viewshed catchment" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/visibility_catchment_v4.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Number of observers that see each cell: 1,805 observers on open ground within 12 m of buildings, placed over the
+shown area extended by the view distance, <code class="docutils literal notranslate"><span class="pre">view_distance=250</span></code>, <code class="docutils literal notranslate"><span class="pre">cell_size=4</span></code>, the counts rasterized with
+<a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a> on one colour scale. Left: 2D. Right: 2.5D with <code class="docutils literal notranslate"><span class="pre">target_height=10</span></code>, the number of
+observers that see a point 10 m above the ground. Such a point is seen over buildings lower than the line of
+sight, so more observers see it.</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>2D visibility ignores heights: low walls, fences and garages block the view as tall buildings do.</p></li>
+<li><p>2.5D viewsheds use flat roofs and vertical walls; trees, street furniture and pitched roofs are not modelled.
+Results are discrete at <code class="docutils literal notranslate"><span class="pre">cell_size</span></code>.</p></li>
+<li><p>Neither model accounts for atmospheric conditions, lighting or the visual acuity of the observer; a cell is
+visible if the geometric line of sight is clear within the view distance.</p></li>
+</ul>
+</section>
+<section id="example-notebooks">
+<h2>Example notebooks<a class="headerlink" href="#example-notebooks" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="examples/visibility.html"><span class="doc">2D visibility: visibility polygons, isovist metrics and catchment</span></a> (2D visibility, isovist metrics, catchment) and <a class="reference internal" href="examples/viewshed.html"><span class="doc">2.5D visibility: viewsheds and viewshed catchment</span></a> (2.5D
+viewsheds and viewshed catchment).</p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="noise.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Noise Simulation</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="provision.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Service Provision</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Donny
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Visibility Analysis</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#d-visibility-polygons">2D visibility polygons</a><ul>
+<li><a class="reference internal" href="#method">Method</a></li>
+<li><a class="reference internal" href="#isovist-metrics">Isovist metrics</a><ul>
+<li><a class="reference internal" href="#objectnat.get_visibility"><code class="docutils literal notranslate"><span class="pre">get_visibility()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#isovist-field">Isovist field</a><ul>
+<li><a class="reference internal" href="#objectnat.get_isovist_grid"><code class="docutils literal notranslate"><span class="pre">get_isovist_grid()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#d-viewsheds">2.5D viewsheds</a><ul>
+<li><a class="reference internal" href="#id1">Method</a><ul>
+<li><a class="reference internal" href="#objectnat.get_viewshed"><code class="docutils literal notranslate"><span class="pre">get_viewshed()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#visibility-catchment">Visibility catchment</a><ul>
+<li><a class="reference internal" href="#id2">Method</a><ul>
+<li><a class="reference internal" href="#objectnat.get_visibility_catchment"><code class="docutils literal notranslate"><span class="pre">get_visibility_catchment()</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.get_viewshed_catchment"><code class="docutils literal notranslate"><span class="pre">get_viewshed_catchment()</span></code></a></li>
+<li><a class="reference internal" href="#objectnat.get_observer_points"><code class="docutils literal notranslate"><span class="pre">get_observer_points()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#limitations">Limitations</a></li>
+<li><a class="reference internal" href="#example-notebooks">Example notebooks</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=acc74ff5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/lightbox.js?v=dc29de6d"></script>
+    </body>
+</html>

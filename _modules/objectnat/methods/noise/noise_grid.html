@@ -1,0 +1,730 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex.html"><link rel="search" title="Search" href="../../../../search.html">
+        <link rel="prefetch" href="../../../../_static/ONlogo.svg" as="image">
+
+    <link rel="shortcut icon" href="../../../../_static/ONFavicon.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>objectnat.methods.noise.noise_grid - ObjectNat 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/objectnat.css?v=bf0f6754" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand">ObjectNat 3.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../../_static/ONlogo.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">ObjectNat 3.0.0 documentation</span>
+  
+</a><div class="lang-switch">
+  <span class="lang-switch-current" lang="en">English</span>
+  <a href="../../../../ru/_modules/objectnat/methods/noise/noise_grid.html" hreflang="ru" lang="ru">Русский</a>
+</div><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/isochrones.html">Isochrones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/coverage.html">Coverage Zones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/provision.html">Service Provision</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/visibility.html">Visibility Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/noise.html">Noise Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/insolation.html">Insolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/rasters.html">Rasters</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../methods/examples/index.html">Examples</a><input aria-label="Toggle navigation of Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/isochrones.html">Isochrones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/coverage.html">Coverage zones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/calculate_od_matrix.html">Building-to-service travel-time matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/provision.html">Service provision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/visibility.html">2D visibility: visibility polygons, isovist metrics and catchment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/viewshed.html">2.5D visibility: viewsheds and viewshed catchment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/noise.html">Noise simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/insolation.html">Insolation: sun hours on the ground and on facades</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../upgrading.html">Upgrading to 3.0</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for objectnat.methods.noise.noise_grid</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Receiver-grid noise model computed in ObjectNat&#39;s Rust extension.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shapely</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat._rust</span><span class="w"> </span><span class="kn">import</span> <span class="n">noise_grid_energy</span>  <span class="c1"># pylint: disable=no-name-in-module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat.methods.noise.noise_reduce</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">decay_distance</span><span class="p">,</span>
+    <span class="n">get_air_resist_ratio</span><span class="p">,</span>
+    <span class="n">source_values</span><span class="p">,</span>
+    <span class="n">vegetation_db_per_m</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat.methods.utils.raster</span><span class="w"> </span><span class="kn">import</span> <span class="n">grid_attrs</span><span class="p">,</span> <span class="n">grid_zones</span><span class="p">,</span> <span class="n">resolve_output</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat.methods.visibility._native</span><span class="w"> </span><span class="kn">import</span> <span class="n">geometries_to_segments</span>
+
+<span class="n">FLOOR_MARGIN_DB</span> <span class="o">=</span> <span class="mf">10.0</span>  <span class="c1"># paths this far below the target can still add up above it</span>
+<span class="n">LINE_FLOOR_MARGIN_DB</span> <span class="o">=</span> <span class="mf">30.0</span>  <span class="c1"># many weak samples of a long line add up: keep more of them</span>
+<span class="n">DIFFRACTION_SIMPLIFY</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># m: outline details smaller than this are no edges of their own</span>
+<span class="n">CORNER_OFFSET</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># m: what a corner sees is computed from this far outside it</span>
+<span class="n">MIN_CORNER_SINE</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># an outline turning by less than about 3 degrees has no corner there</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cut_holes_around_sources</span><span class="p">(</span><span class="n">geometries</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cut a ``radius`` buffer around every source from the geometries that contain it.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">radius</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">geometries</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">geometries</span>
+    <span class="n">geometries</span> <span class="o">=</span> <span class="n">geometries</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">STRtree</span><span class="p">(</span><span class="n">geometries</span><span class="p">)</span>
+    <span class="n">point_idx</span><span class="p">,</span> <span class="n">geom_idx</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;within&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">point_idx</span><span class="p">,</span> <span class="n">geom_idx</span><span class="p">):</span>
+        <span class="n">geometries</span><span class="p">[</span><span class="n">g</span><span class="p">]</span> <span class="o">=</span> <span class="n">geometries</span><span class="p">[</span><span class="n">g</span><span class="p">]</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">quad_segs</span><span class="o">=</span><span class="mi">8</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">geometries</span>
+
+
+<div class="viewcode-block" id="simulate_noise_grid">
+<a class="viewcode-back" href="../../../../methods/noise.html#objectnat.simulate_noise_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">simulate_noise_grid</span><span class="p">(</span>
+    <span class="n">source_points</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">obstacles</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">source_noise_db</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">geometric_mean_freq_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">absorb_ratio_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">standard_absorb_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">trees</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">air_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+    <span class="n">target_noise_db</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>
+    <span class="n">db_sim_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">reflections</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">reflection_max_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">,</span>
+    <span class="n">diffraction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">grid_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">source_spacing</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">source_position_buffer_r</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">output</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;zones&quot;</span><span class="p">,</span> <span class="s2">&quot;receivers&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zones&quot;</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulate noise from point, line and polygon sources on a regular grid of receivers.</span>
+
+<span class="sd">    An alternative to :func:`simulate_noise` built on the receiver-grid approach used by engineering</span>
+<span class="sd">    noise models. Every receiver collects sound energy from every source along:</span>
+
+<span class="sd">    * the direct path, when no obstacle blocks it;</span>
+<span class="sd">    * first-order reflections from obstacle walls (image-source method), when ``reflections`` is True;</span>
+<span class="sd">    * diffraction around one or two corners of an obstacle (vertical building edges) into its shadow, when</span>
+<span class="sd">      ``diffraction`` is True.</span>
+
+<span class="sd">    Each path loses ``20 lg r`` (geometric spreading, ``r`` in metres), air absorption ``k r`` (``k`` from</span>
+<span class="sd">    temperature and frequency, as in :func:`simulate_noise`), a reflection loss ``-10 lg(1 - a)`` per</span>
+<span class="sd">    reflection (``a`` = absorption ratio of the wall) and, through vegetation, the foliage rate of</span>
+<span class="sd">    :func:`simulate_noise` times the length crossed. A diffracted path has the level at the direct distance</span>
+<span class="sd">    minus the barrier attenuation of ISO 9613-2 without the ground term, ``10 lg(3 + 40 C3 δ / λ)``: ``δ`` is</span>
+<span class="sd">    how much longer the path through the corners is, ``λ`` the wavelength, ``C3 = 1`` around one corner</span>
+<span class="sd">    (Maekawa&#39;s formula) and ``(1 + (5 λ / e)²) / (1/3 + (5 λ / e)²)`` around two corners ``e`` metres apart.</span>
+<span class="sd">    The attenuation is at most 20 dB around one corner and 25 dB around two. Paths and sources add up as</span>
+<span class="sd">    energies, so two equal sources give +3 dB. Receivers inside obstacles are skipped. The levels are then</span>
+<span class="sd">    grouped into bands of ``db_sim_step`` dB and returned as polygons, like :func:`simulate_noise`.</span>
+
+<span class="sd">    The computation runs in parallel in ObjectNat&#39;s Rust extension.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        source_points:</span>
+<span class="sd">            Noise sources. Points are point sources. Lines (roads, railways) are line sources, sampled</span>
+<span class="sd">            every ``source_spacing`` metres. Polygons (industrial sites, noisy buildings) radiate from</span>
+<span class="sd">            their outline as line sources. Optional columns ``source_noise_db`` (level at 1 m from the</span>
+<span class="sd">            point or line, dB) and ``geometric_mean_freq_hz`` override the arguments of the same name</span>
+<span class="sd">            per source.</span>
+<span class="sd">        obstacles:</span>
+<span class="sd">            Buildings, walls and other obstacles (polygons or lines). ``None`` or empty for free field.</span>
+<span class="sd">        source_noise_db:</span>
+<span class="sd">            Level at 1 m for sources without a ``source_noise_db`` column, dB.</span>
+<span class="sd">        geometric_mean_freq_hz:</span>
+<span class="sd">            Characteristic frequency for sources without a ``geometric_mean_freq_hz`` column, Hz.</span>
+<span class="sd">        absorb_ratio_column:</span>
+<span class="sd">            Column of ``obstacles`` with the sound absorption ratio of each obstacle (0-1).</span>
+<span class="sd">        standard_absorb_ratio:</span>
+<span class="sd">            Absorption ratio for obstacles without a value. Default 0.05 (concrete).</span>
+<span class="sd">        trees:</span>
+<span class="sd">            Vegetation polygons; sound crossing them is attenuated.</span>
+<span class="sd">        air_temperature:</span>
+<span class="sd">            Air temperature, °C.</span>
+<span class="sd">        target_noise_db:</span>
+<span class="sd">            Lowest level to report, dB. Sources reach as far as their own level drops to it.</span>
+<span class="sd">        db_sim_step:</span>
+<span class="sd">            Width of the output level bands, dB.</span>
+<span class="sd">        reflections:</span>
+<span class="sd">            Include first-order reflections from obstacle walls.</span>
+<span class="sd">        reflection_max_dist:</span>
+<span class="sd">            Only walls closer than this to a source reflect it, metres (default 50, as the maximum</span>
+<span class="sd">            reflection distance of engineering models). Larger values are slower.</span>
+<span class="sd">        diffraction:</span>
+<span class="sd">            Bend sound around the corners of obstacles: a receiver hidden from a source but seen from a</span>
+<span class="sd">            corner that the source sees at the edge of an obstacle gets the diffracted sound, and along the</span>
+<span class="sd">            shadowed side of the obstacle&#39;s convex hull the sound also bends around the next corner. Corners</span>
+<span class="sd">            are the convex vertices of the merged outlines simplified by 0.5 m, and the ends of lines.</span>
+<span class="sd">        grid_step:</span>
+<span class="sd">            Receiver spacing in metres; smaller is finer and slower.</span>
+<span class="sd">        source_spacing:</span>
+<span class="sd">            Spacing of the point samples along line and polygon sources, metres (default 5). Each</span>
+<span class="sd">            sample gets ``source_noise_db - 10 lg(pi / s)``, so that a long line follows the line-source</span>
+<span class="sd">            law ``source_noise_db - 10 lg d - k d`` (3 dB per doubling of distance). Closer to the line</span>
+<span class="sd">            than about ``source_spacing`` the individual samples show.</span>
+<span class="sd">        source_position_buffer_r:</span>
+<span class="sd">            Radius in metres cut out of an obstacle or tree that contains a source, as in</span>
+<span class="sd">            :func:`simulate_noise`.</span>
+<span class="sd">        output:</span>
+<span class="sd">            ``&quot;zones&quot;`` (default) for the level bands, ``&quot;receivers&quot;`` for the receiver points with their exact</span>
+<span class="sd">            levels only (no band polygons are built), ``&quot;both&quot;`` for the tuple ``(bands, receivers)``.</span>
+<span class="sd">        max_workers:</span>
+<span class="sd">            Maximum number of threads (``None`` uses all cores).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        GeoDataFrame with columns ``noise_level`` (upper bound of each ``db_sim_step`` band, dB, like</span>
+<span class="sd">        :func:`simulate_noise`) and ``geometry`` (one polygon per band), in the CRS of ``source_points``.</span>
+<span class="sd">        With ``output=&quot;receivers&quot;`` the receivers, with ``output=&quot;both&quot;`` a tuple ``(bands, receivers)``. The</span>
+<span class="sd">        receivers have the exact ``noise_level`` of every receiver that hears at least ``target_noise_db``;</span>
+<span class="sd">        their ``attrs`` record the grid, so :func:`rasterize` turns ``noise_level`` into a :class:`Raster`.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        Not modelled: ground effect, diffraction over roofs (obstacle heights are not used), paths around</span>
+<span class="sd">        three or more corners and reflections of higher order. Places that sound reaches only around three</span>
+<span class="sd">        or more corners (inner courtyards, the second row of buildings) get reflected sound only.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">resolve_output</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="s2">&quot;receivers&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">source_points</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;source_points is empty.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">grid_step</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;grid_step must be &gt; 0.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">db_sim_step</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;db_sim_step must be &gt; 0.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">source_position_buffer_r</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;source_position_buffer_r must be non-negative.&quot;</span><span class="p">)</span>
+
+    <span class="n">levels</span> <span class="o">=</span> <span class="n">source_values</span><span class="p">(</span><span class="n">source_points</span><span class="p">,</span> <span class="s2">&quot;source_noise_db&quot;</span><span class="p">,</span> <span class="n">source_noise_db</span><span class="p">)</span>
+    <span class="n">freqs</span> <span class="o">=</span> <span class="n">source_values</span><span class="p">(</span><span class="n">source_points</span><span class="p">,</span> <span class="s2">&quot;geometric_mean_freq_hz&quot;</span><span class="p">,</span> <span class="n">geometric_mean_freq_hz</span><span class="p">)</span>
+
+    <span class="n">original_crs</span> <span class="o">=</span> <span class="n">source_points</span><span class="o">.</span><span class="n">crs</span>
+    <span class="n">local_crs</span> <span class="o">=</span> <span class="p">(</span><span class="n">obstacles</span> <span class="k">if</span> <span class="n">obstacles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">obstacles</span><span class="p">)</span> <span class="k">else</span> <span class="n">source_points</span><span class="p">)</span><span class="o">.</span><span class="n">estimate_utm_crs</span><span class="p">()</span>
+    <span class="n">sources</span> <span class="o">=</span> <span class="n">source_points</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">local_crs</span><span class="p">)</span>
+    <span class="n">spacing</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">source_spacing</span><span class="p">)</span> <span class="k">if</span> <span class="n">source_spacing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">5.0</span>
+    <span class="k">if</span> <span class="n">spacing</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;source_spacing must be &gt; 0.&quot;</span><span class="p">)</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">_sample_sources</span><span class="p">(</span><span class="n">sources</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">spacing</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;source_points has no usable geometry.&quot;</span><span class="p">)</span>
+    <span class="n">xy</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">freqs</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">],</span> <span class="n">samples</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">],</span> <span class="n">samples</span><span class="p">[</span><span class="s2">&quot;freq&quot;</span><span class="p">]</span>
+    <span class="n">source_geoms</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">points</span><span class="p">(</span><span class="n">xy</span><span class="p">[</span><span class="n">samples</span><span class="p">[</span><span class="s2">&quot;is_point&quot;</span><span class="p">]])</span>
+
+    <span class="n">air</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">get_air_resist_ratio</span><span class="p">(</span><span class="n">air_temperature</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">freqs</span><span class="p">])</span>
+    <span class="n">veg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">vegetation_db_per_m</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">freqs</span><span class="p">])</span>
+    <span class="n">reach</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">_reach</span><span class="p">(</span><span class="n">full</span><span class="p">,</span> <span class="n">target_noise_db</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">is_point</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">full</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">is_point</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="s2">&quot;full_level&quot;</span><span class="p">],</span> <span class="n">air</span><span class="p">,</span> <span class="n">samples</span><span class="p">[</span><span class="s2">&quot;is_point&quot;</span><span class="p">])</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="c1"># Reflections of a line sample are followed only while that sample alone stays within</span>
+    <span class="c1"># FLOOR_MARGIN_DB of the target: far reflections of single samples are negligible next to the</span>
+    <span class="c1"># direct field of the whole line, which is summed in full.</span>
+    <span class="n">reflection_reach</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">r</span> <span class="k">if</span> <span class="n">is_point</span> <span class="k">else</span> <span class="n">_reach</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">target_noise_db</span> <span class="o">-</span> <span class="n">FLOOR_MARGIN_DB</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">is_point</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">reach</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">air</span><span class="p">,</span> <span class="n">samples</span><span class="p">[</span><span class="s2">&quot;is_point&quot;</span><span class="p">])</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># receiver grid over the reach of the sources; obstacles and trees outside it cannot matter</span>
+    <span class="n">origin</span> <span class="o">=</span> <span class="n">xy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">reach</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">origin</span> <span class="o">/</span> <span class="n">grid_step</span><span class="p">)</span> <span class="o">*</span> <span class="n">grid_step</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">xy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">reach</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">nx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="n">grid_step</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">ny</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">/</span> <span class="n">grid_step</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">gx</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span> <span class="o">*</span> <span class="n">grid_step</span>
+    <span class="n">gy</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ny</span><span class="p">)</span> <span class="o">*</span> <span class="n">grid_step</span>
+    <span class="n">receivers</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">points</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">gx</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:],</span> <span class="n">ny</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">gy</span><span class="p">,</span> <span class="n">nx</span><span class="p">))</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="n">x0</span> <span class="o">-</span> <span class="n">grid_step</span><span class="p">,</span> <span class="n">y0</span> <span class="o">-</span> <span class="n">grid_step</span><span class="p">,</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">grid_step</span><span class="p">,</span> <span class="n">y1</span> <span class="o">+</span> <span class="n">grid_step</span><span class="p">)</span>
+
+    <span class="c1"># obstacles -&gt; walls with reflection losses</span>
+    <span class="k">if</span> <span class="n">obstacles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">obstacles</span><span class="p">):</span>
+        <span class="n">obstacles</span> <span class="o">=</span> <span class="n">obstacles</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">local_crs</span><span class="p">)</span>
+        <span class="n">obstacles</span> <span class="o">=</span> <span class="n">obstacles</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">obstacles</span><span class="o">.</span><span class="n">sindex</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;intersects&quot;</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">obstacles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">obstacles</span><span class="p">):</span>
+        <span class="n">absorb</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">obstacles</span><span class="p">[</span><span class="n">absorb_ratio_column</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">standard_absorb_ratio</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">absorb_ratio_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obstacles</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">standard_absorb_ratio</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">obstacle_geoms</span> <span class="o">=</span> <span class="n">_cut_holes_around_sources</span><span class="p">(</span><span class="n">obstacles</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">source_geoms</span><span class="p">,</span> <span class="n">source_position_buffer_r</span><span class="p">)</span>
+        <span class="n">segments</span><span class="p">,</span> <span class="n">one_sided</span><span class="p">,</span> <span class="n">owner</span> <span class="o">=</span> <span class="n">geometries_to_segments</span><span class="p">(</span><span class="n">obstacle_geoms</span><span class="p">,</span> <span class="n">return_owner</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">wall_loss</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">absorb</span><span class="p">[</span><span class="n">owner</span><span class="p">],</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">obstacle_union</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">union_all</span><span class="p">(</span><span class="n">obstacle_geoms</span><span class="p">)</span>
+        <span class="c1"># corners of the merged outlines: where buildings touch, their facades run on without an edge</span>
+        <span class="n">merged</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_parts</span><span class="p">(</span><span class="n">obstacle_union</span><span class="p">)</span>
+        <span class="n">corners</span><span class="p">,</span> <span class="n">links</span> <span class="o">=</span> <span class="n">_diffraction_corners</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span> <span class="k">if</span> <span class="n">diffraction</span> <span class="k">else</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">obstacle_geoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+        <span class="n">segments</span><span class="p">,</span> <span class="n">one_sided</span><span class="p">,</span> <span class="n">wall_loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">obstacle_union</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">Polygon</span><span class="p">()</span>
+        <span class="n">corners</span><span class="p">,</span> <span class="n">links</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">)),</span> <span class="kc">None</span>
+
+    <span class="c1"># vegetation -&gt; boundaries of non-overlapping polygons</span>
+    <span class="n">tree_segments</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">trees</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">trees</span><span class="p">):</span>
+        <span class="n">trees</span> <span class="o">=</span> <span class="n">trees</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">local_crs</span><span class="p">)</span>
+        <span class="n">trees</span> <span class="o">=</span> <span class="n">trees</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">trees</span><span class="o">.</span><span class="n">sindex</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;intersects&quot;</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">trees</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">trees</span><span class="p">):</span>
+        <span class="n">tree_geoms</span> <span class="o">=</span> <span class="n">_cut_holes_around_sources</span><span class="p">(</span><span class="n">trees</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">source_geoms</span><span class="p">,</span> <span class="n">source_position_buffer_r</span><span class="p">)</span>
+        <span class="n">merged</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_parts</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">union_all</span><span class="p">(</span><span class="n">tree_geoms</span><span class="p">))</span>
+        <span class="n">merged</span> <span class="o">=</span> <span class="n">merged</span><span class="p">[</span><span class="n">shapely</span><span class="o">.</span><span class="n">get_type_id</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="n">tree_segments</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">geometries_to_segments</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span>
+
+    <span class="n">active</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obstacle_geoms</span><span class="p">):</span>
+        <span class="n">inside</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">STRtree</span><span class="p">(</span><span class="n">obstacle_geoms</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">receivers</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;within&quot;</span><span class="p">)</span>
+        <span class="n">active</span><span class="p">[</span><span class="n">inside</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># local coordinates keep the kernel&#39;s arithmetic precise</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">])</span>
+    <span class="n">shifted</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shifted</span><span class="p">):</span>
+        <span class="n">shifted</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">shift</span>
+        <span class="n">shifted</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">-=</span> <span class="n">shift</span>
+    <span class="n">shifted_trees</span> <span class="o">=</span> <span class="n">tree_segments</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shifted_trees</span><span class="p">):</span>
+        <span class="n">shifted_trees</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">shift</span>
+        <span class="n">shifted_trees</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">-=</span> <span class="n">shift</span>
+    <span class="n">speed_of_sound</span> <span class="o">=</span> <span class="mf">331.3</span> <span class="o">+</span> <span class="mf">0.606</span> <span class="o">*</span> <span class="n">air_temperature</span>  <span class="c1"># m/s</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="n">noise_grid_energy</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">xy</span> <span class="o">-</span> <span class="n">shift</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">air</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">veg</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">reach</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">shifted</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">one_sided</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">wall_loss</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">shifted_trees</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">grid_step</span><span class="p">),</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">),</span>
+        <span class="n">active</span><span class="p">,</span>
+        <span class="n">reflections</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">reflections</span><span class="p">),</span>
+        <span class="n">reflection_max_dist</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">reflection_max_dist</span><span class="p">),</span>
+        <span class="n">floor_db</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">target_noise_db</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">FLOOR_MARGIN_DB</span> <span class="k">if</span> <span class="n">samples</span><span class="p">[</span><span class="s2">&quot;is_point&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">else</span> <span class="n">LINE_FLOOR_MARGIN_DB</span><span class="p">),</span>
+        <span class="n">n_threads</span><span class="o">=</span><span class="n">max_workers</span><span class="p">,</span>
+        <span class="n">reflection_reach</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">reflection_reach</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">corners</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">corners</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">shift</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">corners</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">corner_links</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">links</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">corners</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wavelength</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">speed_of_sound</span> <span class="o">/</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+    <span class="n">heard</span> <span class="o">=</span> <span class="n">level</span> <span class="o">&gt;=</span> <span class="n">target_noise_db</span>
+    <span class="k">if</span> <span class="n">output</span> <span class="o">!=</span> <span class="s2">&quot;receivers&quot;</span><span class="p">:</span>
+        <span class="n">bands</span> <span class="o">=</span> <span class="n">_level_bands</span><span class="p">(</span><span class="n">receivers</span><span class="p">[</span><span class="n">heard</span><span class="p">],</span> <span class="n">level</span><span class="p">[</span><span class="n">heard</span><span class="p">],</span> <span class="n">target_noise_db</span><span class="p">,</span> <span class="n">db_sim_step</span><span class="p">,</span> <span class="n">grid_step</span><span class="p">,</span> <span class="n">obstacle_union</span><span class="p">)</span>
+        <span class="n">bands</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">bands</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">local_crs</span><span class="p">)</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">original_crs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">output</span> <span class="o">==</span> <span class="s2">&quot;zones&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">bands</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">({</span><span class="s2">&quot;noise_level&quot;</span><span class="p">:</span> <span class="n">level</span><span class="p">[</span><span class="n">heard</span><span class="p">]},</span> <span class="n">geometry</span><span class="o">=</span><span class="n">receivers</span><span class="p">[</span><span class="n">heard</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="n">local_crs</span><span class="p">)</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">original_crs</span><span class="p">)</span>
+    <span class="n">points</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">grid_attrs</span><span class="p">(</span><span class="n">local_crs</span><span class="p">,</span> <span class="n">grid_step</span><span class="p">,</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">points</span> <span class="k">if</span> <span class="n">output</span> <span class="o">==</span> <span class="s2">&quot;receivers&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="n">bands</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_diffraction_corners</span><span class="p">(</span><span class="n">geometries</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Vertical edges that sound bends around, as rows ``x, y`` of the corner, of its previous and of its next</span>
+<span class="sd">    vertex and of a point ``CORNER_OFFSET`` metres outside it: the convex corners of polygon outlines (outer</span>
+<span class="sd">    and courtyard rings, simplified by ``DIFFRACTION_SIMPLIFY``) and the ends and bends of lines. A corner whose</span>
+<span class="sd">    outside point lies in an obstacle is no free edge and is left out. Also returns, for the corners on the</span>
+<span class="sd">    convex hull of an outline, the rows of the neighbouring hull corners on the previous and the next side</span>
+<span class="sd">    (``-1`` otherwise): the way sound goes around an obstacle from corner to corner.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_parts</span><span class="p">(</span><span class="n">geometries</span><span class="p">)</span>
+    <span class="n">types</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_type_id</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+    <span class="n">rows</span><span class="p">,</span> <span class="n">links</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">))],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)]</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">polygons</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="n">types</span> <span class="o">==</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">polygons</span><span class="p">):</span>
+        <span class="n">outlines</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">orient_polygons</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="n">DIFFRACTION_SIMPLIFY</span><span class="p">))</span>
+        <span class="n">outlines</span> <span class="o">=</span> <span class="n">outlines</span><span class="p">[</span><span class="o">~</span><span class="n">shapely</span><span class="o">.</span><span class="n">is_empty</span><span class="p">(</span><span class="n">outlines</span><span class="p">)]</span>
+        <span class="c1"># oriented rings have the obstacle on their left</span>
+        <span class="n">rings</span><span class="p">,</span> <span class="n">ring_outline</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_rings</span><span class="p">(</span><span class="n">outlines</span><span class="p">,</span> <span class="n">return_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">exterior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="n">ring_outline</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span> <span class="n">ring_outline</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">for</span> <span class="n">ring</span><span class="p">,</span> <span class="n">is_exterior</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">rings</span><span class="p">,</span> <span class="n">exterior</span><span class="p">):</span>
+            <span class="n">xy</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">ring</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">corners</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_vertex_corners</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">two_sided</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">hull_links</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">corners</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_exterior</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">corners</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># hull vertices are corners of the outline: link each to the hull corners beside it</span>
+                <span class="n">hull</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">convex_hull</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">polygons</span><span class="p">(</span><span class="n">xy</span><span class="p">)))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">rows_at</span> <span class="o">=</span> <span class="p">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">):</span> <span class="n">count</span> <span class="o">+</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">corners</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])}</span>
+                <span class="n">on_hull</span> <span class="o">=</span> <span class="p">[</span><span class="n">rows_at</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">)]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">hull</span> <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="n">rows_at</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">on_hull</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">on_hull</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">on_hull</span><span class="p">)</span>
+                    <span class="c1"># rows follow the ring, so hull order around the ring decides which side is &quot;previous&quot;</span>
+                    <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">on_hull</span><span class="p">)</span>
+                    <span class="n">sequence</span> <span class="o">=</span> <span class="n">on_hull</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+                    <span class="n">hull_links</span><span class="p">[</span><span class="n">sequence</span> <span class="o">-</span> <span class="n">count</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)])</span>
+            <span class="n">links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hull_links</span><span class="p">)</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">corners</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">corners</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))]:</span>
+        <span class="n">xy</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="n">closed</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">corners</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_vertex_corners</span><span class="p">(</span><span class="n">xy</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">closed</span> <span class="k">else</span> <span class="n">xy</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="n">closed</span><span class="p">,</span> <span class="n">two_sided</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">corners</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">corners</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">corners</span><span class="p">)</span>
+    <span class="n">corners</span><span class="p">,</span> <span class="n">links</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">links</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">corners</span><span class="p">):</span>
+        <span class="n">inside</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">STRtree</span><span class="p">(</span><span class="n">geometries</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">points</span><span class="p">(</span><span class="n">corners</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">:</span><span class="mi">8</span><span class="p">]),</span> <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;intersects&quot;</span><span class="p">)</span>
+        <span class="n">free</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">corners</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">free</span><span class="p">[</span><span class="n">inside</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">renumber</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">free</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">free</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">links</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">links</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">renumber</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">links</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">corners</span><span class="p">,</span> <span class="n">links</span> <span class="o">=</span> <span class="n">corners</span><span class="p">[</span><span class="n">free</span><span class="p">],</span> <span class="n">links</span><span class="p">[</span><span class="n">free</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">corners</span><span class="p">,</span> <span class="n">links</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_vertex_corners</span><span class="p">(</span><span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">closed</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">two_sided</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Corner rows (see :func:`_diffraction_corners`) of the vertices of one ring or line, and which vertices</span>
+<span class="sd">    they are.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">closed</span><span class="p">:</span>
+        <span class="n">prev</span><span class="p">,</span> <span class="n">nxt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># the ends of a line have one neighbour, given as both</span>
+        <span class="n">prev</span><span class="p">,</span> <span class="n">nxt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">xy</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">xy</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">to_prev</span><span class="p">,</span> <span class="n">to_next</span> <span class="o">=</span> <span class="n">prev</span> <span class="o">-</span> <span class="n">xy</span><span class="p">,</span> <span class="n">nxt</span> <span class="o">-</span> <span class="n">xy</span>
+    <span class="n">length_prev</span><span class="p">,</span> <span class="n">length_next</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="o">*</span><span class="n">to_prev</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="o">*</span><span class="n">to_next</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="p">(</span><span class="n">length_prev</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">length_next</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">)</span>
+    <span class="n">u_prev</span> <span class="o">=</span> <span class="n">to_prev</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ok</span><span class="p">,</span> <span class="n">length_prev</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">u_next</span> <span class="o">=</span> <span class="n">to_next</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ok</span><span class="p">,</span> <span class="n">length_next</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">sine</span> <span class="o">=</span> <span class="n">u_prev</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">u_next</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">u_prev</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">u_next</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># &gt; 0: a left turn</span>
+    <span class="n">convex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sine</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">MIN_CORNER_SINE</span> <span class="k">if</span> <span class="n">two_sided</span> <span class="k">else</span> <span class="n">sine</span> <span class="o">&gt;</span> <span class="n">MIN_CORNER_SINE</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">ok</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">convex</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">prev</span> <span class="o">==</span> <span class="n">nxt</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">away</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">u_prev</span> <span class="o">+</span> <span class="n">u_next</span><span class="p">)[</span><span class="n">keep</span><span class="p">]</span>  <span class="c1"># from the corner away from the obstacle</span>
+    <span class="n">outside</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span> <span class="o">+</span> <span class="n">CORNER_OFFSET</span> <span class="o">*</span> <span class="n">away</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="o">*</span><span class="n">away</span><span class="o">.</span><span class="n">T</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">xy</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">prev</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">nxt</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">outside</span><span class="p">]),</span> <span class="n">keep</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_line_level_offset</span><span class="p">(</span><span class="n">spacing</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    dB to subtract from a line&#39;s level for each of its point samples ``spacing`` metres apart, so that</span>
+<span class="sd">    the samples of a long line add up to the line law ``L - 10 lg d`` at distance ``d``: ``10 lg(pi / s)``</span>
+<span class="sd">    (the energy sum of samples ``s`` apart seen from ``d`` tends to ``pi / (s d)``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">spacing</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sample_sources</span><span class="p">(</span><span class="n">geometries</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">levels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">freqs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">spacing</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Point sources as they are; lines sampled every ``spacing`` metres; polygons radiate from their outline</span>
+<span class="sd">    (0.1 m outside, as in calculate_simplified_noise_frame). Line samples get calibrated levels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parts</span><span class="p">,</span> <span class="n">owner</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_parts</span><span class="p">(</span><span class="n">geometries</span><span class="p">,</span> <span class="n">return_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">types</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_type_id</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+    <span class="n">point_mask</span> <span class="o">=</span> <span class="n">types</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">polygon_mask</span> <span class="o">=</span> <span class="n">types</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">polygon_mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">lines</span><span class="p">[</span><span class="n">polygon_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">boundary</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="n">polygon_mask</span><span class="p">],</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">quad_segs</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">lines</span><span class="p">,</span> <span class="n">line_inner</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_parts</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="o">~</span><span class="n">point_mask</span><span class="p">],</span> <span class="n">return_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">line_owner</span> <span class="o">=</span> <span class="n">owner</span><span class="p">[</span><span class="o">~</span><span class="n">point_mask</span><span class="p">][</span><span class="n">line_inner</span><span class="p">]</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_type_id</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">lines</span><span class="p">,</span> <span class="n">line_owner</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">line_owner</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+
+    <span class="n">xy</span> <span class="o">=</span> <span class="p">[</span><span class="n">shapely</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="n">point_mask</span><span class="p">])]</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="p">[</span><span class="n">levels</span><span class="p">[</span><span class="n">owner</span><span class="p">[</span><span class="n">point_mask</span><span class="p">]]]</span>
+    <span class="n">full_level</span> <span class="o">=</span> <span class="p">[</span><span class="n">levels</span><span class="p">[</span><span class="n">owner</span><span class="p">[</span><span class="n">point_mask</span><span class="p">]]]</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="p">[</span><span class="n">freqs</span><span class="p">[</span><span class="n">owner</span><span class="p">[</span><span class="n">point_mask</span><span class="p">]]]</span>
+    <span class="n">is_point</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">point_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)]</span>
+    <span class="n">lengths</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">length</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">lengths</span><span class="p">,</span> <span class="n">line_owner</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">length</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">length</span> <span class="o">/</span> <span class="n">spacing</span><span class="p">)))</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="n">length</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="n">pts</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">line_interpolate_point</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">step</span><span class="p">)</span>
+        <span class="n">xy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">pts</span><span class="p">))</span>
+        <span class="n">level</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">levels</span><span class="p">[</span><span class="n">src</span><span class="p">]</span> <span class="o">-</span> <span class="n">_line_level_offset</span><span class="p">(</span><span class="n">step</span><span class="p">)))</span>
+        <span class="n">full_level</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">levels</span><span class="p">[</span><span class="n">src</span><span class="p">]))</span>
+        <span class="n">freq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">freqs</span><span class="p">[</span><span class="n">src</span><span class="p">]))</span>
+        <span class="n">is_point</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;xy&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">xy</span><span class="p">),</span>
+        <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">level</span><span class="p">),</span>
+        <span class="s2">&quot;full_level&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">full_level</span><span class="p">),</span>
+        <span class="s2">&quot;freq&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">freq</span><span class="p">),</span>
+        <span class="s2">&quot;is_point&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">is_point</span><span class="p">),</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reach</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">air</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">is_point</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Distance at which a point (or line) source drops to ``target``.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">decay_distance</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">air</span><span class="p">,</span> <span class="n">line</span><span class="o">=</span><span class="ow">not</span> <span class="n">is_point</span><span class="p">)</span> <span class="k">if</span> <span class="n">level</span> <span class="o">&gt;</span> <span class="n">target</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_level_bands</span><span class="p">(</span>
+    <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">target_db</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">obstacles_union</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge receiver cells into one polygon per level band (labelled by the band&#39;s upper bound).&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;noise_level&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)})</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="n">target_db</span> <span class="o">+</span> <span class="n">step</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">level</span> <span class="o">-</span> <span class="n">target_db</span><span class="p">)</span> <span class="o">/</span> <span class="n">step</span><span class="p">,</span> <span class="mi">9</span><span class="p">))</span>
+    <span class="n">zones</span> <span class="o">=</span> <span class="n">grid_zones</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">label</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">obstacles_union</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s2">&quot;noise_level&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="n">geom</span><span class="p">}</span> <span class="k">for</span> <span class="n">value</span><span class="p">,</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">zones</span><span class="p">])</span>
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Donny
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../../_static/documentation_options.js?v=acc74ff5"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../../../../_static/lightbox.js?v=dc29de6d"></script>
+    </body>
+</html>

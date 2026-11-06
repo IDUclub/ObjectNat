@@ -1,0 +1,624 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Rasters" href="rasters.html"><link rel="prev" title="Noise Simulation" href="noise.html">
+        <link rel="prefetch" href="../_static/ONlogo.svg" as="image">
+
+    <link rel="shortcut icon" href="../_static/ONFavicon.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>Insolation - ObjectNat 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/objectnat.css?v=bf0f6754" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">ObjectNat 3.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/ONlogo.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">ObjectNat 3.0.0 documentation</span>
+  
+</a><div class="lang-switch">
+  <span class="lang-switch-current" lang="en">English</span>
+  <a href="../ru/methods/insolation.html" hreflang="ru" lang="ru">Русский</a>
+</div><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="isochrones.html">Isochrones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverage.html">Coverage Zones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provision.html">Service Provision</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visibility.html">Visibility Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="noise.html">Noise Simulation</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Insolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rasters.html">Rasters</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples/index.html">Examples</a><input aria-label="Toggle navigation of Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/isochrones.html">Isochrones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/coverage.html">Coverage zones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/calculate_od_matrix.html">Building-to-service travel-time matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/provision.html">Service provision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/visibility.html">2D visibility: visibility polygons, isovist metrics and catchment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/viewshed.html">2.5D visibility: viewsheds and viewshed catchment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/noise.html">Noise simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/insolation.html">Insolation: sun hours on the ground and on facades</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../upgrading.html">Upgrading to 3.0</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/methods/insolation.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="insolation">
+<h1>Insolation<a class="headerlink" href="#insolation" title="Link to this heading">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>Insolation analysis estimates how long a place receives direct sunlight among buildings of known height and,
+optionally, terrain. <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_insolation()</span></code></a> computes the daily <strong>sun hours</strong> on a regular grid of
+ground receivers; <a class="reference internal" href="#objectnat.get_facade_insolation" title="objectnat.get_facade_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_facade_insolation()</span></code></a> computes them for facade points on every floor of the
+selected buildings. Both functions accept a single day or a period. Typical uses are checks of insolation norms for
+playgrounds and dwellings, comparison of development scenarios, and the placement of planting that needs direct
+sun.</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21_v2.gif"><img alt="Ground shadows of a residential district on 21 June, 15-minute frames" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21_v2.gif" style="width: 70%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Sunlit and shaded ground on 21 June 2026 in the example district (Vasilyevsky Island, Saint Petersburg,
+59.96° N), one frame every 15 minutes from sunrise to sunset. The title gives Moscow time (UTC+3) and the sun
+elevation and azimuth.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="method">
+<h2>Method<a class="headerlink" href="#method" title="Link to this heading">¶</a></h2>
+<p><strong>Sun position.</strong> For every simulated day the sun position is sampled every <code class="docutils literal notranslate"><span class="pre">time_step_min</span></code> minutes (the
+midpoints of the intervals of a local solar day) with the NOAA solar position algorithm, including atmospheric
+refraction; the stated accuracy of the algorithm is about 0.01°. The date and the centre of the area determine the
+sun path, so latitude and season are taken into account. Positions below <code class="docutils literal notranslate"><span class="pre">min_sun_elevation</span></code> (degrees) count as
+no sun.</p>
+<p><strong>Scene.</strong> Buildings are extruded footprints with flat roofs. The height of a building is taken from
+<code class="docutils literal notranslate"><span class="pre">height_column</span></code>; where it is missing, from <code class="docutils literal notranslate"><span class="pre">storeys_column</span></code> × <code class="docutils literal notranslate"><span class="pre">storey_height</span></code>; where both are missing, from
+<code class="docutils literal notranslate"><span class="pre">default_height</span></code>. Buildings with no height at all are skipped with a warning. Terrain is optional and can be
+given as</p>
+<ul class="simple">
+<li><p>a GeoDataFrame of polygons with heights in <code class="docutils literal notranslate"><span class="pre">terrain_height_column</span></code> (for example, elevation zones), rasterized
+with <code class="docutils literal notranslate"><span class="pre">terrain_cell</span></code> cells; overlapping polygons take the highest value;</p></li>
+<li><p>a path to a GeoTIFF (requires <code class="docutils literal notranslate"><span class="pre">rasterio</span></code>);</p></li>
+<li><p>a tuple <code class="docutils literal notranslate"><span class="pre">(heights,</span> <span class="pre">transform,</span> <span class="pre">crs)</span></code> with a 2-D array, a north-up affine transform in rasterio order and a
+projected CRS.</p></li>
+</ul>
+<p>Buildings stand on the terrain at their footprint, and receivers are placed <code class="docutils literal notranslate"><span class="pre">receiver_height</span></code> above the terrain.
+The calculation runs in a local metric CRS (the raster CRS when a raster is given, otherwise an estimated UTM zone).
+Azimuths are measured from true north and corrected for the difference between true north and grid north
+(meridian convergence).</p>
+<p><strong>Shadow test.</strong> For every receiver and every sun position a ray is cast towards the sun. The receiver is sunlit
+when the ray passes above every building wall it crosses and above the terrain. The ray is followed only while it is
+lower than the highest roof or terrain point of the scene, so rays towards a high sun end early and cost little. The test runs in
+ObjectNat’s Rust extension in parallel over receivers.</p>
+<p><strong>Day statistics.</strong> For each receiver and day the Rust extension returns the number of sunlit time steps and the
+longest uninterrupted sunlit run. These give three quantities, all in hours:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sun_hours</span></code>: mean daily direct sun over the simulated days;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">min_sun_hours</span></code>: direct sun on the worst simulated day;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_continuous_hours</span></code>: the longest continuous sunlit period on the worst day (the minimum over days of the
+daily longest run). Insolation norms usually set a minimum for this quantity; SanPiN 1.2.3685-21 (Russia), for
+example, sets the minimum continuous insolation of dwellings and playgrounds.</p></li>
+</ul>
+<p>Time steps are discrete, so every value is a multiple of <code class="docutils literal notranslate"><span class="pre">time_step_min</span></code>.</p>
+<p><strong>Periods.</strong> <code class="docutils literal notranslate"><span class="pre">date=(&quot;2026-04-22&quot;,</span> <span class="pre">&quot;2026-08-22&quot;)</span></code> simulates every <code class="docutils literal notranslate"><span class="pre">day_step</span></code>-th day of the period and its last
+day; the scene is built once.</p>
+</section>
+<section id="ground-insolation">
+<h2>Ground insolation<a class="headerlink" href="#ground-insolation" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_insolation()</span></code></a> places receivers every <code class="docutils literal notranslate"><span class="pre">grid_step</span></code> metres inside <code class="docutils literal notranslate"><span class="pre">area</span></code> (by default the
+bounding box of the buildings), outside building footprints. Include the buildings around the area in
+<code class="docutils literal notranslate"><span class="pre">buildings</span></code>: their shadows reach into it.</p>
+<p>The result is the receiver points with <code class="docutils literal notranslate"><span class="pre">sun_hours</span></code>, <code class="docutils literal notranslate"><span class="pre">min_sun_hours</span></code> and <code class="docutils literal notranslate"><span class="pre">max_continuous_hours</span></code>;
+<code class="docutils literal notranslate"><span class="pre">sun_hours</span></code> is <code class="docutils literal notranslate"><span class="pre">0</span></code> on ground that receives no direct sun on any simulated day. The <code class="docutils literal notranslate"><span class="pre">attrs</span></code> contain the
+simulated <code class="docutils literal notranslate"><span class="pre">days</span></code>, <code class="docutils literal notranslate"><span class="pre">day_length_hours</span></code> (the mean time the sun is above <code class="docutils literal notranslate"><span class="pre">min_sun_elevation</span></code>) and the grid, so
+<a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a> turns any column into a raster for maps, GeoTIFF files and web maps (see
+<a class="reference internal" href="rasters.html"><span class="doc">Rasters</span></a>). A raster shows the hours as a continuous colour scale; thresholds such as a norm are applied to the
+columns directly, for example <code class="docutils literal notranslate"><span class="pre">receivers[&quot;max_continuous_hours&quot;]</span> <span class="pre">&gt;=</span> <span class="pre">2.5</span></code>.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.get_insolation">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">get_insolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buildings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">area</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storeys_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storey_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain_height_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_sun_elevation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receiver_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/insolation/insolation.html#get_insolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.get_insolation" title="Link to this definition">¶</a></dt>
+<dd><p>Hours of direct sunlight on the ground during a day or a period, among buildings of known height and
+terrain.</p>
+<p>The sun is followed through every simulated day in <code class="docutils literal notranslate"><span class="pre">time_step_min</span></code> steps (NOAA solar position for the
+date and the location of the area, with refraction), so its path changes with latitude and season. For
+every point of a regular grid and every sun position above <code class="docutils literal notranslate"><span class="pre">min_sun_elevation</span></code> a ray is cast towards
+the sun; the point is in the sun when the ray passes above every building wall it crosses and above the
+terrain. Buildings are extruded footprints with flat roofs standing on the terrain. The result shows how
+many hours each place gets and which places stay in shadow all the time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buildings</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – Building footprints (Polygon/MultiPolygon) in any CRS. Include the buildings around the area
+of interest too: shadows come from them.</p></li>
+<li><p><strong>date</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.date</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">tuple</span></code>) – One day (<code class="docutils literal notranslate"><span class="pre">&quot;2026-06-21&quot;</span></code>) or a period <code class="docutils literal notranslate"><span class="pre">(start,</span> <span class="pre">end)</span></code>, both days included
+(<code class="docutils literal notranslate"><span class="pre">(&quot;2026-04-22&quot;,</span> <span class="pre">&quot;2026-08-22&quot;)</span></code>). Every day is covered from sunrise to sunset.</p></li>
+<li><p><strong>area</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">gpd.GeoDataFrame</span> <span class="pre">|</span> <span class="pre">gpd.GeoSeries</span> <span class="pre">|</span> <span class="pre">shapely</span> <span class="pre">geometry</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Where to place receivers. Shapely geometries are taken in the CRS of <code class="docutils literal notranslate"><span class="pre">buildings</span></code>.
+Defaults to the bounding box of the buildings.</p></li>
+<li><p><strong>height_column</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Column with building heights in metres. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;height&quot;</span></code>.</p></li>
+<li><p><strong>storeys_column</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Column with the number of storeys, used (times <code class="docutils literal notranslate"><span class="pre">storey_height</span></code>) where the height is missing.</p></li>
+<li><p><strong>storey_height</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Height of one storey in metres. Defaults to 3.</p></li>
+<li><p><strong>default_height</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Height for buildings with neither value. Without it such buildings are skipped with a warning.</p></li>
+<li><p><strong>terrain</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">gpd.GeoDataFrame</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">os.PathLike</span> <span class="pre">|</span> <span class="pre">tuple</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – <p>Ground heights in metres, one of:</p>
+<ul>
+<li><p>a GeoDataFrame of polygons with the height in <code class="docutils literal notranslate"><span class="pre">terrain_height_column</span></code> (e.g. elevation zones);
+it is rasterized with <code class="docutils literal notranslate"><span class="pre">terrain_cell</span></code> cells, overlapping polygons take the highest value and
+places no polygon covers count as no data;</p></li>
+<li><p>a GeoTIFF path (requires <code class="docutils literal notranslate"><span class="pre">rasterio</span></code>);</p></li>
+<li><p>a tuple <code class="docutils literal notranslate"><span class="pre">(heights,</span> <span class="pre">transform,</span> <span class="pre">crs)</span></code> with a 2-D array, an affine transform <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c,</span> <span class="pre">d,</span> <span class="pre">e,</span>
+<span class="pre">f)</span></code> as in rasterio (<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">a</span> <span class="pre">*</span> <span class="pre">col</span> <span class="pre">+</span> <span class="pre">c</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">e</span> <span class="pre">*</span> <span class="pre">row</span> <span class="pre">+</span> <span class="pre">f</span></code>, north-up, no rotation) and a
+projected CRS.</p></li>
+</ul>
+<p>Rasters set the CRS of the calculation; NaN marks missing data. Without terrain the ground is
+flat.</p>
+</p></li>
+<li><p><strong>terrain_height_column</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Height column of a terrain GeoDataFrame. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;height&quot;</span></code>.</p></li>
+<li><p><strong>terrain_cell</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Cell size in metres used to rasterize a terrain GeoDataFrame. Defaults to 5.</p></li>
+<li><p><strong>grid_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Receiver spacing in metres. Defaults to 2.</p></li>
+<li><p><strong>time_step_min</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Time step in minutes; it must divide a day evenly. Defaults to 10.</p></li>
+<li><p><strong>day_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – For a period, simulate every <code class="docutils literal notranslate"><span class="pre">day_step</span></code>-th day (the last day of the period is always
+included). Defaults to 7.</p></li>
+<li><p><strong>min_sun_elevation</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Sun positions lower than this (degrees) count as no sun, e.g. to leave out the low morning and
+evening sun as insolation norms do. Defaults to 0.</p></li>
+<li><p><strong>receiver_height</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Height of the receivers above the ground in metres. Defaults to 0.</p></li>
+<li><p><strong>max_workers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Number of threads (<code class="docutils literal notranslate"><span class="pre">None</span></code> uses all cores).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Receiver points in the CRS of <code class="docutils literal notranslate"><span class="pre">buildings</span></code>; points inside buildings are left out. Columns:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sun_hours</span></code>: mean hours of direct sun per day (<code class="docutils literal notranslate"><span class="pre">0</span></code> for ground that gets no direct sun on any
+simulated day);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">min_sun_hours</span></code>: hours on the worst day;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_continuous_hours</span></code>: the longest uninterrupted sunlit period on the worst day (the least
+of the daily longest periods), for which insolation norms usually set a minimum.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">attrs</span></code> contain <code class="docutils literal notranslate"><span class="pre">days</span></code> (the simulated dates) and <code class="docutils literal notranslate"><span class="pre">day_length_hours</span></code> (mean time the sun is
+above <code class="docutils literal notranslate"><span class="pre">min_sun_elevation</span></code>) and record the grid, so <a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">rasterize()</span></code></a> turns any column into a
+<a class="reference internal" href="rasters.html#objectnat.Raster" title="objectnat.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a>.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gpd.GeoDataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – On missing CRS, empty input, unknown height columns, a bad time step or period.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ImportError" title="(in Python v3.15)"><strong>ImportError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">terrain</span></code> is a file path and <code class="docutils literal notranslate"><span class="pre">rasterio</span></code> is not installed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_day_sun_hours_v4.png"><img alt="Direct sun hours on 21 March and 21 June" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_day_sun_hours_v4.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Direct sun hours on 21 March and 21 June 2026 in a 500 × 400 m area (outlined), <code class="docutils literal notranslate"><span class="pre">grid_step=2</span></code>,
+<code class="docutils literal notranslate"><span class="pre">time_step_min=10</span></code>, receivers rasterized with <a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a> on one colour scale. Building heights are <code class="docutils literal notranslate"><span class="pre">storeys_count</span></code> × 3 m.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_period_receivers_v2.png"><img alt="Mean sun hours and longest continuous sun over a period" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_period_receivers_v2.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Period 22 April – 22 August 2026 with <code class="docutils literal notranslate"><span class="pre">day_step=7</span></code> (19 simulated days), receivers rasterized with
+<a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a> on one scale. Left: mean daily sun hours. Right: longest continuous sunlit period on
+the worst day.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_terrain_ridge_v2.png"><img alt="Sun hours without and with a ridge south of the area, and their difference" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_terrain_ridge_v2.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The same area on 21 March on flat ground and with a synthetic ridge running west–east, 50 m high, its crest
+50 m south of the area, given as a <code class="docutils literal notranslate"><span class="pre">(heights,</span> <span class="pre">transform,</span> <span class="pre">crs)</span></code> array (dashed contours in metres). The low
+equinox sun comes from the south. In the southern 40 m of the area, at the foot of the ridge, receivers lose
+7 h a day on average, and two thirds of them get no direct sun at all; up to 180 m further north some places
+still lose 1–2 h. A hill under the area itself changes little, because buildings and receivers rise with the
+ground.</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="facade-insolation">
+<h2>Facade insolation<a class="headerlink" href="#facade-insolation" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="#objectnat.get_facade_insolation" title="objectnat.get_facade_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.get_facade_insolation()</span></code></a> places points along every wall of the buildings that intersect <code class="docutils literal notranslate"><span class="pre">area</span></code>
+(outer and courtyard walls) every <code class="docutils literal notranslate"><span class="pre">spacing</span></code> metres, 0.1 m in front of the wall, on every floor at
+<code class="docutils literal notranslate"><span class="pre">window_height</span></code> above the floor level. Walls shared with a neighbouring building get no points. The number of
+floors is the storeys value when given, otherwise the height divided by <code class="docutils literal notranslate"><span class="pre">storey_height</span></code>. A point counts the sun
+only while the sun is in front of its facade, at least <code class="docutils literal notranslate"><span class="pre">min_facade_angle</span></code> degrees (horizontal) away from the
+facade plane, and the ray towards the sun is not blocked by other buildings or the terrain. All buildings in
+<code class="docutils literal notranslate"><span class="pre">buildings</span></code> cast shadows, including those outside <code class="docutils literal notranslate"><span class="pre">area</span></code>.</p>
+<p>The result has one point per wall position and floor with <code class="docutils literal notranslate"><span class="pre">building</span></code> (index label of the building), <code class="docutils literal notranslate"><span class="pre">floor</span></code>
+(1 is the ground floor), <code class="docutils literal notranslate"><span class="pre">height</span></code> above the ground, <code class="docutils literal notranslate"><span class="pre">facade_azimuth</span></code> (direction the facade faces, degrees
+clockwise from true north), <code class="docutils literal notranslate"><span class="pre">sun_hours</span></code>, <code class="docutils literal notranslate"><span class="pre">min_sun_hours</span></code> and <code class="docutils literal notranslate"><span class="pre">max_continuous_hours</span></code>. With <code class="docutils literal notranslate"><span class="pre">norm_hours</span></code> it
+also has <code class="docutils literal notranslate"><span class="pre">meets_norm</span></code> (<code class="docutils literal notranslate"><span class="pre">max_continuous_hours</span> <span class="pre">&gt;=</span> <span class="pre">norm_hours</span></code>). Grouping the points by <code class="docutils literal notranslate"><span class="pre">building</span></code> and
+<code class="docutils literal notranslate"><span class="pre">floor</span></code> shows which floors and facades fail a norm; comparing runs with and without a planned building shows
+which windows it shades.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.get_facade_insolation">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">get_facade_insolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buildings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">area</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storeys_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storey_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain_height_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'height'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terrain_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">floors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_sun_elevation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_facade_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_hours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/insolation/insolation.html#get_facade_insolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#objectnat.get_facade_insolation" title="Link to this definition">¶</a></dt>
+<dd><p>Hours of direct sunlight on building facades, floor by floor: which windows get sun and which do not.</p>
+<p>Calculation points are placed along every wall of the buildings in <code class="docutils literal notranslate"><span class="pre">area</span></code> (outer walls and courtyard
+walls) every <code class="docutils literal notranslate"><span class="pre">spacing</span></code> metres, on every floor at <code class="docutils literal notranslate"><span class="pre">window_height</span></code> above the floor level, just in
+front of the wall. Walls shared with a neighbouring building get no points. A point is sunlit when the
+sun is in front of its facade, at least <code class="docutils literal notranslate"><span class="pre">min_facade_angle</span></code> away from the facade plane, and the ray
+towards the sun passes above every other wall and the terrain, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>. All
+buildings cast shadows, including those outside <code class="docutils literal notranslate"><span class="pre">area</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buildings</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – Building footprints with heights, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>date</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.date</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">tuple</span></code>) – One day or a period <code class="docutils literal notranslate"><span class="pre">(start,</span> <span class="pre">end)</span></code>, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>area</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">gpd.GeoDataFrame</span> <span class="pre">|</span> <span class="pre">gpd.GeoSeries</span> <span class="pre">|</span> <span class="pre">shapely</span> <span class="pre">geometry</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Buildings intersecting it get facade points (shapely geometries in the CRS of <code class="docutils literal notranslate"><span class="pre">buildings</span></code>).
+Defaults to all buildings.</p></li>
+<li><p><strong>height_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Building heights, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>. The number of floors is the storeys value when
+given, otherwise the height divided by <code class="docutils literal notranslate"><span class="pre">storey_height</span></code> (at least one floor).</p></li>
+<li><p><strong>storeys_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Building heights, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>. The number of floors is the storeys value when
+given, otherwise the height divided by <code class="docutils literal notranslate"><span class="pre">storey_height</span></code> (at least one floor).</p></li>
+<li><p><strong>storey_height</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Building heights, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>. The number of floors is the storeys value when
+given, otherwise the height divided by <code class="docutils literal notranslate"><span class="pre">storey_height</span></code> (at least one floor).</p></li>
+<li><p><strong>default_height</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Building heights, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>. The number of floors is the storeys value when
+given, otherwise the height divided by <code class="docutils literal notranslate"><span class="pre">storey_height</span></code> (at least one floor).</p></li>
+<li><p><strong>terrain</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathLike</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Ground heights, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>terrain_height_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Ground heights, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>terrain_cell</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Ground heights, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>spacing</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Distance between points along a wall in metres; shorter walls get one point. Defaults to 3.</p></li>
+<li><p><strong>window_height</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Height of the points above each floor level in metres. Defaults to 1.2.</p></li>
+<li><p><strong>floors</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence[int]</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Only these floors (1 is the ground floor). Defaults to all floors.</p></li>
+<li><p><strong>time_step_min</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Sun sampling, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>day_step</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Sun sampling, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>min_sun_elevation</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Sun sampling, as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>.</p></li>
+<li><p><strong>min_facade_angle</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Sun closer than this angle (degrees, horizontal) to the facade plane does not count. Defaults to
+0: any sun in front of the facade counts.</p></li>
+<li><p><strong>norm_hours</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Required continuous sunlight in hours; adds <code class="docutils literal notranslate"><span class="pre">meets_norm</span></code> (<code class="docutils literal notranslate"><span class="pre">max_continuous_hours</span> <span class="pre">&gt;=</span>
+<span class="pre">norm_hours</span></code>).</p></li>
+<li><p><strong>max_workers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Number of threads (<code class="docutils literal notranslate"><span class="pre">None</span></code> uses all cores).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One point per wall position and floor in the CRS of <code class="docutils literal notranslate"><span class="pre">buildings</span></code> with <code class="docutils literal notranslate"><span class="pre">building</span></code> (index label
+of the building), <code class="docutils literal notranslate"><span class="pre">floor</span></code>, <code class="docutils literal notranslate"><span class="pre">height</span></code> (above the ground), <code class="docutils literal notranslate"><span class="pre">facade_azimuth</span></code> (direction the
+facade faces, degrees clockwise from true north), <code class="docutils literal notranslate"><span class="pre">sun_hours</span></code>, <code class="docutils literal notranslate"><span class="pre">min_sun_hours</span></code> and
+<code class="docutils literal notranslate"><span class="pre">max_continuous_hours</span></code> (as in <a class="reference internal" href="#objectnat.get_insolation" title="objectnat.get_insolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_insolation()</span></code></a>) and, with <code class="docutils literal notranslate"><span class="pre">norm_hours</span></code>,
+<code class="docutils literal notranslate"><span class="pre">meets_norm</span></code>. <code class="docutils literal notranslate"><span class="pre">attrs</span></code> contain <code class="docutils literal notranslate"><span class="pre">days</span></code> and <code class="docutils literal notranslate"><span class="pre">day_length_hours</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gpd.GeoDataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<figure class="align-center" id="id5">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_facades_v2.png"><img alt="Continuous facade insolation on floors 1, 5 and 10 and share of points meeting 2.5 h" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_facades_v2.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Facade points (<code class="docutils literal notranslate"><span class="pre">spacing=3</span></code>) on 22 April 2026 coloured by the longest continuous sunlit period, for floors 1,
+5 and 10, and the share of points with at least 2.5 h of continuous sun per floor (<code class="docutils literal notranslate"><span class="pre">norm_hours=2.5</span></code>). The
+number of points per floor is given in brackets. The 2.5 h threshold is an example value; use the norm and the
+calculation day that apply to the project.</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Roofs are flat. Pitched roofs, balconies, loggias, eaves and trees are not modelled.</p></li>
+<li><p>Facade points lie in front of the outer wall surface; window reveals (the wall depth) are not modelled, so the
+sun angles that a deep window opening would cut off still count, unless <code class="docutils literal notranslate"><span class="pre">min_facade_angle</span></code> excludes them.</p></li>
+<li><p>Only direct sunlight is counted; diffuse sky light and reflected light are not, and cloud cover is ignored.</p></li>
+<li><p>Results are discrete in time (<code class="docutils literal notranslate"><span class="pre">time_step_min</span></code>) and space (<code class="docutils literal notranslate"><span class="pre">grid_step</span></code>, <code class="docutils literal notranslate"><span class="pre">spacing</span></code>); a continuous period can
+be under- or overestimated by up to one time step at each end.</p></li>
+<li><p>The accuracy of the result is limited by the building heights: heights derived from storey counts (<code class="docutils literal notranslate"><span class="pre">storeys</span></code>
+× <code class="docutils literal notranslate"><span class="pre">storey_height</span></code>) can differ from surveyed heights by several metres.</p></li>
+</ul>
+</section>
+<section id="example-notebook">
+<h2>Example notebook<a class="headerlink" href="#example-notebook" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="examples/insolation.html"><span class="doc">Insolation: sun hours on the ground and on facades</span></a></p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="rasters.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Rasters</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="noise.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Noise Simulation</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Donny
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Insolation</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#method">Method</a></li>
+<li><a class="reference internal" href="#ground-insolation">Ground insolation</a><ul>
+<li><a class="reference internal" href="#objectnat.get_insolation"><code class="docutils literal notranslate"><span class="pre">get_insolation()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#facade-insolation">Facade insolation</a><ul>
+<li><a class="reference internal" href="#objectnat.get_facade_insolation"><code class="docutils literal notranslate"><span class="pre">get_facade_insolation()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#limitations">Limitations</a></li>
+<li><a class="reference internal" href="#example-notebook">Example notebook</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=acc74ff5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/lightbox.js?v=dc29de6d"></script>
+    </body>
+</html>

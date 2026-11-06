@@ -1,0 +1,693 @@
+<!doctype html>
+<html class="no-js" lang="ru" data-content_root="../../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Алфавитный указатель" href="../../../../genindex.html"><link rel="search" title="Поиск" href="../../../../search.html">
+        <link rel="prefetch" href="../../../../_static/ONlogo.svg" as="image">
+
+    <link rel="shortcut icon" href="../../../../_static/ONFavicon.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>objectnat.methods.insolation.insolation - документация ObjectNat 3.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/objectnat.css?v=bf0f6754" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand">документация ObjectNat 3.0.0</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../../_static/ONlogo.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">документация ObjectNat 3.0.0</span>
+  
+</a><div class="lang-switch">
+  <a href="../../../../../_modules/objectnat/methods/insolation/insolation.html" hreflang="en" lang="en">English</a>
+  <span class="lang-switch-current" lang="ru">Русский</span>
+</div><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Поиск" name="q" aria-label="Поиск">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/isochrones.html">Изохроны</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/coverage.html">Зоны покрытия</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/provision.html">Обеспеченность сервисами</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/visibility.html">Анализ видимости</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/noise.html">Моделирование шума</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/insolation.html">Инсоляция</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/rasters.html">Растры</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../methods/examples/index.html">Примеры</a><input aria-label="Toggle navigation of Примеры" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/isochrones.html">Изохроны</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/coverage.html">Зоны покрытия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/calculate_od_matrix.html">Матрица времени в пути от зданий до сервисов</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/provision.html">Обеспеченность сервисами</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/visibility.html">Видимость 2D: полигоны видимости, метрики изовист и охват</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/viewshed.html">Видимость 2.5D: области видимости и их охват</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/noise.html">Моделирование шума</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/insolation.html">Инсоляция: часы солнца на земле и на фасадах</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../upgrading.html">Переход на 3.0</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Исходный код objectnat.methods.insolation.insolation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Direct-sun hours on the ground among buildings and terrain, computed in ObjectNat&#39;s Rust extension.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shapely</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyproj</span><span class="w"> </span><span class="kn">import</span> <span class="n">Transformer</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat._rust</span><span class="w"> </span><span class="kn">import</span> <span class="n">insolation_day_stats</span>  <span class="c1"># pylint: disable=no-name-in-module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat.methods.insolation._sun</span><span class="w"> </span><span class="kn">import</span> <span class="n">day_samples</span><span class="p">,</span> <span class="n">solar_position</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat.methods.utils.raster</span><span class="w"> </span><span class="kn">import</span> <span class="n">grid_attrs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat.methods.utils.scene</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Scene</span><span class="p">,</span>
+    <span class="n">TerrainInput</span><span class="p">,</span>
+    <span class="n">area_geometry</span><span class="p">,</span>
+    <span class="n">grid_north_azimuth</span><span class="p">,</span>
+    <span class="n">kernel_scene</span><span class="p">,</span>
+    <span class="n">prepare_scene</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">DateInput</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">date</span> <span class="o">|</span> <span class="nb">str</span>
+
+
+<div class="viewcode-block" id="get_insolation">
+<a class="viewcode-back" href="../../../../methods/insolation.html#objectnat.get_insolation">[документация]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_insolation</span><span class="p">(</span>
+    <span class="n">buildings</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">date</span><span class="p">:</span> <span class="n">DateInput</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DateInput</span><span class="p">,</span> <span class="n">DateInput</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">area</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoSeries</span> <span class="o">|</span> <span class="n">shapely</span><span class="o">.</span><span class="n">Geometry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">height_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">storeys_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">storey_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="n">default_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">terrain</span><span class="p">:</span> <span class="n">TerrainInput</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">terrain_height_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">terrain_cell</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">grid_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">time_step_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">day_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="n">min_sun_elevation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">receiver_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Hours of direct sunlight on the ground during a day or a period, among buildings of known height and</span>
+<span class="sd">    terrain.</span>
+
+<span class="sd">    The sun is followed through every simulated day in ``time_step_min`` steps (NOAA solar position for the</span>
+<span class="sd">    date and the location of the area, with refraction), so its path changes with latitude and season. For</span>
+<span class="sd">    every point of a regular grid and every sun position above ``min_sun_elevation`` a ray is cast towards</span>
+<span class="sd">    the sun; the point is in the sun when the ray passes above every building wall it crosses and above the</span>
+<span class="sd">    terrain. Buildings are extruded footprints with flat roofs standing on the terrain. The result shows how</span>
+<span class="sd">    many hours each place gets and which places stay in shadow all the time.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        buildings (gpd.GeoDataFrame):</span>
+<span class="sd">            Building footprints (Polygon/MultiPolygon) in any CRS. Include the buildings around the area</span>
+<span class="sd">            of interest too: shadows come from them.</span>
+<span class="sd">        date (datetime.date | str | tuple):</span>
+<span class="sd">            One day (``&quot;2026-06-21&quot;``) or a period ``(start, end)``, both days included</span>
+<span class="sd">            (``(&quot;2026-04-22&quot;, &quot;2026-08-22&quot;)``). Every day is covered from sunrise to sunset.</span>
+<span class="sd">        area (gpd.GeoDataFrame | gpd.GeoSeries | shapely geometry | None, optional):</span>
+<span class="sd">            Where to place receivers. Shapely geometries are taken in the CRS of ``buildings``.</span>
+<span class="sd">            Defaults to the bounding box of the buildings.</span>
+<span class="sd">        height_column (str | None, optional):</span>
+<span class="sd">            Column with building heights in metres. Defaults to ``&quot;height&quot;``.</span>
+<span class="sd">        storeys_column (str | None, optional):</span>
+<span class="sd">            Column with the number of storeys, used (times ``storey_height``) where the height is missing.</span>
+<span class="sd">        storey_height (float, optional):</span>
+<span class="sd">            Height of one storey in metres. Defaults to 3.</span>
+<span class="sd">        default_height (float | None, optional):</span>
+<span class="sd">            Height for buildings with neither value. Without it such buildings are skipped with a warning.</span>
+<span class="sd">        terrain (gpd.GeoDataFrame | str | os.PathLike | tuple | None, optional):</span>
+<span class="sd">            Ground heights in metres, one of:</span>
+
+<span class="sd">            - a GeoDataFrame of polygons with the height in ``terrain_height_column`` (e.g. elevation zones);</span>
+<span class="sd">              it is rasterized with ``terrain_cell`` cells, overlapping polygons take the highest value and</span>
+<span class="sd">              places no polygon covers count as no data;</span>
+<span class="sd">            - a GeoTIFF path (requires ``rasterio``);</span>
+<span class="sd">            - a tuple ``(heights, transform, crs)`` with a 2-D array, an affine transform ``(a, b, c, d, e,</span>
+<span class="sd">              f)`` as in rasterio (``x = a * col + c``, ``y = e * row + f``, north-up, no rotation) and a</span>
+<span class="sd">              projected CRS.</span>
+
+<span class="sd">            Rasters set the CRS of the calculation; NaN marks missing data. Without terrain the ground is</span>
+<span class="sd">            flat.</span>
+<span class="sd">        terrain_height_column (str, optional):</span>
+<span class="sd">            Height column of a terrain GeoDataFrame. Defaults to ``&quot;height&quot;``.</span>
+<span class="sd">        terrain_cell (float, optional):</span>
+<span class="sd">            Cell size in metres used to rasterize a terrain GeoDataFrame. Defaults to 5.</span>
+<span class="sd">        grid_step (float, optional):</span>
+<span class="sd">            Receiver spacing in metres. Defaults to 2.</span>
+<span class="sd">        time_step_min (float, optional):</span>
+<span class="sd">            Time step in minutes; it must divide a day evenly. Defaults to 10.</span>
+<span class="sd">        day_step (int, optional):</span>
+<span class="sd">            For a period, simulate every ``day_step``-th day (the last day of the period is always</span>
+<span class="sd">            included). Defaults to 7.</span>
+<span class="sd">        min_sun_elevation (float, optional):</span>
+<span class="sd">            Sun positions lower than this (degrees) count as no sun, e.g. to leave out the low morning and</span>
+<span class="sd">            evening sun as insolation norms do. Defaults to 0.</span>
+<span class="sd">        receiver_height (float, optional):</span>
+<span class="sd">            Height of the receivers above the ground in metres. Defaults to 0.</span>
+<span class="sd">        max_workers (int | None, optional):</span>
+<span class="sd">            Number of threads (``None`` uses all cores).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        gpd.GeoDataFrame:</span>
+<span class="sd">            Receiver points in the CRS of ``buildings``; points inside buildings are left out. Columns:</span>
+
+<span class="sd">            - ``sun_hours``: mean hours of direct sun per day (``0`` for ground that gets no direct sun on any</span>
+<span class="sd">              simulated day);</span>
+<span class="sd">            - ``min_sun_hours``: hours on the worst day;</span>
+<span class="sd">            - ``max_continuous_hours``: the longest uninterrupted sunlit period on the worst day (the least</span>
+<span class="sd">              of the daily longest periods), for which insolation norms usually set a minimum.</span>
+
+<span class="sd">            ``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is</span>
+<span class="sd">            above ``min_sun_elevation``) and record the grid, so :func:`rasterize` turns any column into a</span>
+<span class="sd">            :class:`Raster`.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: On missing CRS, empty input, unknown height columns, a bad time step or period.</span>
+<span class="sd">        ImportError: If ``terrain`` is a file path and ``rasterio`` is not installed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">days</span> <span class="o">=</span> <span class="n">_simulated_days</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">day_step</span><span class="p">)</span>
+    <span class="n">scene</span> <span class="o">=</span> <span class="n">prepare_scene</span><span class="p">(</span>
+        <span class="n">buildings</span><span class="p">,</span> <span class="n">area</span><span class="p">,</span> <span class="n">terrain</span><span class="p">,</span> <span class="n">terrain_height_column</span><span class="p">,</span> <span class="n">terrain_cell</span><span class="p">,</span>
+        <span class="n">height_column</span><span class="p">,</span> <span class="n">storeys_column</span><span class="p">,</span> <span class="n">storey_height</span><span class="p">,</span> <span class="n">default_height</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># fmt: skip</span>
+    <span class="n">blds</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">blds</span>
+    <span class="n">area_geom</span> <span class="o">=</span> <span class="n">area_geometry</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">blds</span><span class="p">,</span> <span class="n">buildings</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">)</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">area_geom</span><span class="o">.</span><span class="n">bounds</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">])):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Nothing to compute: the area and the buildings are empty&quot;</span><span class="p">)</span>
+    <span class="n">gx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x0</span> <span class="o">/</span> <span class="n">grid_step</span><span class="p">)</span> <span class="o">*</span> <span class="n">grid_step</span><span class="p">,</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">grid_step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">grid_step</span><span class="p">)</span>
+    <span class="n">gy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">y0</span> <span class="o">/</span> <span class="n">grid_step</span><span class="p">)</span> <span class="o">*</span> <span class="n">grid_step</span><span class="p">,</span> <span class="n">y1</span> <span class="o">+</span> <span class="n">grid_step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">grid_step</span><span class="p">)</span>
+    <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">gx</span><span class="p">,</span> <span class="n">gy</span><span class="p">)</span>
+    <span class="n">receivers</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">points</span><span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">covers</span><span class="p">(</span><span class="n">area_geom</span><span class="p">,</span> <span class="n">receivers</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">blds</span><span class="p">):</span>
+        <span class="n">inside</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">STRtree</span><span class="p">(</span><span class="n">blds</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">receivers</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;within&quot;</span><span class="p">)</span>
+        <span class="n">keep</span><span class="p">[</span><span class="n">inside</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">receivers</span> <span class="o">=</span> <span class="n">receivers</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+    <span class="n">rxy</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">receivers</span><span class="p">)</span>
+
+    <span class="n">suns</span><span class="p">,</span> <span class="n">offsets</span> <span class="o">=</span> <span class="n">_sun_positions</span><span class="p">(</span>
+        <span class="n">days</span><span class="p">,</span> <span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">,</span> <span class="p">(</span><span class="n">x0</span> <span class="o">+</span> <span class="n">x1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">y0</span> <span class="o">+</span> <span class="n">y1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">time_step_min</span><span class="p">,</span> <span class="n">min_sun_elevation</span>
+    <span class="p">)</span>
+    <span class="n">xyz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">rxy</span><span class="p">,</span> <span class="n">scene</span><span class="o">.</span><span class="n">ground_at</span><span class="p">(</span><span class="n">rxy</span><span class="p">)</span> <span class="o">+</span> <span class="n">receiver_height</span><span class="p">])</span>
+    <span class="n">counts</span><span class="p">,</span> <span class="n">longest</span> <span class="o">=</span> <span class="n">_day_stats</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">suns</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">max_workers</span><span class="o">=</span><span class="n">max_workers</span><span class="p">)</span>
+
+    <span class="n">step_h</span> <span class="o">=</span> <span class="n">time_step_min</span> <span class="o">/</span> <span class="mf">60.0</span>
+    <span class="n">sun_hours</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">step_h</span>
+    <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;days&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">days</span><span class="p">],</span> <span class="s2">&quot;day_length_hours&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">offsets</span><span class="p">)))</span> <span class="o">*</span> <span class="n">step_h</span><span class="p">}</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;sun_hours&quot;</span><span class="p">:</span> <span class="n">sun_hours</span><span class="p">,</span>
+            <span class="s2">&quot;min_sun_hours&quot;</span><span class="p">:</span> <span class="n">counts</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">step_h</span><span class="p">,</span>
+            <span class="s2">&quot;max_continuous_hours&quot;</span><span class="p">:</span> <span class="n">longest</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">step_h</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">geometry</span><span class="o">=</span><span class="n">receivers</span><span class="p">,</span>
+        <span class="n">crs</span><span class="o">=</span><span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">buildings</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+    <span class="n">points</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+    <span class="n">points</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">grid_attrs</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">,</span> <span class="n">grid_step</span><span class="p">,</span> <span class="p">(</span><span class="n">gx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gy</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+    <span class="k">return</span> <span class="n">points</span></div>
+
+
+
+<div class="viewcode-block" id="get_facade_insolation">
+<a class="viewcode-back" href="../../../../methods/insolation.html#objectnat.get_facade_insolation">[документация]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_facade_insolation</span><span class="p">(</span>
+    <span class="n">buildings</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">date</span><span class="p">:</span> <span class="n">DateInput</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DateInput</span><span class="p">,</span> <span class="n">DateInput</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">area</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoSeries</span> <span class="o">|</span> <span class="n">shapely</span><span class="o">.</span><span class="n">Geometry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">height_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">storeys_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">storey_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="n">default_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">terrain</span><span class="p">:</span> <span class="n">TerrainInput</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">terrain_height_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">terrain_cell</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">spacing</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="n">window_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.2</span><span class="p">,</span>
+    <span class="n">floors</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time_step_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">day_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="n">min_sun_elevation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">min_facade_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">norm_hours</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Hours of direct sunlight on building facades, floor by floor: which windows get sun and which do not.</span>
+
+<span class="sd">    Calculation points are placed along every wall of the buildings in ``area`` (outer walls and courtyard</span>
+<span class="sd">    walls) every ``spacing`` metres, on every floor at ``window_height`` above the floor level, just in</span>
+<span class="sd">    front of the wall. Walls shared with a neighbouring building get no points. A point is sunlit when the</span>
+<span class="sd">    sun is in front of its facade, at least ``min_facade_angle`` away from the facade plane, and the ray</span>
+<span class="sd">    towards the sun passes above every other wall and the terrain, as in :func:`get_insolation`. All</span>
+<span class="sd">    buildings cast shadows, including those outside ``area``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        buildings (gpd.GeoDataFrame):</span>
+<span class="sd">            Building footprints with heights, as in :func:`get_insolation`.</span>
+<span class="sd">        date (datetime.date | str | tuple):</span>
+<span class="sd">            One day or a period ``(start, end)``, as in :func:`get_insolation`.</span>
+<span class="sd">        area (gpd.GeoDataFrame | gpd.GeoSeries | shapely geometry | None, optional):</span>
+<span class="sd">            Buildings intersecting it get facade points (shapely geometries in the CRS of ``buildings``).</span>
+<span class="sd">            Defaults to all buildings.</span>
+<span class="sd">        height_column, storeys_column, storey_height, default_height:</span>
+<span class="sd">            Building heights, as in :func:`get_insolation`. The number of floors is the storeys value when</span>
+<span class="sd">            given, otherwise the height divided by ``storey_height`` (at least one floor).</span>
+<span class="sd">        terrain, terrain_height_column, terrain_cell:</span>
+<span class="sd">            Ground heights, as in :func:`get_insolation`.</span>
+<span class="sd">        spacing (float, optional):</span>
+<span class="sd">            Distance between points along a wall in metres; shorter walls get one point. Defaults to 3.</span>
+<span class="sd">        window_height (float, optional):</span>
+<span class="sd">            Height of the points above each floor level in metres. Defaults to 1.2.</span>
+<span class="sd">        floors (Sequence[int] | None, optional):</span>
+<span class="sd">            Only these floors (1 is the ground floor). Defaults to all floors.</span>
+<span class="sd">        time_step_min, day_step, min_sun_elevation:</span>
+<span class="sd">            Sun sampling, as in :func:`get_insolation`.</span>
+<span class="sd">        min_facade_angle (float, optional):</span>
+<span class="sd">            Sun closer than this angle (degrees, horizontal) to the facade plane does not count. Defaults to</span>
+<span class="sd">            0: any sun in front of the facade counts.</span>
+<span class="sd">        norm_hours (float | None, optional):</span>
+<span class="sd">            Required continuous sunlight in hours; adds ``meets_norm`` (``max_continuous_hours &gt;=</span>
+<span class="sd">            norm_hours``).</span>
+<span class="sd">        max_workers (int | None, optional):</span>
+<span class="sd">            Number of threads (``None`` uses all cores).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        gpd.GeoDataFrame:</span>
+<span class="sd">            One point per wall position and floor in the CRS of ``buildings`` with ``building`` (index label</span>
+<span class="sd">            of the building), ``floor``, ``height`` (above the ground), ``facade_azimuth`` (direction the</span>
+<span class="sd">            facade faces, degrees clockwise from true north), ``sun_hours``, ``min_sun_hours`` and</span>
+<span class="sd">            ``max_continuous_hours`` (as in :func:`get_insolation`) and, with ``norm_hours``,</span>
+<span class="sd">            ``meets_norm``. ``attrs`` contain ``days`` and ``day_length_hours``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">days</span> <span class="o">=</span> <span class="n">_simulated_days</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">day_step</span><span class="p">)</span>
+    <span class="n">scene</span> <span class="o">=</span> <span class="n">prepare_scene</span><span class="p">(</span>
+        <span class="n">buildings</span><span class="p">,</span> <span class="n">area</span><span class="p">,</span> <span class="n">terrain</span><span class="p">,</span> <span class="n">terrain_height_column</span><span class="p">,</span> <span class="n">terrain_cell</span><span class="p">,</span>
+        <span class="n">height_column</span><span class="p">,</span> <span class="n">storeys_column</span><span class="p">,</span> <span class="n">storey_height</span><span class="p">,</span> <span class="n">default_height</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># fmt: skip</span>
+    <span class="n">blds</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">blds</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">blds</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">area</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">area_geom</span> <span class="o">=</span> <span class="n">area_geometry</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">blds</span><span class="p">,</span> <span class="n">buildings</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">)</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span><span class="p">[</span><span class="n">shapely</span><span class="o">.</span><span class="n">intersects</span><span class="p">(</span><span class="n">blds</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">area_geom</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No buildings with a height in the area&quot;</span><span class="p">)</span>
+
+    <span class="n">xy</span><span class="p">,</span> <span class="n">normals</span><span class="p">,</span> <span class="n">owner</span> <span class="o">=</span> <span class="n">_facade_points</span><span class="p">(</span><span class="n">blds</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">targets</span><span class="p">],</span> <span class="n">spacing</span><span class="p">)</span>
+    <span class="n">owner</span> <span class="o">=</span> <span class="n">targets</span><span class="p">[</span><span class="n">owner</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">):</span>
+        <span class="n">on_neighbour</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">STRtree</span><span class="p">(</span><span class="n">blds</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">points</span><span class="p">(</span><span class="n">xy</span><span class="p">),</span> <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;within&quot;</span><span class="p">)</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">keep</span><span class="p">[</span><span class="n">on_neighbour</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">xy</span><span class="p">,</span> <span class="n">normals</span><span class="p">,</span> <span class="n">owner</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">normals</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">owner</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">storeys_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">storeys_column</span> <span class="ow">in</span> <span class="n">blds</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">storeys</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">blds</span><span class="p">[</span><span class="n">storeys_column</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">storeys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">blds</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">storeys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">storeys</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">storeys</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">building_height</span> <span class="o">/</span> <span class="n">storey_height</span><span class="p">))</span>
+    <span class="n">storeys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">storeys</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">floor_counts</span> <span class="o">=</span> <span class="n">storeys</span><span class="p">[</span><span class="n">owner</span><span class="p">]</span>
+    <span class="n">point_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">)),</span> <span class="n">floor_counts</span><span class="p">)</span>
+    <span class="n">floor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">floor_counts</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="p">(</span><span class="n">floor</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">storey_height</span> <span class="o">+</span> <span class="n">window_height</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">height</span> <span class="o">&lt;</span> <span class="n">scene</span><span class="o">.</span><span class="n">building_height</span><span class="p">[</span><span class="n">owner</span><span class="p">[</span><span class="n">point_idx</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="n">floors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">keep</span> <span class="o">&amp;=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">floor</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">floors</span><span class="p">))</span>
+    <span class="n">point_idx</span><span class="p">,</span> <span class="n">floor</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">point_idx</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">floor</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">height</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No facade points: check spacing, window_height and floors&quot;</span><span class="p">)</span>
+
+    <span class="n">pxy</span><span class="p">,</span> <span class="n">pnormal</span><span class="p">,</span> <span class="n">powner</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[</span><span class="n">point_idx</span><span class="p">],</span> <span class="n">normals</span><span class="p">[</span><span class="n">point_idx</span><span class="p">],</span> <span class="n">owner</span><span class="p">[</span><span class="n">point_idx</span><span class="p">]</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">pxy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">pxy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">suns</span><span class="p">,</span> <span class="n">offsets</span> <span class="o">=</span> <span class="n">_sun_positions</span><span class="p">(</span>
+        <span class="n">days</span><span class="p">,</span> <span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">,</span> <span class="p">(</span><span class="n">x0</span> <span class="o">+</span> <span class="n">x1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">y0</span> <span class="o">+</span> <span class="n">y1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">time_step_min</span><span class="p">,</span> <span class="n">min_sun_elevation</span>
+    <span class="p">)</span>
+    <span class="n">xyz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">pxy</span><span class="p">,</span> <span class="n">scene</span><span class="o">.</span><span class="n">base</span><span class="p">[</span><span class="n">powner</span><span class="p">]</span> <span class="o">+</span> <span class="n">height</span><span class="p">])</span>
+    <span class="n">counts</span><span class="p">,</span> <span class="n">longest</span> <span class="o">=</span> <span class="n">_day_stats</span><span class="p">(</span>
+        <span class="n">scene</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">suns</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">normals</span><span class="o">=</span><span class="n">pnormal</span><span class="p">,</span> <span class="n">min_facing</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">min_facade_angle</span><span class="p">)),</span>
+        <span class="n">max_workers</span><span class="o">=</span><span class="n">max_workers</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># fmt: skip</span>
+
+    <span class="n">step_h</span> <span class="o">=</span> <span class="n">time_step_min</span> <span class="o">/</span> <span class="mf">60.0</span>
+    <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">,</span> <span class="mi">4326</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">((</span><span class="n">x0</span> <span class="o">+</span> <span class="n">x1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">y0</span> <span class="o">+</span> <span class="n">y1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">azimuth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">pnormal</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">pnormal</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="n">grid_north_azimuth</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">),</span> <span class="mi">360</span>
+    <span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;building&quot;</span><span class="p">:</span> <span class="n">blds</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="n">powner</span><span class="p">],</span>
+            <span class="s2">&quot;floor&quot;</span><span class="p">:</span> <span class="n">floor</span><span class="p">,</span>
+            <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="n">height</span><span class="p">,</span>
+            <span class="s2">&quot;facade_azimuth&quot;</span><span class="p">:</span> <span class="n">azimuth</span><span class="p">,</span>
+            <span class="s2">&quot;sun_hours&quot;</span><span class="p">:</span> <span class="n">counts</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">step_h</span><span class="p">,</span>
+            <span class="s2">&quot;min_sun_hours&quot;</span><span class="p">:</span> <span class="n">counts</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">step_h</span><span class="p">,</span>
+            <span class="s2">&quot;max_continuous_hours&quot;</span><span class="p">:</span> <span class="n">longest</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">step_h</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">geometry</span><span class="o">=</span><span class="n">shapely</span><span class="o">.</span><span class="n">points</span><span class="p">(</span><span class="n">pxy</span><span class="p">),</span>
+        <span class="n">crs</span><span class="o">=</span><span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">buildings</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">norm_hours</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;meets_norm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;max_continuous_hours&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="nb">float</span><span class="p">(</span><span class="n">norm_hours</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1e-9</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">&quot;days&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">days</span><span class="p">],</span> <span class="s2">&quot;day_length_hours&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">offsets</span><span class="p">)))</span> <span class="o">*</span> <span class="n">step_h</span><span class="p">}</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sun_positions</span><span class="p">(</span><span class="n">days</span><span class="p">,</span> <span class="n">local_crs</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">time_step_min</span><span class="p">,</span> <span class="n">min_sun_elevation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sun directions in grid coordinates ``(t, 3)`` [dx, dy, tan(elevation)] of all days, and day offsets.</span>
+<span class="sd">    True north differs from grid north away from the projection&#39;s central meridian.&quot;&quot;&quot;</span>
+    <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">local_crs</span><span class="p">,</span> <span class="mi">4326</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">)</span>
+    <span class="n">grid_north</span> <span class="o">=</span> <span class="n">grid_north_azimuth</span><span class="p">(</span><span class="n">local_crs</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+    <span class="n">suns</span><span class="p">,</span> <span class="n">offsets</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">day</span> <span class="ow">in</span> <span class="n">days</span><span class="p">:</span>
+        <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span> <span class="o">=</span> <span class="n">solar_position</span><span class="p">(</span><span class="n">day_samples</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">time_step_min</span><span class="p">),</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span>
+        <span class="n">up</span> <span class="o">=</span> <span class="n">elevation</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_sun_elevation</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">azimuth</span><span class="p">[</span><span class="n">up</span><span class="p">]</span> <span class="o">-</span> <span class="n">grid_north</span><span class="p">)</span>
+        <span class="n">suns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">elevation</span><span class="p">[</span><span class="n">up</span><span class="p">]))]))</span>
+        <span class="n">offsets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">offsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">up</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">suns</span><span class="p">),</span> <span class="n">offsets</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_day_stats</span><span class="p">(</span><span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">suns</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">normals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_facing</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">max_workers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Per point and day: sunlit sun positions and the longest sunlit run (Rust kernel, local coordinates).&quot;&quot;&quot;</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">segments</span><span class="p">,</span> <span class="n">tops</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kernel_scene</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">normals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">normals</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">normals</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">min_facing</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">min_facing</span><span class="p">))</span>
+    <span class="n">local</span> <span class="o">=</span> <span class="n">xyz</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">local</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">shift</span>
+    <span class="k">return</span> <span class="n">insolation_day_stats</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">suns</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">offsets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="n">segments</span><span class="p">,</span>
+        <span class="n">tops</span><span class="p">,</span>
+        <span class="n">n_threads</span><span class="o">=</span><span class="n">max_workers</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_facade_points</span><span class="p">(</span><span class="n">geometries</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">spacing</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Points along every wall of the polygons, ``offset`` metres in front of it, with the wall&#39;s outward</span>
+<span class="sd">    unit normal and the index of the polygon.&quot;&quot;&quot;</span>
+    <span class="n">parts</span><span class="p">,</span> <span class="n">part_owner</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_parts</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">orient_polygons</span><span class="p">(</span><span class="n">geometries</span><span class="p">),</span> <span class="n">return_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">rings</span><span class="p">,</span> <span class="n">ring_part</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ring</span> <span class="ow">in</span> <span class="p">[</span><span class="n">part</span><span class="o">.</span><span class="n">exterior</span><span class="p">,</span> <span class="o">*</span><span class="n">part</span><span class="o">.</span><span class="n">interiors</span><span class="p">]:</span>
+            <span class="n">rings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ring</span><span class="p">)</span>
+            <span class="n">ring_part</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="n">coords</span><span class="p">,</span> <span class="n">ring_idx</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">rings</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span> <span class="n">return_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">same</span> <span class="o">=</span> <span class="n">ring_idx</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">==</span> <span class="n">ring_idx</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">wall_owner</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">same</span><span class="p">],</span> <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">:][</span><span class="n">same</span><span class="p">],</span> <span class="n">part_owner</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ring_part</span><span class="p">)[</span><span class="n">ring_idx</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">same</span><span class="p">]]]</span>
+    <span class="n">vec</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">a</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">vec</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">vec</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mf">1e-6</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">vec</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">wall_owner</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span> <span class="n">vec</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span> <span class="n">length</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span> <span class="n">wall_owner</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span>
+    <span class="n">normal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">vec</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">vec</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]])</span> <span class="o">/</span> <span class="n">length</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># right of a CCW exterior / CW hole</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">length</span> <span class="o">/</span> <span class="n">spacing</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">wall</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)),</span> <span class="n">count</span><span class="p">)</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">count</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">count</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">xy</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">wall</span><span class="p">]</span> <span class="o">+</span> <span class="n">position</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">vec</span><span class="p">[</span><span class="n">wall</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span> <span class="o">*</span> <span class="n">normal</span><span class="p">[</span><span class="n">wall</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">xy</span><span class="p">,</span> <span class="n">normal</span><span class="p">[</span><span class="n">wall</span><span class="p">],</span> <span class="n">wall_owner</span><span class="p">[</span><span class="n">wall</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_simulated_days</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">day_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_date</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">as_date</span><span class="p">(</span><span class="n">date</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">date</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;a period must be (start, end)&quot;</span><span class="p">)</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">as_date</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">as_date</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">end</span> <span class="o">&lt;</span> <span class="n">start</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;the period ends before it starts&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">day_step</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;day_step must be at least 1&quot;</span><span class="p">)</span>
+    <span class="n">days</span> <span class="o">=</span> <span class="p">[</span><span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">days</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">day_step</span><span class="p">))]</span>
+    <span class="k">if</span> <span class="n">days</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">end</span><span class="p">:</span>
+        <span class="n">days</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">days</span>
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Donny
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../../_static/documentation_options.js?v=c2c16d3a"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/translations.js?v=cd1d70c9"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../../../../_static/lightbox.js?v=dc29de6d"></script>
+    </body>
+</html>

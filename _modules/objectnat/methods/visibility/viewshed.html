@@ -1,0 +1,644 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex.html"><link rel="search" title="Search" href="../../../../search.html">
+        <link rel="prefetch" href="../../../../_static/ONlogo.svg" as="image">
+
+    <link rel="shortcut icon" href="../../../../_static/ONFavicon.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>objectnat.methods.visibility.viewshed - ObjectNat 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/objectnat.css?v=bf0f6754" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand">ObjectNat 3.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../../_static/ONlogo.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">ObjectNat 3.0.0 documentation</span>
+  
+</a><div class="lang-switch">
+  <span class="lang-switch-current" lang="en">English</span>
+  <a href="../../../../ru/_modules/objectnat/methods/visibility/viewshed.html" hreflang="ru" lang="ru">Русский</a>
+</div><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/isochrones.html">Isochrones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/coverage.html">Coverage Zones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/provision.html">Service Provision</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/visibility.html">Visibility Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/noise.html">Noise Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/insolation.html">Insolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../methods/rasters.html">Rasters</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../methods/examples/index.html">Examples</a><input aria-label="Toggle navigation of Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/isochrones.html">Isochrones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/coverage.html">Coverage zones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/calculate_od_matrix.html">Building-to-service travel-time matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/provision.html">Service provision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/visibility.html">2D visibility: visibility polygons, isovist metrics and catchment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/viewshed.html">2.5D visibility: viewsheds and viewshed catchment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/noise.html">Noise simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../methods/examples/insolation.html">Insolation: sun hours on the ground and on facades</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../upgrading.html">Upgrading to 3.0</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for objectnat.methods.visibility.viewshed</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;2.5D visibility: viewsheds and viewshed catchment zones among buildings of known height and terrain.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shapely</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat._rust</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># pylint: disable=no-name-in-module</span>
+    <span class="n">rasterize_footprints</span><span class="p">,</span>
+    <span class="n">viewshed_cells</span><span class="p">,</span>
+    <span class="n">viewshed_count_grid</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat.methods.utils.raster</span><span class="w"> </span><span class="kn">import</span> <span class="n">label_zones</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat.methods.utils.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">TerrainInput</span><span class="p">,</span> <span class="n">kernel_scene</span><span class="p">,</span> <span class="n">prepare_scene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">objectnat.methods.visibility.catchment</span><span class="w"> </span><span class="kn">import</span> <span class="n">cell_points</span><span class="p">,</span> <span class="n">empty_cells</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">logger</span>
+
+<span class="n">MAX_GRID_CELLS</span> <span class="o">=</span> <span class="mi">30_000_000</span>  <span class="c1"># per target grid: ~250 MB of heights and footprint ids</span>
+
+
+<div class="viewcode-block" id="get_viewshed">
+<a class="viewcode-back" href="../../../../methods/visibility.html#objectnat.get_viewshed">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_viewshed</span><span class="p">(</span>
+    <span class="n">point_from</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">buildings</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">view_distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">height_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">storeys_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">storey_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="n">default_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">terrain</span><span class="p">:</span> <span class="n">TerrainInput</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">terrain_height_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">terrain_cell</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">observer_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.6</span><span class="p">,</span>
+    <span class="n">target_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">cell_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">include_roofs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute 2.5D visibility: the ground (and optionally the roofs) each observer can see from its eye height,</span>
+<span class="sd">    among buildings of known height and terrain.</span>
+
+<span class="sd">    Unlike :func:`get_visibility`, which treats every obstacle as infinitely high, here a low building or a</span>
+<span class="sd">    hill hides only what lies below the line of sight: an observer sees over a garage onto the street behind</span>
+<span class="sd">    it, from a hill over the roofs, from a tower far across the district. The area within ``view_distance``</span>
+<span class="sd">    is split into ``cell_size`` cells, and a cell is visible when the straight line from the eye to the cell</span>
+<span class="sd">    centre (at ``target_height`` above the ground) passes above every building wall it crosses and above the</span>
+<span class="sd">    terrain. Visible cells are merged into one polygon per observer. The eye is ``observer_height`` above the</span>
+<span class="sd">    terrain; observers standing inside a building footprint are placed on its roof.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        point_from (gpd.GeoDataFrame):</span>
+<span class="sd">            Observer points in any CRS. Optional columns ``visibility_distance`` and ``observer_height``</span>
+<span class="sd">            override ``view_distance`` and ``observer_height`` per point; other attributes are kept.</span>
+<span class="sd">        buildings (gpd.GeoDataFrame | None):</span>
+<span class="sd">            Building footprints with heights (see ``height_column``, ``storeys_column``); ``None`` for terrain</span>
+<span class="sd">            only.</span>
+<span class="sd">        view_distance (float | None, optional):</span>
+<span class="sd">            View distance in metres, unless ``point_from`` has ``visibility_distance``.</span>
+<span class="sd">        height_column, storeys_column, storey_height, default_height:</span>
+<span class="sd">            Building heights, as in :func:`get_insolation`.</span>
+<span class="sd">        terrain, terrain_height_column, terrain_cell:</span>
+<span class="sd">            Ground heights, as in :func:`get_insolation`; without terrain the ground is flat.</span>
+<span class="sd">        observer_height (float, optional):</span>
+<span class="sd">            Eye height above the terrain (or the roof) in metres. Defaults to 1.6.</span>
+<span class="sd">        target_height (float, optional):</span>
+<span class="sd">            Height above the ground of what is looked at, in metres: 0 for the ground itself, 1.6 to see</span>
+<span class="sd">            people&#39;s faces, more for the upper part of objects. Defaults to 0.</span>
+<span class="sd">        cell_size (float, optional):</span>
+<span class="sd">            Cell size in metres; time grows with ``(view_distance / cell_size) ** 2``. Defaults to 2.</span>
+<span class="sd">        include_roofs (bool, optional):</span>
+<span class="sd">            Also return the parts of roofs that can be seen (flat roofs at the building height). Defaults to</span>
+<span class="sd">            ``False``: building footprints are left out.</span>
+<span class="sd">        max_workers (int | None, optional):</span>
+<span class="sd">            Number of threads (``None`` uses all cores).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        gpd.GeoDataFrame:</span>
+<span class="sd">            Same index and attributes as ``point_from`` with the geometry replaced by the visible area (cells</span>
+<span class="sd">            merged into polygons, an empty polygon when nothing is visible) in the CRS of ``point_from``, plus</span>
+<span class="sd">            ``visible_area`` (m²) and ``visible_share`` (the share of the target cells within the view distance</span>
+<span class="sd">            that are visible).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If ``point_from`` is empty or has no CRS, or no view distance is given.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scene</span><span class="p">,</span> <span class="n">observers</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">eye_offset</span> <span class="o">=</span> <span class="n">_setup</span><span class="p">(</span>
+        <span class="n">point_from</span><span class="p">,</span> <span class="n">buildings</span><span class="p">,</span> <span class="n">view_distance</span><span class="p">,</span> <span class="n">observer_height</span><span class="p">,</span>
+        <span class="n">height_column</span><span class="p">,</span> <span class="n">storeys_column</span><span class="p">,</span> <span class="n">storey_height</span><span class="p">,</span> <span class="n">default_height</span><span class="p">,</span>
+        <span class="n">terrain</span><span class="p">,</span> <span class="n">terrain_height_column</span><span class="p">,</span> <span class="n">terrain_cell</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># fmt: skip</span>
+    <span class="n">oxy</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">observers</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    <span class="n">eye_z</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">ground_at</span><span class="p">(</span><span class="n">oxy</span><span class="p">)</span> <span class="o">+</span> <span class="n">eye_offset</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">blds</span><span class="p">):</span>
+        <span class="n">on_obs</span><span class="p">,</span> <span class="n">on_bld</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">STRtree</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">blds</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">points</span><span class="p">(</span><span class="n">oxy</span><span class="p">),</span> <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;within&quot;</span><span class="p">)</span>
+        <span class="n">eye_z</span><span class="p">[</span><span class="n">on_obs</span><span class="p">]</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">base</span><span class="p">[</span><span class="n">on_bld</span><span class="p">]</span> <span class="o">+</span> <span class="n">scene</span><span class="o">.</span><span class="n">building_height</span><span class="p">[</span><span class="n">on_bld</span><span class="p">]</span> <span class="o">+</span> <span class="n">eye_offset</span><span class="p">[</span><span class="n">on_obs</span><span class="p">]</span>
+
+    <span class="n">geoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observers</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+    <span class="n">geoms</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">shapely</span><span class="o">.</span><span class="n">Polygon</span><span class="p">()]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">observers</span><span class="p">)</span>
+    <span class="n">share</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observers</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">_spatial_groups</span><span class="p">(</span><span class="n">oxy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">cell_size</span><span class="p">):</span>
+        <span class="n">grid</span><span class="p">,</span> <span class="n">target_z</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">kernel</span> <span class="o">=</span> <span class="n">_target_grid</span><span class="p">(</span>
+            <span class="n">scene</span><span class="p">,</span> <span class="n">oxy</span><span class="p">[</span><span class="n">group</span><span class="p">],</span> <span class="n">radius</span><span class="p">[</span><span class="n">group</span><span class="p">],</span> <span class="n">cell_size</span><span class="p">,</span> <span class="n">target_height</span><span class="p">,</span> <span class="n">include_roofs</span>
+        <span class="p">)</span>
+        <span class="n">segments</span><span class="p">,</span> <span class="n">tops</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kernel</span>
+        <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">grid</span>
+        <span class="n">flat</span><span class="p">,</span> <span class="n">offsets</span> <span class="o">=</span> <span class="n">viewshed_cells</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">oxy</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">-</span> <span class="n">shift</span><span class="p">,</span> <span class="n">eye_z</span><span class="p">[</span><span class="n">group</span><span class="p">]]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">radius</span><span class="p">[</span><span class="n">group</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">x0</span> <span class="o">-</span> <span class="n">shift</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y0</span> <span class="o">-</span> <span class="n">shift</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cell</span><span class="p">,</span> <span class="n">grid</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">grid</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span>
+            <span class="n">target_z</span><span class="p">,</span>
+            <span class="n">segments</span><span class="p">,</span>
+            <span class="n">tops</span><span class="p">,</span>
+            <span class="n">n_threads</span><span class="o">=</span><span class="n">max_workers</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">target_z</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">observer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">group</span><span class="p">):</span>
+            <span class="n">cells</span> <span class="o">=</span> <span class="n">flat</span><span class="p">[</span><span class="n">offsets</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="p">:</span> <span class="n">offsets</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span>
+            <span class="n">share</span><span class="p">[</span><span class="n">observer</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cells</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">_targets_in_disc</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">oxy</span><span class="p">[</span><span class="n">observer</span><span class="p">],</span> <span class="n">radius</span><span class="p">[</span><span class="n">observer</span><span class="p">]),</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cells</span><span class="p">):</span>
+                <span class="n">geoms</span><span class="p">[</span><span class="n">observer</span><span class="p">]</span> <span class="o">=</span> <span class="n">_cells_polygon</span><span class="p">(</span><span class="n">cells</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">observers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geoms</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="s2">&quot;geometry&quot;</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">&quot;visible_area&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">area</span><span class="p">(</span><span class="n">geoms</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">&quot;visible_share&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">share</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">point_from</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_viewshed_catchment">
+<a class="viewcode-back" href="../../../../methods/visibility.html#objectnat.get_viewshed_catchment">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_viewshed_catchment</span><span class="p">(</span>
+    <span class="n">observers</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">buildings</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">view_distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">height_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">storeys_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">storey_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="n">default_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">terrain</span><span class="p">:</span> <span class="n">TerrainInput</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">terrain_height_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">terrain_cell</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">observer_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.6</span><span class="p">,</span>
+    <span class="n">target_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">cell_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">include_roofs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">weight_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Count, for every place around the observers, how many of them see it, over buildings of known height and</span>
+<span class="sd">    terrain (the 2.5D visibility catchment).</span>
+
+<span class="sd">    The 2.5D counterpart of :func:`get_visibility_catchment`: every cell around the observers gets the number</span>
+<span class="sd">    of observers (or the sum of their weights) whose line of sight to the cell centre at ``target_height`` is</span>
+<span class="sd">    clear, as in :func:`get_viewshed`. Observers stand on the ground with their eyes ``observer_height`` above</span>
+<span class="sd">    the terrain; observers inside a building footprint are left out. With ``include_roofs`` roof cells are</span>
+<span class="sd">    counted too, which shows the roofs and building tops seen from the streets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        observers (gpd.GeoDataFrame):</span>
+<span class="sd">            Observer points with a CRS, e.g. from :func:`get_observer_points`. Optional columns</span>
+<span class="sd">            ``visibility_distance`` and ``observer_height`` override ``view_distance`` and</span>
+<span class="sd">            ``observer_height`` per point.</span>
+<span class="sd">        buildings (gpd.GeoDataFrame | None):</span>
+<span class="sd">            Building footprints with heights; ``None`` for terrain only.</span>
+<span class="sd">        view_distance (float | None, optional):</span>
+<span class="sd">            View distance in metres, unless ``observers`` has ``visibility_distance``.</span>
+<span class="sd">        height_column, storeys_column, storey_height, default_height:</span>
+<span class="sd">            Building heights, as in :func:`get_insolation`.</span>
+<span class="sd">        terrain, terrain_height_column, terrain_cell:</span>
+<span class="sd">            Ground heights, as in :func:`get_insolation`.</span>
+<span class="sd">        observer_height (float, optional):</span>
+<span class="sd">            Eye height above the terrain in metres. Defaults to 1.6.</span>
+<span class="sd">        target_height (float, optional):</span>
+<span class="sd">            Height above the ground of what is looked at, in metres. Defaults to 0.</span>
+<span class="sd">        cell_size (float, optional):</span>
+<span class="sd">            Cell side in metres. Defaults to 5.</span>
+<span class="sd">        include_roofs (bool, optional):</span>
+<span class="sd">            Count roof cells too. Defaults to ``False``.</span>
+<span class="sd">        weight_column (str | None, optional):</span>
+<span class="sd">            Observer weights, as in :func:`get_visibility_catchment`.</span>
+<span class="sd">        max_workers (int | None, optional):</span>
+<span class="sd">            Number of threads (``None`` uses all cores).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        gpd.GeoDataFrame:</span>
+<span class="sd">            The cells seen by at least one observer, as points at the cell centres in the CRS of ``observers``,</span>
+<span class="sd">            with ``count`` (and ``weight``), as in :func:`get_visibility_catchment`; :func:`rasterize` turns</span>
+<span class="sd">            them into a :class:`Raster`.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: On empty observers, a missing view distance, bad weights or a grid larger than 30 million</span>
+<span class="sd">            cells.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scene</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">eye_offset</span> <span class="o">=</span> <span class="n">_setup</span><span class="p">(</span>
+        <span class="n">observers</span><span class="p">,</span> <span class="n">buildings</span><span class="p">,</span> <span class="n">view_distance</span><span class="p">,</span> <span class="n">observer_height</span><span class="p">,</span>
+        <span class="n">height_column</span><span class="p">,</span> <span class="n">storeys_column</span><span class="p">,</span> <span class="n">storey_height</span><span class="p">,</span> <span class="n">default_height</span><span class="p">,</span>
+        <span class="n">terrain</span><span class="p">,</span> <span class="n">terrain_height_column</span><span class="p">,</span> <span class="n">terrain_cell</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># fmt: skip</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">weight_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">weight_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">points</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;weight_column </span><span class="si">{</span><span class="n">weight_column</span><span class="si">!r}</span><span class="s2"> is not a column of observers&quot;</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">weight_column</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">weights</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;weight_column </span><span class="si">{</span><span class="n">weight_column</span><span class="si">!r}</span><span class="s2"> must not hold negative values&quot;</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">value_name</span> <span class="o">=</span> <span class="s2">&quot;count&quot;</span> <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;weight&quot;</span>
+
+    <span class="n">oxy</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    <span class="n">usable</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">radius</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">blds</span><span class="p">):</span>
+        <span class="n">inside</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">STRtree</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">blds</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">shapely</span><span class="o">.</span><span class="n">points</span><span class="p">(</span><span class="n">oxy</span><span class="p">),</span> <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;within&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inside</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">inside</span><span class="p">))</span><span class="si">}</span><span class="s2"> observers inside buildings are left out&quot;</span><span class="p">)</span>
+        <span class="n">usable</span><span class="p">[</span><span class="n">inside</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">usable</span> <span class="o">&amp;=</span> <span class="n">weights</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">usable</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">empty_cells</span><span class="p">(</span><span class="n">value_name</span><span class="p">,</span> <span class="n">observers</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+    <span class="n">oxy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">eye_offset</span> <span class="o">=</span> <span class="n">oxy</span><span class="p">[</span><span class="n">usable</span><span class="p">],</span> <span class="n">radius</span><span class="p">[</span><span class="n">usable</span><span class="p">],</span> <span class="n">eye_offset</span><span class="p">[</span><span class="n">usable</span><span class="p">]</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">usable</span><span class="p">]</span> <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">grid</span><span class="p">,</span> <span class="n">target_z</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">tops</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span> <span class="o">=</span> <span class="n">_target_grid</span><span class="p">(</span>
+        <span class="n">scene</span><span class="p">,</span> <span class="n">oxy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">cell_size</span><span class="p">,</span> <span class="n">target_height</span><span class="p">,</span> <span class="n">include_roofs</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">grid</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Counting 2.5D visibility of </span><span class="si">{</span><span class="n">nx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ny</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> cells from </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">oxy</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> observers&quot;</span><span class="p">)</span>
+    <span class="n">counts</span><span class="p">,</span> <span class="n">sums</span> <span class="o">=</span> <span class="n">viewshed_count_grid</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">oxy</span> <span class="o">-</span> <span class="n">shift</span><span class="p">,</span> <span class="n">scene</span><span class="o">.</span><span class="n">ground_at</span><span class="p">(</span><span class="n">oxy</span><span class="p">)</span> <span class="o">+</span> <span class="n">eye_offset</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">x0</span> <span class="o">-</span> <span class="n">shift</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y0</span> <span class="o">-</span> <span class="n">shift</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cell</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">),</span>
+        <span class="n">target_z</span><span class="p">,</span>
+        <span class="n">segments</span><span class="p">,</span>
+        <span class="n">tops</span><span class="p">,</span>
+        <span class="n">weights</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">n_threads</span><span class="o">=</span><span class="n">max_workers</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">cell_points</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">sums</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">cell</span><span class="p">)),</span> <span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">,</span> <span class="n">observers</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_setup</span><span class="p">(</span>
+    <span class="n">points</span><span class="p">,</span> <span class="n">buildings</span><span class="p">,</span> <span class="n">view_distance</span><span class="p">,</span> <span class="n">observer_height</span><span class="p">,</span>
+    <span class="n">height_column</span><span class="p">,</span> <span class="n">storeys_column</span><span class="p">,</span> <span class="n">storey_height</span><span class="p">,</span> <span class="n">default_height</span><span class="p">,</span>
+    <span class="n">terrain</span><span class="p">,</span> <span class="n">terrain_height_column</span><span class="p">,</span> <span class="n">terrain_cell</span><span class="p">,</span>
+<span class="p">):</span>  <span class="c1"># fmt: skip</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scene, observers in its CRS, their radii and eye heights above the ground.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">)</span> <span class="ow">or</span> <span class="n">points</span><span class="o">.</span><span class="n">crs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">points</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;observers must be a non-empty GeoDataFrame with a CRS&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">buildings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">buildings</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">({</span><span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="n">geometry</span><span class="o">=</span><span class="p">[],</span> <span class="n">crs</span><span class="o">=</span><span class="n">points</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+        <span class="n">height_column</span><span class="p">,</span> <span class="n">storeys_column</span> <span class="o">=</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">scene</span> <span class="o">=</span> <span class="n">prepare_scene</span><span class="p">(</span>
+        <span class="n">buildings</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">terrain</span><span class="p">,</span> <span class="n">terrain_height_column</span><span class="p">,</span> <span class="n">terrain_cell</span><span class="p">,</span>
+        <span class="n">height_column</span><span class="p">,</span> <span class="n">storeys_column</span><span class="p">,</span> <span class="n">storey_height</span><span class="p">,</span> <span class="n">default_height</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># fmt: skip</span>
+    <span class="n">local</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">local_crs</span><span class="p">)</span>
+    <span class="n">local</span> <span class="o">=</span> <span class="n">local</span><span class="p">[</span><span class="n">local</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s2">&quot;Point&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">local</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;observers must contain point geometries&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;visibility_distance&quot;</span> <span class="ow">in</span> <span class="n">local</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">radius</span> <span class="o">=</span> <span class="n">local</span><span class="p">[</span><span class="s2">&quot;visibility_distance&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">view_distance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">local</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">view_distance</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Provide view_distance or a &#39;visibility_distance&#39; column in the observers&quot;</span><span class="p">)</span>
+    <span class="n">eye</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">local</span><span class="p">[</span><span class="s2">&quot;observer_height&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;observer_height&quot;</span> <span class="ow">in</span> <span class="n">local</span><span class="o">.</span><span class="n">columns</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">local</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">observer_height</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">scene</span><span class="p">,</span> <span class="n">local</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">eye</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_spatial_groups</span><span class="p">(</span><span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Observer groups whose target grids stay below ``MAX_GRID_CELLS`` cells.&quot;&quot;&quot;</span>
+    <span class="n">reach</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">radius</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="n">span</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">reach</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">cell</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">cell</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">MAX_GRID_CELLS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">))]</span>
+    <span class="n">tile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MAX_GRID_CELLS</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">reach</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cell</span>
+    <span class="k">if</span> <span class="n">tile</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;view_distance is too large for cell_size; increase cell_size&quot;</span><span class="p">)</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">xy</span> <span class="o">/</span> <span class="n">tile</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">group</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">==</span> <span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_target_grid</span><span class="p">(</span><span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">target_height</span><span class="p">,</span> <span class="n">include_roofs</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cell grid around the observers (aligned to multiples of ``cell``) with the absolute height of the</span>
+<span class="sd">    target in every cell: the ground plus ``target_height``, the roof on footprints with ``include_roofs``,</span>
+<span class="sd">    NaN on footprints otherwise. Also returns the coordinate shift and the kernel&#39;s scene arguments.&quot;&quot;&quot;</span>
+    <span class="n">reach</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">radius</span><span class="p">))</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">reach</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">reach</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell</span>
+    <span class="n">nx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">reach</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">ny</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">reach</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">limit</span> <span class="ow">and</span> <span class="n">nx</span> <span class="o">*</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="n">MAX_GRID_CELLS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;The grid would have </span><span class="si">{</span><span class="n">nx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ny</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> cells (limit </span><span class="si">{</span><span class="n">MAX_GRID_CELLS</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">); increase cell_size or split the area.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">])</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel_scene</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
+    <span class="n">xs</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell</span>
+    <span class="n">ys</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ny</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell</span>
+    <span class="k">if</span> <span class="n">scene</span><span class="o">.</span><span class="n">terrain_grid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">target_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">target_height</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">centres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">ny</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">ys</span><span class="p">,</span> <span class="n">nx</span><span class="p">)])</span>
+        <span class="n">target_z</span> <span class="o">=</span> <span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">ground_at</span><span class="p">(</span><span class="n">centres</span><span class="p">)</span> <span class="o">+</span> <span class="n">target_height</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">blds</span><span class="p">):</span>
+        <span class="n">roof</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">base</span> <span class="o">+</span> <span class="n">scene</span><span class="o">.</span><span class="n">building_height</span>
+        <span class="n">footprint</span> <span class="o">=</span> <span class="n">rasterize_footprints</span><span class="p">(</span>
+            <span class="n">kernel</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">scene</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">roof</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">cell</span><span class="p">),</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">covered</span> <span class="o">=</span> <span class="n">footprint</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="n">target_z</span><span class="p">[</span><span class="n">covered</span><span class="p">]</span> <span class="o">=</span> <span class="n">roof</span><span class="p">[</span><span class="n">footprint</span><span class="p">[</span><span class="n">covered</span><span class="p">]]</span> <span class="k">if</span> <span class="n">include_roofs</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">cell</span><span class="p">),</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">target_z</span><span class="p">),</span> <span class="n">shift</span><span class="p">,</span> <span class="n">kernel</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_targets_in_disc</span><span class="p">(</span><span class="n">targets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">grid</span>
+    <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">radius</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell</span><span class="p">),</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">radius</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+    <span class="n">j0</span><span class="p">,</span> <span class="n">j1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">radius</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell</span><span class="p">),</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">radius</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
+    <span class="n">cx</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell</span> <span class="o">-</span> <span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">cy</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">j0</span><span class="p">,</span> <span class="n">j1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell</span> <span class="o">-</span> <span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">disc</span> <span class="o">=</span> <span class="n">cx</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">cy</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="n">radius</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">((</span><span class="n">disc</span> <span class="o">&amp;</span> <span class="n">targets</span><span class="p">[</span><span class="n">j0</span><span class="p">:</span><span class="n">j1</span><span class="p">,</span> <span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cells_polygon</span><span class="p">(</span><span class="n">cells</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge flat cell indices of a grid into one (Multi)Polygon.&quot;&quot;&quot;</span>
+    <span class="n">j</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divmod</span><span class="p">(</span><span class="n">cells</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span> <span class="n">nx</span><span class="p">)</span>
+    <span class="n">i0</span><span class="p">,</span> <span class="n">j0</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">j</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">j</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">j0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">i0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">labels</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="n">j0</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">i0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">label_zones</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="p">(</span><span class="n">x0</span> <span class="o">+</span> <span class="n">i0</span> <span class="o">*</span> <span class="n">cell</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">j0</span> <span class="o">*</span> <span class="n">cell</span><span class="p">),</span> <span class="n">cell</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Donny
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../../_static/documentation_options.js?v=acc74ff5"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../../../../_static/lightbox.js?v=dc29de6d"></script>
+    </body>
+</html>

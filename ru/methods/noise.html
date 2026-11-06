@@ -1,0 +1,590 @@
+<!doctype html>
+<html class="no-js" lang="ru" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Алфавитный указатель" href="../genindex.html"><link rel="search" title="Поиск" href="../search.html"><link rel="next" title="Инсоляция" href="insolation.html"><link rel="prev" title="Анализ видимости" href="visibility.html">
+        <link rel="prefetch" href="../_static/ONlogo.svg" as="image">
+
+    <link rel="shortcut icon" href="../_static/ONFavicon.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>Моделирование шума - документация ObjectNat 3.0.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/objectnat.css?v=bf0f6754" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">документация ObjectNat 3.0.0</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/ONlogo.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">документация ObjectNat 3.0.0</span>
+  
+</a><div class="lang-switch">
+  <a href="../../methods/noise.html" hreflang="en" lang="en">English</a>
+  <span class="lang-switch-current" lang="ru">Русский</span>
+</div><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Поиск" name="q" aria-label="Поиск">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="isochrones.html">Изохроны</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverage.html">Зоны покрытия</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provision.html">Обеспеченность сервисами</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visibility.html">Анализ видимости</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Моделирование шума</a></li>
+<li class="toctree-l1"><a class="reference internal" href="insolation.html">Инсоляция</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rasters.html">Растры</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples/index.html">Примеры</a><input aria-label="Toggle navigation of Примеры" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/isochrones.html">Изохроны</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/coverage.html">Зоны покрытия</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/calculate_od_matrix.html">Матрица времени в пути от зданий до сервисов</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/provision.html">Обеспеченность сервисами</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/visibility.html">Видимость 2D: полигоны видимости, метрики изовист и охват</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/viewshed.html">Видимость 2.5D: области видимости и их охват</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/noise.html">Моделирование шума</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/insolation.html">Инсоляция: часы солнца на земле и на фасадах</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../upgrading.html">Переход на 3.0</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/methods/noise.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="noise-simulation">
+<h1>Моделирование шума<a class="headerlink" href="#noise-simulation" title="Ссылка на этот заголовок">¶</a></h1>
+<section id="overview">
+<h2>Обзор<a class="headerlink" href="#overview" title="Ссылка на этот заголовок">¶</a></h2>
+<p>Функции шума оценивают уровни звука вокруг <strong>источников</strong> среди <strong>препятствий</strong> (зданий, стен) и растительности и возвращают их полигонами полос уровня (<code class="docutils literal notranslate"><span class="pre">noise_level</span></code>, дБ). Три функции различаются моделью распространения и временем расчёта:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 28.0%" />
+<col style="width: 22.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Функция</p></th>
+<th class="head"><p>Источники</p></th>
+<th class="head"><p>Модель</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="#objectnat.simulate_noise_grid" title="objectnat.simulate_noise_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise_grid()</span></code></a></p></td>
+<td><p>точки, линии, полигоны</p></td>
+<td><p>Уровни на регулярной сетке <strong>приёмников</strong>: прямой путь, отражения первого порядка и дифракция у углов зданий, энергетическое суммирование (Rust)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise()</span></code></a></p></td>
+<td><p>точки</p></td>
+<td><p>Распространение волнового фронта по слоям затухания с многократными отражениями и поглощением препятствиями</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#objectnat.calculate_simplified_noise_frame" title="objectnat.calculate_simplified_noise_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.calculate_simplified_noise_frame()</span></code></a></p></td>
+<td><p>точки, линии, полигоны</p></td>
+<td><p>Маски видимости и затухание с расстоянием, без отражений и поглощения</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Все три функции принимают уровень источника <code class="docutils literal notranslate"><span class="pre">source_noise_db</span></code> (дБ на расстоянии 1 м от источника) и характерную частоту <code class="docutils literal notranslate"><span class="pre">geometric_mean_freq_hz</span></code> (Гц) либо как аргументы, либо как столбцы для каждого источника, а также температуру воздуха (°C), от которой зависит поглощение в воздухе.</p>
+</section>
+<section id="receiver-grid-simulation">
+<h2>Расчёт на сетке приёмников<a class="headerlink" href="#receiver-grid-simulation" title="Ссылка на этот заголовок">¶</a></h2>
+<section id="method">
+<h3>Метод<a class="headerlink" href="#method" title="Ссылка на этот заголовок">¶</a></h3>
+<p><a class="reference internal" href="#objectnat.simulate_noise_grid" title="objectnat.simulate_noise_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise_grid()</span></code></a> вычисляет уровень в каждом приёмнике регулярной сетки (шаг <code class="docutils literal notranslate"><span class="pre">grid_step</span></code> метров). Приёмники внутри препятствий пропускаются. Для каждой пары источника и приёмника функция энергетически суммирует</p>
+<ul class="simple">
+<li><p><strong>прямой путь</strong>, если линию между источником и приёмником не перекрывает ни одно препятствие;</p></li>
+<li><p><strong>отражения первого порядка</strong> от стен препятствий не дальше <code class="docutils literal notranslate"><span class="pre">reflection_max_dist</span></code> метров от источника (по умолчанию 50 м), найденные методом мнимых источников; каждое отражение теряет <code class="docutils literal notranslate"><span class="pre">-10</span> <span class="pre">lg(1</span> <span class="pre">-</span> <span class="pre">a)</span></code> дБ, где <code class="docutils literal notranslate"><span class="pre">a</span></code> — коэффициент поглощения стены (<code class="docutils literal notranslate"><span class="pre">absorb_ratio_column</span></code> или <code class="docutils literal notranslate"><span class="pre">standard_absorb_ratio</span></code>, по умолчанию 0.05);</p></li>
+<li><p><strong>дифракцию на вертикальных рёбрах</strong> (<code class="docutils literal notranslate"><span class="pre">diffraction=True</span></code>): угол, который источник видит на краю препятствия, служит вторичным источником для приёмников, скрытых от источника, но видимых из угла. Звук также проходит вдоль затенённой стороны выпуклой оболочки препятствия до следующего угла и огибает его; этот путь доходит до приёмников сразу за зданием.</p></li>
+</ul>
+<p>Дифрагированный путь имеет геометрическое расхождение и поглощение в воздухе прямого расстояния <code class="docutils literal notranslate"><span class="pre">d</span></code> и, кроме того, затухание на экране по ISO 9613-2 без учёта земли, <code class="docutils literal notranslate"><span class="pre">10</span> <span class="pre">lg(3</span> <span class="pre">+</span> <span class="pre">40</span> <span class="pre">C3</span> <span class="pre">δ</span> <span class="pre">/</span> <span class="pre">λ)</span></code>. Здесь <code class="docutils literal notranslate"><span class="pre">δ</span></code> — разность хода, то есть насколько путь через углы длиннее <code class="docutils literal notranslate"><span class="pre">d</span></code>, а <code class="docutils literal notranslate"><span class="pre">λ</span> <span class="pre">=</span> <span class="pre">c</span> <span class="pre">/</span> <span class="pre">f</span></code> — длина волны на характерной частоте (<code class="docutils literal notranslate"><span class="pre">c</span> <span class="pre">=</span> <span class="pre">331.3</span> <span class="pre">+</span> <span class="pre">0.606</span> <span class="pre">T</span></code> м/с, <code class="docutils literal notranslate"><span class="pre">T</span></code> в °C). Для одного угла <code class="docutils literal notranslate"><span class="pre">C3</span> <span class="pre">=</span> <span class="pre">1</span></code>, что даёт формулу Маэкавы <code class="docutils literal notranslate"><span class="pre">10</span> <span class="pre">lg(3</span> <span class="pre">+</span> <span class="pre">20</span> <span class="pre">N)</span></code> с числом Френеля <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">2</span> <span class="pre">δ</span> <span class="pre">/</span> <span class="pre">λ</span></code>; для двух углов на расстоянии <code class="docutils literal notranslate"><span class="pre">e</span></code> метров <code class="docutils literal notranslate"><span class="pre">C3</span> <span class="pre">=</span> <span class="pre">(1</span> <span class="pre">+</span> <span class="pre">(5</span> <span class="pre">λ</span> <span class="pre">/</span> <span class="pre">e)²)</span> <span class="pre">/</span> <span class="pre">(1/3</span> <span class="pre">+</span> <span class="pre">(5</span> <span class="pre">λ</span> <span class="pre">/</span> <span class="pre">e)²)</span></code>. Затухание равно 4,8 дБ на границе тени и не превышает 20 дБ для одного угла и 25 дБ для двух. Углы — выпуклые вершины объединённых контуров препятствий, упрощённых на 0,5 м (соприкасающиеся здания образуют один контур), и концы линий стен.</p>
+<p>Каждый путь длиной <code class="docutils literal notranslate"><span class="pre">r</span></code> (м) теряет <code class="docutils literal notranslate"><span class="pre">20</span> <span class="pre">lg</span> <span class="pre">r</span></code> дБ на геометрическое расхождение и <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">r</span></code> дБ на поглощение в воздухе, где <code class="docutils literal notranslate"><span class="pre">k</span></code> зависит от температуры и частоты; путь через растительность (<code class="docutils literal notranslate"><span class="pre">trees</span></code>) дополнительно теряет зависящую от частоты величину на каждый метр пересечённой листвы. Линейные источники (дороги, железные дороги) и контуры полигонов (промышленные площадки, шумные здания) разбиваются на точки с шагом <code class="docutils literal notranslate"><span class="pre">source_spacing</span></code> метров (по умолчанию 5 м); каждая точка получает <code class="docutils literal notranslate"><span class="pre">source_noise_db</span> <span class="pre">-</span> <span class="pre">10</span> <span class="pre">lg(π</span> <span class="pre">/</span> <span class="pre">s)</span></code>, чтобы длинная линия следовала закону линейного источника <code class="docutils literal notranslate"><span class="pre">L</span> <span class="pre">-</span> <span class="pre">10</span> <span class="pre">lg</span> <span class="pre">d</span> <span class="pre">-</span> <span class="pre">k</span> <span class="pre">d</span></code> (на 3 дБ меньше при удвоении расстояния). Так как энергии складываются, два одинаковых источника дают +3 дБ.</p>
+<p>Уровни ниже <code class="docutils literal notranslate"><span class="pre">target_noise_db</span></code> отбрасываются, остальные группируются в полосы по <code class="docutils literal notranslate"><span class="pre">db_sim_step</span></code> дБ. <code class="docutils literal notranslate"><span class="pre">noise_level</span></code> — верхняя граница полосы, как в <a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise()</span></code></a>. При <code class="docutils literal notranslate"><span class="pre">output=&quot;receivers&quot;</span></code> функция возвращает точки приёмников с точными уровнями вместо полос; при <code class="docutils literal notranslate"><span class="pre">output=&quot;both&quot;</span></code> — и то, и другое.</p>
+<p>Время расчёта пропорционально числу приёмников, умноженному на число точечных источников и точек линий в пределах досягаемости. Для больших дорожных сетей используйте более крупный <code class="docutils literal notranslate"><span class="pre">grid_step</span></code> или <code class="docutils literal notranslate"><span class="pre">source_spacing</span></code> либо <a class="reference internal" href="#objectnat.calculate_simplified_noise_frame" title="objectnat.calculate_simplified_noise_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.calculate_simplified_noise_frame()</span></code></a> для первой оценки.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.simulate_noise_grid">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">simulate_noise_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_noise_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometric_mean_freq_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">absorb_ratio_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standard_absorb_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">air_temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_noise_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_sim_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reflections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reflection_max_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diffraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_position_buffer_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zones'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/noise/noise_grid.html#simulate_noise_grid"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#objectnat.simulate_noise_grid" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Моделирует шум от точечных, линейных и площадных источников на регулярной сетке приёмников.</p>
+<p>Альтернатива <a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate_noise()</span></code></a>, основанная на подходе с сеткой приёмников, который используют инженерные модели шума. Каждый приёмник собирает звуковую энергию от каждого источника по путям:</p>
+<ul class="simple">
+<li><p>прямой путь, если его не перекрывает препятствие;</p></li>
+<li><p>отражения первого порядка от стен препятствий (метод мнимых источников), если <code class="docutils literal notranslate"><span class="pre">reflections</span></code> равно True;</p></li>
+<li><p>дифракция вокруг одного или двух углов препятствия (вертикальных рёбер зданий) в его тень, если <code class="docutils literal notranslate"><span class="pre">diffraction</span></code> равно True.</p></li>
+</ul>
+<p>Каждый путь теряет <code class="docutils literal notranslate"><span class="pre">20</span> <span class="pre">lg</span> <span class="pre">r</span></code> (геометрическое расхождение, <code class="docutils literal notranslate"><span class="pre">r</span></code> в метрах), поглощение в воздухе <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">r</span></code> (<code class="docutils literal notranslate"><span class="pre">k</span></code> по температуре и частоте, как в <a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate_noise()</span></code></a>), потерю при отражении <code class="docutils literal notranslate"><span class="pre">-10</span> <span class="pre">lg(1</span> <span class="pre">-</span> <span class="pre">a)</span></code> на каждое отражение (<code class="docutils literal notranslate"><span class="pre">a</span></code> — коэффициент поглощения стены) и, при прохождении через растительность, удельное ослабление листвой из <a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate_noise()</span></code></a>, умноженное на пересечённую длину. Уровень дифрагированного пути равен уровню на прямом расстоянии минус затухание на экране по ISO 9613-2 без учёта земли, <code class="docutils literal notranslate"><span class="pre">10</span> <span class="pre">lg(3</span> <span class="pre">+</span> <span class="pre">40</span> <span class="pre">C3</span> <span class="pre">δ</span> <span class="pre">/</span> <span class="pre">λ)</span></code>: <code class="docutils literal notranslate"><span class="pre">δ</span></code> — насколько путь через углы длиннее, <code class="docutils literal notranslate"><span class="pre">λ</span></code> — длина волны, <code class="docutils literal notranslate"><span class="pre">C3</span> <span class="pre">=</span> <span class="pre">1</span></code> для одного угла (формула Маэкавы) и <code class="docutils literal notranslate"><span class="pre">(1</span> <span class="pre">+</span> <span class="pre">(5</span> <span class="pre">λ</span> <span class="pre">/</span> <span class="pre">e)²)</span> <span class="pre">/</span> <span class="pre">(1/3</span> <span class="pre">+</span> <span class="pre">(5</span> <span class="pre">λ</span> <span class="pre">/</span> <span class="pre">e)²)</span></code> для двух углов на расстоянии <code class="docutils literal notranslate"><span class="pre">e</span></code> метров. Затухание не превышает 20 дБ для одного угла и 25 дБ для двух. Пути и источники складываются энергетически, поэтому два одинаковых источника дают +3 дБ. Приёмники внутри препятствий пропускаются. Затем уровни группируются в полосы по <code class="docutils literal notranslate"><span class="pre">db_sim_step</span></code> дБ и возвращаются полигонами, как в <a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate_noise()</span></code></a>.</p>
+<p>Расчёт выполняется параллельно в расширении ObjectNat на Rust.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Параметры<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_points</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a></span>) – Источники шума. Точки — точечные источники. Линии (дороги, железные дороги) — линейные источники, разбитые на точки с шагом <code class="docutils literal notranslate"><span class="pre">source_spacing</span></code> метров. Полигоны (промышленные площадки, шумные здания) излучают по контуру как линейные источники. Необязательные столбцы <code class="docutils literal notranslate"><span class="pre">source_noise_db</span></code> (уровень в 1 м от точки или линии, дБ) и <code class="docutils literal notranslate"><span class="pre">geometric_mean_freq_hz</span></code> заменяют одноимённые аргументы для отдельных источников.</p></li>
+<li><p><strong>obstacles</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Здания, стены и другие препятствия (полигоны или линии). <code class="docutils literal notranslate"><span class="pre">None</span></code> или пустой набор — свободное поле.</p></li>
+<li><p><strong>source_noise_db</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Уровень в 1 м для источников без столбца <code class="docutils literal notranslate"><span class="pre">source_noise_db</span></code>, дБ.</p></li>
+<li><p><strong>geometric_mean_freq_hz</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Характерная частота для источников без столбца <code class="docutils literal notranslate"><span class="pre">geometric_mean_freq_hz</span></code>, Гц.</p></li>
+<li><p><strong>absorb_ratio_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Столбец <code class="docutils literal notranslate"><span class="pre">obstacles</span></code> с коэффициентом звукопоглощения каждого препятствия (0-1).</p></li>
+<li><p><strong>standard_absorb_ratio</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Коэффициент поглощения для препятствий без значения. По умолчанию 0.05 (бетон).</p></li>
+<li><p><strong>trees</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Полигоны растительности; звук, проходящий через них, ослабевает.</p></li>
+<li><p><strong>air_temperature</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Температура воздуха, °C.</p></li>
+<li><p><strong>target_noise_db</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Наименьший учитываемый уровень, дБ. Источники действуют до расстояния, на котором их уровень падает до него.</p></li>
+<li><p><strong>db_sim_step</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Ширина выходных полос уровня, дБ.</p></li>
+<li><p><strong>reflections</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Учитывать отражения первого порядка от стен препятствий.</p></li>
+<li><p><strong>reflection_max_dist</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Отражают источник только стены ближе этого расстояния к нему, метры (по умолчанию 50, как максимальное расстояние отражения в инженерных моделях). Большие значения медленнее.</p></li>
+<li><p><strong>diffraction</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Огибание звуком углов препятствий: приёмник, скрытый от источника, но видимый из угла, который источник видит на краю препятствия, получает дифрагированный звук, а вдоль затенённой стороны выпуклой оболочки препятствия звук огибает и следующий угол. Углы — выпуклые вершины объединённых контуров, упрощённых на 0,5 м, и концы линий.</p></li>
+<li><p><strong>grid_step</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Шаг приёмников в метрах; меньший шаг подробнее и медленнее.</p></li>
+<li><p><strong>source_spacing</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Шаг точек вдоль линейных и площадных источников, метры (по умолчанию 5). Каждая точка получает <code class="docutils literal notranslate"><span class="pre">source_noise_db</span> <span class="pre">-</span> <span class="pre">10</span> <span class="pre">lg(pi</span> <span class="pre">/</span> <span class="pre">s)</span></code>, чтобы длинная линия следовала закону линейного источника <code class="docutils literal notranslate"><span class="pre">source_noise_db</span> <span class="pre">-</span> <span class="pre">10</span> <span class="pre">lg</span> <span class="pre">d</span> <span class="pre">-</span> <span class="pre">k</span> <span class="pre">d</span></code> (3 дБ на удвоение расстояния). Ближе к линии, чем примерно <code class="docutils literal notranslate"><span class="pre">source_spacing</span></code>, видны отдельные точки.</p></li>
+<li><p><strong>source_position_buffer_r</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Радиус в метрах, вырезаемый из препятствия или дерева, внутри которого находится источник, как в <a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate_noise()</span></code></a>.</p></li>
+<li><p><strong>output</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(в Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'zones'</span></code>, <code class="docutils literal notranslate"><span class="pre">'receivers'</span></code>, <code class="docutils literal notranslate"><span class="pre">'both'</span></code>]</span>) – <code class="docutils literal notranslate"><span class="pre">&quot;zones&quot;</span></code> (по умолчанию) — полосы уровня, <code class="docutils literal notranslate"><span class="pre">&quot;receivers&quot;</span></code> — только точки приёмников с точными уровнями (полигоны полос не строятся), <code class="docutils literal notranslate"><span class="pre">&quot;both&quot;</span></code> — кортеж <code class="docutils literal notranslate"><span class="pre">(bands,</span> <span class="pre">receivers)</span></code>.</p></li>
+<li><p><strong>max_workers</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(в Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Максимальное число потоков (<code class="docutils literal notranslate"><span class="pre">None</span></code> — все ядра).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Тип результата<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a>, <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeoDataFrame</span></code></a>]</span></p>
+</dd>
+<dt class="field-odd">Результат<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GeoDataFrame со столбцами <code class="docutils literal notranslate"><span class="pre">noise_level</span></code> (верхняя граница каждой полосы <code class="docutils literal notranslate"><span class="pre">db_sim_step</span></code>, дБ, как в <a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate_noise()</span></code></a>) и <code class="docutils literal notranslate"><span class="pre">geometry</span></code> (по одному полигону на полосу) в системе координат <code class="docutils literal notranslate"><span class="pre">source_points</span></code>. При <code class="docutils literal notranslate"><span class="pre">output=&quot;receivers&quot;</span></code> — приёмники, при <code class="docutils literal notranslate"><span class="pre">output=&quot;both&quot;</span></code> — кортеж <code class="docutils literal notranslate"><span class="pre">(bands,</span> <span class="pre">receivers)</span></code>. Приёмники содержат точный <code class="docutils literal notranslate"><span class="pre">noise_level</span></code> каждого приёмника, где уровень не ниже <code class="docutils literal notranslate"><span class="pre">target_noise_db</span></code>; их <code class="docutils literal notranslate"><span class="pre">attrs</span></code> записывают сетку, поэтому <a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">rasterize()</span></code></a> превращает <code class="docutils literal notranslate"><span class="pre">noise_level</span></code> в <a class="reference internal" href="rasters.html#objectnat.Raster" title="objectnat.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a>.</p>
+</dd>
+</dl>
+<p class="rubric">Заметки</p>
+<p>Не моделируются: влияние земли, дифракция через крыши (высоты препятствий не используются), пути вокруг трёх и более углов и отражения высших порядков. Места, куда звук попадает только вокруг трёх и более углов (внутренние дворы, второй ряд зданий), получают только отражённый звук.</p>
+</dd></dl>
+
+<p>Каждая полоса охватывает <code class="docutils literal notranslate"><span class="pre">db_sim_step</span></code> дБ; приёмники (<code class="docutils literal notranslate"><span class="pre">output=&quot;receivers&quot;</span></code>) содержат точный уровень, а <a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a> превращает их в непрерывную карту (см. <a class="reference internal" href="rasters.html"><span class="doc">Растры</span></a>).</p>
+<p><strong>Как читать результат.</strong> Модель энергетическая: она возвращает усреднённый по времени уровень звука, то есть величину, которую используют шумовые карты и нормативы, а не мгновенное звуковое давление. Поэтому фаза, волновые фронты и интерференция не вычисляются, и уровень плавно убывает с расстоянием. Прямой звук и отражения распространяются по прямым лучам, поэтому проходят в просветы между зданиями прямыми пучками; отражение первого порядка — это поле мнимого источника за стеной, ограниченное лучами, которые проходят через стену. Там, куда уже приходит прямой звук, отражение с коэффициентом поглощения 5 % добавляет не больше 3 дБ. Дифракция заполняет тени. На границе тени уровень падает на 4,8 дБ и убывает дальше по мере роста обхода; предел 20 дБ достигается при обходе 2,4 длины волны, то есть 0,4 м на 2 кГц и 1,7 м на 500 Гц. Поэтому на высоких частотах тени глубже, чем на низких. Сразу за зданием звук огибает два угла и приходит с уровнем до 25 дБ ниже уровня в свободном поле; места, куда звук попадает только вокруг трёх и более углов (внутренние дворы, второй ряд за зданием), получают только отражённый звук.</p>
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_grid_paths_v2.png"><img alt="Непрерывные уровни в приёмниках и прибавка от отражений и от дифракции" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_grid_paths_v2.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="#objectnat.simulate_noise_grid" title="objectnat.simulate_noise_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise_grid()</span></code></a> для дороги (линейный источник, 80 дБ в 1 м, 1 кГц) и двух точечных источников (95 дБ на 2 кГц, 85 дБ на 500 Гц) среди зданий и растительности из примера, <code class="docutils literal notranslate"><span class="pre">grid_step=2</span></code>, приёмники растеризованы функцией <a class="reference internal" href="rasters.html#objectnat.rasterize" title="objectnat.rasterize"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.rasterize()</span></code></a>. <code class="docutils literal notranslate"><span class="pre">target_noise_db=30</span></code> показывает звук, который доходит до теней. Слева: непрерывные уровни по всем путям. В центре и справа: прибавка уровня от отражений (для сравнения <code class="docutils literal notranslate"><span class="pre">reflections=False</span></code>) и от дифракции (<code class="docutils literal notranslate"><span class="pre">diffraction=False</span></code>); ячейки, куда звук доходит только по этим путям, сравниваются с <code class="docutils literal notranslate"><span class="pre">target_noise_db</span></code>. Дифракция заполняет тени рядом с пучками и за зданиями возле точечных источников.</span><a class="headerlink" href="#id3" title="Ссылка на это изображение">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="wave-front-simulation">
+<h2>Моделирование волнового фронта<a class="headerlink" href="#wave-front-simulation" title="Ссылка на этот заголовок">¶</a></h2>
+<section id="id1">
+<h3>Метод<a class="headerlink" href="#id1" title="Ссылка на этот заголовок">¶</a></h3>
+<p><a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise()</span></code></a> моделирует распространение от точечных источников слоями затухания по <code class="docutils literal notranslate"><span class="pre">db_sim_step</span></code> дБ. Слой — это территория в пределах расстояния, на котором уровень падает на один шаг, ограниченная полигоном видимости источника. Границы препятствий, до которых доходит звук, становятся вторичными источниками отражённого звука, до <code class="docutils literal notranslate"><span class="pre">reflection_n</span></code> отражений (по умолчанию 3), с уровнем, уменьшенным на коэффициент поглощения препятствия (<code class="docutils literal notranslate"><span class="pre">absorb_ratio_column</span></code>, <code class="docutils literal notranslate"><span class="pre">standart_absorb_ratio</span></code>); отражения не начинаются ближе <code class="docutils literal notranslate"><span class="pre">dead_area_r</span></code> метров к предыдущему источнику. Растительность (<code class="docutils literal notranslate"><span class="pre">trees</span></code>, растеризуется с <code class="docutils literal notranslate"><span class="pre">tree_resolution</span></code>) снижает уровень в секторе тени за полигонами деревьев на зависящую от частоты величину, которая растёт с толщиной пересечённой листвы. Моделирование останавливается на <code class="docutils literal notranslate"><span class="pre">target_noise_db</span></code>. Для источника внутри препятствия или полигона деревьев <code class="docutils literal notranslate"><span class="pre">source_position_buffer_r</span></code> вырезает вокруг источника отверстие такого радиуса; <code class="docutils literal notranslate"><span class="pre">use_parallel</span></code> распределяет работу по процессам.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.simulate_noise">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">simulate_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_noise_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometric_mean_freq_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/noise/noise_simulation.html#simulate_noise"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#objectnat.simulate_noise" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Моделирует распространение шума от набора точечных источников с учётом препятствий, деревьев и условий среды.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Параметры<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_points</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – GeoDataFrame с одной или несколькими точечными геометриями источников шума. Может содержать столбцы „source_noise_db“ и „geometric_mean_freq_hz“ для расчёта по каждой точке.</p></li>
+<li><p><strong>obstacles</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – GeoDataFrame препятствий. Если в нём есть столбец с коэффициентами звукопоглощения, его имя нужно передать в аргументе <cite>absorb_ratio_column</cite>. Отсутствующие значения заполняются <cite>standart_absorb_ratio</cite>.</p></li>
+<li><p><strong>source_noise_db</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Уровень шума по умолчанию (дБ) для точек без собственного значения. Децибелы — логарифмические единицы интенсивности звука. 20 дБ соответствуют едва слышному шёпоту, а 140 дБ сравнимы с шумом реактивных двигателей.</p></li>
+<li><p><strong>geometric_mean_freq_hz</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Частота по умолчанию (Гц) для точек без собственного значения. Этот параметр влияет на распространение и рассеяние звука среди деревьев. Низкие частоты распространяются дальше высоких. Рекомендуются значения от 63 до 8000 Гц; значения вне этого диапазона приводятся к ближайшей границе при расчёте коэффициента поглощения.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Именованные аргументы<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>absorb_ratio_column</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Имя столбца в GeoDataFrame <cite>obstacles</cite> с коэффициентами звукопоглощения препятствий. По умолчанию None. Если не задано, все препятствия получают <cite>standart_absorb_ratio</cite>.</p></li>
+<li><p><strong>standart_absorb_ratio</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Коэффициент звукопоглощения по умолчанию для препятствий без значения в <cite>absorb_ratio_column</cite>. По умолчанию 0.05 — типичное значение для бетонных стен.</p></li>
+<li><p><strong>trees</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>, <em>optional</em>) – GeoDataFrame с деревьями или густой растительностью на пути звука. Деревья рассеивают и поглощают звук.</p></li>
+<li><p><strong>tree_resolution</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – Параметр разрешения для моделирования взаимодействия звука с деревьями. Рекомендуются значения от 2 до 16; большие значения дают более точный результат.</p></li>
+<li><p><strong>air_temperature</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Температура воздуха в градусах Цельсия. Рекомендуемый диапазон — от 0 до 30 градусов, значения вне его обрезаются. Температура влияет на распространение звука в воздухе.</p></li>
+<li><p><strong>target_noise_db</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Целевой уровень шума (дБ) для моделирования. По умолчанию 40 дБ. Меньшие значения могут быть неважны для дальнейшего анализа, так как близки к порогу слышимости.</p></li>
+<li><p><strong>db_sim_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Шаг моделирования в децибелах. По умолчанию 1. Для более точного анализа его можно изменить. Если разность между <cite>source_noise_db</cite> и <cite>target_noise_db</cite> не делится на шаг, функция выдаёт ошибку.</p></li>
+<li><p><strong>reflection_n</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – Максимальное число отражений для каждой звуковой волны. Рекомендуются значения от 1 до 3. Большие значения увеличивают время моделирования.</p></li>
+<li><p><strong>dead_area_r</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Отладочный параметр — радиус «мёртвой зоны» для отражений. Точки в этой зоне не порождают отражений. Это не даёт алгоритму застревать в углах и вдоль стен зданий.</p></li>
+<li><p><strong>source_position_buffer_r</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Радиус в метрах, вырезаемый вокруг исходной точки источника из содержащего её препятствия или дерева. По умолчанию 0: геометрии источников не меняются.</p></li>
+<li><p><strong>use_parallel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – Использовать ли ProcessPool для распределения задач. По умолчанию True.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Результат<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Уровни шума (<code class="docutils literal notranslate"><span class="pre">noise_level</span></code>, дБ) с геометрией охватываемых ими территорий; результаты всех точечных источников объединены в один GeoDataFrame.</p>
+</dd>
+<dt class="field-even">Тип результата<span class="colon">:</span></dt>
+<dd class="field-even"><p>gpd.GeoDataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_simulation_v4.png"><img alt="Полосы уровней моделирования волнового фронта для двух точечных источников" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_simulation_v4.png" style="width: 75%;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise()</span></code></a> для двух точечных источников из примера <a class="reference internal" href="#objectnat.simulate_noise_grid" title="objectnat.simulate_noise_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise_grid()</span></code></a> (95 дБ на 2 кГц, 85 дБ на 500 Гц) среди зданий и растительности примера, <code class="docutils literal notranslate"><span class="pre">reflection_n=2</span></code>, <code class="docutils literal notranslate"><span class="pre">target_noise_db=40</span></code>, <code class="docutils literal notranslate"><span class="pre">db_sim_step=5</span></code>.</span><a class="headerlink" href="#id4" title="Ссылка на это изображение">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="simplified-noise-frame">
+<h2>Упрощённый шумовой каркас<a class="headerlink" href="#simplified-noise-frame" title="Ссылка на этот заголовок">¶</a></h2>
+<section id="id2">
+<h3>Метод<a class="headerlink" href="#id2" title="Ссылка на этот заголовок">¶</a></h3>
+<p><a class="reference internal" href="#objectnat.calculate_simplified_noise_frame" title="objectnat.calculate_simplified_noise_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.calculate_simplified_noise_frame()</span></code></a> строит огибающую возможного воздействия без моделирования распространения. Линии и полигоны разбиваются на точки (<code class="docutils literal notranslate"><span class="pre">linestring_point_radius</span></code>, <code class="docutils literal notranslate"><span class="pre">polygon_point_radius</span></code>), полигон видимости каждой точки ограничивает территорию, куда звук доходит напрямую, а уровень убывает с расстоянием в зависимости от уровня источника, частоты и температуры. Каркас каждого источника — максимум по его точкам, а результат — максимум по источникам. Препятствия служат только масками прямой видимости: поглощение, отражения и растительность не моделируются.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="objectnat.calculate_simplified_noise_frame">
+<span class="sig-prename descclassname"><span class="pre">objectnat.</span></span><span class="sig-name descname"><span class="pre">calculate_simplified_noise_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">air_temperature</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_noise_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_sim_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestring_point_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygon_point_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visibility_max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/objectnat/methods/noise/noise_simulation_simplified.html#calculate_simplified_noise_frame"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#objectnat.calculate_simplified_noise_frame" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Рассчитывает упрощённый шумовой каркас по статичным геометриям источников, без полного моделирования распространения звуковых волн и отражений.</p>
+<p>Функция даёт быструю оценку распространения шума от источников разной геометрии: точек (например, точек измерения транспортного шума), линий (дорог, железных дорог) и полигонов (промышленных зон, зданий). Вместо подробного моделирования волн и отражений она строит огибающую возможного шумового воздействия по полигонам видимости точек, расставленных на источниках, и затуханию с расстоянием, которое зависит от уровня источника, частоты и температуры.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Параметры<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noise_sources</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – <p>GeoDataFrame с геометриями источников шума (Point, LineString или Polygon). У каждого объекта должны быть два столбца:</p>
+<ul>
+<li><p>“source_noise_db“: уровень звука в 1 м от источника, в децибелах (дБ).</p></li>
+<li><p>“geometric_mean_freq_hz“: характерная частота звука (Гц) для моделирования затухания с расстоянием.</p></li>
+</ul>
+<p>Значения „source_noise_db“ не должны превышать физический максимум 194 дБ. Отсутствующие значения или NaN в обязательных полях вызывают ошибку.</p>
+</p></li>
+<li><p><strong>obstacles</strong> (<a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(в GeoPandas v1.2.1.dev0.dev+g199fc53c8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></a>) – GeoDataFrame физических препятствий (например, зданий, стен). По ним строятся маски видимости, которые определяют, куда может распространяться звук. Для скорости геометрия упрощается с допуском 1 единица.</p></li>
+<li><p><strong>air_temperature</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Температура окружающего воздуха в градусах Цельсия. Она влияет на модель затухания звука в атмосфере. Температуры заметно вне обычного диапазона 0–30 °C могут дать неточный результат.</p></li>
+<li><p><strong>target_noise_db</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">40</span></code>) – Минимальный моделируемый уровень звука (дБ). Значения ниже этого порога считаются несущественными и исключаются из результата. По умолчанию 40 дБ.</p></li>
+<li><p><strong>db_sim_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">5</span></code>) – Шаг моделирования (дБ), с которым уровни звука разбиваются на пространственные слои. По умолчанию 5. Меньшие значения дают более подробный результат, но увеличивают время расчёта.</p></li>
+<li><p><strong>linestring_point_radius</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>,  default=15) – Шаг (в метрах) при разбиении геометрий LineString на точечные источники. По умолчанию 15. Меньшее значение подробнее передаёт длинные линии.</p></li>
+<li><p><strong>polygon_point_radius</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(в Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>,  default=5) – Шаг точек (в метрах) при размещении источников внутри геометрий Polygon. По умолчанию 5. Точки ставятся по площади и по контуру полигона, чтобы представить всю излучающую поверхность.</p></li>
+<li><p><strong>visibility_max_workers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>, <em>optional</em>) – Максимальное число потоков для расчёта видимости. None — все ядра.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Результат<span class="colon">:</span></dt>
+<dd class="field-even"><p>GeoDataFrame с территориями упрощённого распределения шума. Выходные геометрии — полигоны, каждому из которых соответствует максимальный уровень звука (дБ) на этой территории по перекрывающимся зонам источников. Данные объединяются по уровню шума и возвращаются в исходной системе координат входных источников.</p>
+</dd>
+<dt class="field-odd">Тип результата<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gpd.GeoDataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Заметки</p>
+<ul class="simple">
+<li><p>Функция не моделирует отражения и дифракцию. Для быстрой оценки она использует видимость по прямой (линии прямой видимости) и послойное затухание с расстоянием.</p></li>
+<li><p>Препятствия используются только как маски видимости, но не как отражатели или поглотители.</p></li>
+<li><p>Разрешение и точность результата сильно зависят от типа геометрии и настроек размещения точек.</p></li>
+<li><p>Результаты подходят для быстрого картирования шума или для первичных огибающих перед более подробным моделированием.</p></li>
+</ul>
+</dd></dl>
+
+<figure class="align-center" id="id5">
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_frame_v4.png"><img alt="Упрощённый шумовой каркас для улицы и двух точечных источников" src="https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/noise_frame_v4.png" style="width: 75%;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="#objectnat.calculate_simplified_noise_frame" title="objectnat.calculate_simplified_noise_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.calculate_simplified_noise_frame()</span></code></a> для улицы (линейный источник, 80 дБ на расстоянии 1 м) и двух точечных источников того же примера, <code class="docutils literal notranslate"><span class="pre">target_noise_db=40</span></code>, <code class="docutils literal notranslate"><span class="pre">db_sim_step=5</span></code>. Без отражений и дифракции звук доходит только до мест в прямой видимости источника.</span><a class="headerlink" href="#id5" title="Ссылка на это изображение">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="limitations">
+<h2>Ограничения<a class="headerlink" href="#limitations" title="Ссылка на этот заголовок">¶</a></h2>
+<ul class="simple">
+<li><p>Ни одна модель не учитывает влияние земли и метеорологическую рефракцию. <a class="reference internal" href="#objectnat.simulate_noise_grid" title="objectnat.simulate_noise_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise_grid()</span></code></a> учитывает отражения первого порядка и дифракцию на одном или двух вертикальных рёбрах в плане. Высоты зданий в ней не используются, поэтому дифракция через крыши не моделируется, а места, куда звук попадает только вокруг трёх и более углов, получают только отражения, и их уровень может быть занижен. <a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise()</span></code></a> и <a class="reference internal" href="#objectnat.calculate_simplified_noise_frame" title="objectnat.calculate_simplified_noise_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.calculate_simplified_noise_frame()</span></code></a> дифракцию не учитывают.</p></li>
+<li><p>Каждый источник описан одним уровнем и одной характерной частотой; спектры не моделируются, и результаты не эквивалентны стандартизованным методам расчёта, таким как ISO 9613-2 или CNOSSOS-EU.</p></li>
+<li><p><a class="reference internal" href="#objectnat.simulate_noise" title="objectnat.simulate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise()</span></code></a> и <a class="reference internal" href="#objectnat.calculate_simplified_noise_frame" title="objectnat.calculate_simplified_noise_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.calculate_simplified_noise_frame()</span></code></a> объединяют источники по максимуму полосы; <a class="reference internal" href="#objectnat.simulate_noise_grid" title="objectnat.simulate_noise_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">objectnat.simulate_noise_grid()</span></code></a> суммирует энергии.</p></li>
+</ul>
+<p>Описание волновой модели есть в <a class="reference external" href="https://github.com/IDUclub/ObjectNat/wiki/Noise-simulation">вики проекта</a>; справочник API на этой странице описывает текущее поведение.</p>
+</section>
+<section id="example-notebook">
+<h2>Пример в ноутбуке<a class="headerlink" href="#example-notebook" title="Ссылка на этот заголовок">¶</a></h2>
+<p><a class="reference internal" href="examples/noise.html"><span class="doc">Моделирование шума</span></a></p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="insolation.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Инсоляция</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="visibility.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Анализ видимости</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Donny
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Моделирование шума</a><ul>
+<li><a class="reference internal" href="#overview">Обзор</a></li>
+<li><a class="reference internal" href="#receiver-grid-simulation">Расчёт на сетке приёмников</a><ul>
+<li><a class="reference internal" href="#method">Метод</a><ul>
+<li><a class="reference internal" href="#objectnat.simulate_noise_grid"><code class="docutils literal notranslate"><span class="pre">simulate_noise_grid()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#wave-front-simulation">Моделирование волнового фронта</a><ul>
+<li><a class="reference internal" href="#id1">Метод</a><ul>
+<li><a class="reference internal" href="#objectnat.simulate_noise"><code class="docutils literal notranslate"><span class="pre">simulate_noise()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#simplified-noise-frame">Упрощённый шумовой каркас</a><ul>
+<li><a class="reference internal" href="#id2">Метод</a><ul>
+<li><a class="reference internal" href="#objectnat.calculate_simplified_noise_frame"><code class="docutils literal notranslate"><span class="pre">calculate_simplified_noise_frame()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#limitations">Ограничения</a></li>
+<li><a class="reference internal" href="#example-notebook">Пример в ноутбуке</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=c2c16d3a"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/translations.js?v=cd1d70c9"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/lightbox.js?v=dc29de6d"></script>
+    </body>
+</html>
