@@ -31,6 +31,7 @@ def get_graph_coverage(
     zone: gpd.GeoDataFrame | gpd.GeoSeries | None = None,
     buffer_factor: float = 0.7,
     road_buffer_size: float = 5.0,
+    off_network_distance: float | None = 150.0,
 ) -> gpd.GeoDataFrame:
     """
     Calculate coverage zones of destinations (services) on an urban graph using
@@ -74,8 +75,8 @@ def get_graph_coverage(
             Optional refinement of the coverage shape:
 
             - ``None``: raw Voronoi cells clipped to ``zone`` or the concave hull
-            - ``"radius"``: additionally clip to residual-radius buffers around
-              reachable nodes (remaining budget converted to distance)
+            - ``"radius"``: additionally clip to buffers around the reachable nodes
+              (remaining budget as a distance, at most ``off_network_distance``)
             - ``"ways"``: additionally clip to buffered road geometry inside the
               residual radii (walk edges only on intermodal/walk graphs)
 
@@ -91,12 +92,18 @@ def get_graph_coverage(
             is used.
 
         buffer_factor:
-            Multiplier for the residual radius when ``geometry_type`` is set
-            (default 0.7).
+            Not used by coverage zones; accepted for symmetry with
+            :func:`get_stepped_graph_coverage` (default 0.7).
 
         road_buffer_size:
             Buffer applied to graph edges for ``geometry_type="ways"``, in metres
             (default 5.0).
+
+        off_network_distance (float | None, optional):
+            For ``geometry_type="radius"``: how far from the network, in metres, a place may lie and still count
+            as reached. Every reachable node is buffered by its remaining budget converted to a distance, but by
+            no more than this, so the area follows the network instead of growing into a straight-line circle
+            around the start. ``None`` buffers by the whole remaining budget. Defaults to 150.
 
     Returns:
         gpd.GeoDataFrame:
@@ -116,7 +123,7 @@ def get_graph_coverage(
         raise ValueError(f"Unsupported geometry_type={geometry_type!r}")
     if geometry_type is not None and weight_value_cutoff is None:
         raise ValueError("weight_value_cutoff is required when geometry_type is set")
-    check_buffer_args(buffer_factor, road_buffer_size)
+    check_buffer_args(buffer_factor, road_buffer_size, off_network_distance)
 
     original_crs = gdf_destinations.crs if gdf_destinations is not None else urban_graph.nodes_gdf.crs
     local_crs = urban_graph.nodes_gdf.crs
@@ -152,6 +159,7 @@ def get_graph_coverage(
             weight_value=float(weight_value_cutoff),
             weight_type=weight_type,
             speed_m_per_min=speed_m_per_min,
+            max_distance=off_network_distance,
         )
     elif geometry_type == "ways":
         speed_m_per_min = edge_speed_m_per_min(urban_graph) if weight_type == "time_min" else None
@@ -207,6 +215,7 @@ def get_stepped_graph_coverage(
     step: float | None = None,
     buffer_factor: float = 0.7,
     road_buffer_size: float = 5.0,
+    off_network_distance: float | None = 150.0,
 ) -> gpd.GeoDataFrame:
     """
     Calculate stepped coverage zones of destinations (services), combining graph
@@ -249,7 +258,7 @@ def get_stepped_graph_coverage(
             Method used to build each step's geometry:
 
             - ``None``: Voronoi cells around graph nodes
-            - ``"radius"``: Voronoi cells clipped to residual-radius buffers
+            - ``"radius"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``)
             - ``"ways"``: Voronoi cells clipped to buffered road geometry
               (walk edges only on intermodal/walk graphs)
             - ``"separate"``: independent circular buffers per step
@@ -266,11 +275,16 @@ def get_stepped_graph_coverage(
             100 metres for ``length_meter`` and 1 minute for ``time_min``.
 
         buffer_factor:
-            Residual-radius multiplier for ``"radius"``, ``"ways"`` and
-            ``"separate"`` (default 0.7).
+            Buffer multiplier used by ``geometry_type="separate"`` (default 0.7).
 
         road_buffer_size:
             Edge buffer for ``geometry_type="ways"``, in metres (default 5.0).
+
+        off_network_distance (float | None, optional):
+            For ``geometry_type="radius"``: how far from the network, in metres, a place may lie and still count
+            as reached. Every reachable node is buffered by its remaining budget converted to a distance, but by
+            no more than this, so the area follows the network instead of growing into a straight-line circle
+            around the start. ``None`` buffers by the whole remaining budget. Defaults to 150.
 
     Returns:
         gpd.GeoDataFrame:
@@ -298,5 +312,6 @@ def get_stepped_graph_coverage(
         zone=zone,
         buffer_factor=buffer_factor,
         road_buffer_size=road_buffer_size,
+        off_network_distance=off_network_distance,
         reverse=True,
     )

@@ -14,12 +14,14 @@ SteppedGeometryType = Literal["radius", "ways", "separate"] | None
 _WALK_ONLY_GRAPH_TYPES = {"intermodal", "walk"}
 
 
-def check_buffer_args(buffer_factor: float, road_buffer_size: float) -> None:
+def check_buffer_args(buffer_factor: float, road_buffer_size: float, off_network_distance: float | None = None) -> None:
     """Validate the buffer arguments shared by the accessibility functions."""
     if buffer_factor <= 0:
         raise ValueError(f"buffer_factor must be > 0, got {buffer_factor}")
     if road_buffer_size <= 0:
         raise ValueError(f"road_buffer_size must be > 0, got {road_buffer_size}")
+    if off_network_distance is not None and not off_network_distance > 0:
+        raise ValueError(f"off_network_distance must be > 0 or None, got {off_network_distance}")
 
 
 def node_points(urban_graph: UrbanGraph, table: pd.DataFrame) -> gpd.GeoDataFrame:
@@ -40,6 +42,7 @@ def stepped_accessibility(
     zone,
     buffer_factor: float,
     road_buffer_size: float,
+    off_network_distance: float | None,
     reverse: bool,
 ) -> gpd.GeoDataFrame:
     """
@@ -52,7 +55,7 @@ def stepped_accessibility(
         step = 100.0 if weight_type == "length_meter" else 1.0
     if step <= 0:
         raise ValueError(f"step must be > 0, got {step}")
-    check_buffer_args(buffer_factor, road_buffer_size)
+    check_buffer_args(buffer_factor, road_buffer_size, off_network_distance)
 
     distances = multi_source_dijkstra(
         urban_graph,
@@ -83,6 +86,7 @@ def stepped_accessibility(
         zone=zone,
         buffer_factor=float(buffer_factor),
         road_buffer_size=float(road_buffer_size),
+        off_network_distance=off_network_distance,
     )
     original_crs = gdf_sources.crs if gdf_sources is not None else urban_graph.nodes_gdf.crs
     return result.to_crs(original_crs)
@@ -164,14 +168,20 @@ def radius_buffers(
     weight_value: float,
     weight_type: str,
     speed_m_per_min: float | None,
+    max_distance: float | None = None,
 ) -> np.ndarray:
-    """Buffers of the reachable nodes by their remaining budget (the parts of a radius isochrone)."""
+    """
+    Buffers of the reachable nodes by their remaining budget as a distance (the parts of a radius isochrone),
+    at most ``max_distance`` metres: the budget left at a node is spent off the network only that far.
+    """
     buffer_size = (float(weight_value) - reachable_graph_nodes_gdf["dist"].to_numpy(dtype=float)).clip(min=0.0)
 
     if weight_type == "time_min":
         if speed_m_per_min is None:
             raise ValueError("speed_m_per_min is required for weight_type='time_min'")
         buffer_size = buffer_size * float(speed_m_per_min)
+    if max_distance is not None:
+        buffer_size = np.minimum(buffer_size, float(max_distance))
     return shapely.buffer(reachable_graph_nodes_gdf.geometry.values, buffer_size, quad_segs=4)
 
 
@@ -181,6 +191,7 @@ def build_radius_clip_geometry(
     weight_value: float,
     weight_type: str,
     speed_m_per_min: float | None,
+    max_distance: float | None = None,
 ):
     return shapely.union_all(
         radius_buffers(
@@ -188,6 +199,7 @@ def build_radius_clip_geometry(
             weight_value=weight_value,
             weight_type=weight_type,
             speed_m_per_min=speed_m_per_min,
+            max_distance=max_distance,
         )
     )
 
@@ -317,6 +329,7 @@ def build_stepped_accessibility_geometry(
     zone: gpd.GeoDataFrame | gpd.GeoSeries | None,
     buffer_factor: float,
     road_buffer_size: float,
+    off_network_distance: float | None = None,
 ) -> gpd.GeoDataFrame:
     if reachable_graph_nodes_gdf.empty:
         return gpd.GeoDataFrame()
@@ -348,6 +361,7 @@ def build_stepped_accessibility_geometry(
             weight_value=float(weight_value),
             weight_type=weight_type,
             speed_m_per_min=speed_m_per_min,
+            max_distance=off_network_distance,
         )
     elif geometry_type == "ways":
         clip_geom = build_ways_clip_geometry(

@@ -220,7 +220,7 @@ class Raster(NamedTuple):
         name: str | None = None,
         legend: bool = True,
         caption: str | None = None,
-        tiles: str = "CartoDB positron",
+        tiles: str = "OpenStreetMap",
         **kwargs,
     ):
         """

@@ -84,6 +84,7 @@ def get_graph_isochrones(
     zone: gpd.GeoDataFrame | gpd.GeoSeries | None = None,
     buffer_factor: float = 0.7,
     road_buffer_size: float = 5.0,
+    off_network_distance: float | None = 150.0,
     max_workers: int | None = None,
 ) -> gpd.GeoDataFrame:
     """
@@ -128,7 +129,8 @@ def get_graph_isochrones(
         geometry_type:
             Method used to build each isochrone:
 
-            - ``"radius"``: union of residual-radius buffers around reachable nodes
+            - ``"radius"``: union of buffers around the reachable nodes by their remaining budget as a
+              distance, at most ``off_network_distance``
             - ``"ways"``: buffered reachable road geometry (walk edges only on
               intermodal/walk graphs)
             - ``"separate"``: buffers of ``buffer_factor`` × residual distance around the reachable nodes,
@@ -142,6 +144,12 @@ def get_graph_isochrones(
 
         road_buffer_size:
             Edge buffer for ``geometry_type="ways"``, in metres (default 5.0).
+
+        off_network_distance (float | None, optional):
+            For ``geometry_type="radius"``: how far from the network, in metres, a place may lie and still count
+            as reached. Every reachable node is buffered by its remaining budget converted to a distance, but by
+            no more than this, so the area follows the network instead of growing into a straight-line circle
+            around the start. ``None`` buffers by the whole remaining budget. Defaults to 150.
 
         max_workers (int, optional):
             Number of parallel Numba threads. Defaults to the Numba runtime.
@@ -165,7 +173,7 @@ def get_graph_isochrones(
         raise ValueError(f"Unsupported geometry_type={geometry_type!r}")
     if weight_value_cutoff < 0:
         raise ValueError(f"weight_value_cutoff must be >= 0, got {weight_value_cutoff}")
-    check_buffer_args(buffer_factor, road_buffer_size)
+    check_buffer_args(buffer_factor, road_buffer_size, off_network_distance)
     original_crs = gdf_origins.crs if gdf_origins is not None else urban_graph.nodes_gdf.crs
     local_crs = urban_graph.nodes_gdf.crs
 
@@ -205,6 +213,8 @@ def get_graph_isochrones(
                     weight_value=float(weight_value_cutoff),
                     weight_type=weight_type,
                     speed_m_per_min=speed_m_per_min,
+                    # "ways" clips whole streets with these buffers, so they keep the full budget
+                    max_distance=off_network_distance if geometry_type == "radius" else None,
                 )
             )
         if geometry_type == "ways":
@@ -264,6 +274,7 @@ def get_stepped_graph_isochrones(
     step: float | None = None,
     buffer_factor: float = 0.7,
     road_buffer_size: float = 5.0,
+    off_network_distance: float | None = 150.0,
 ) -> gpd.GeoDataFrame:
     """
     Calculate stepped accessibility isochrones from origin objects over an urban
@@ -304,7 +315,7 @@ def get_stepped_graph_isochrones(
             Method used to build each step's geometry:
 
             - ``None``: Voronoi cells around graph nodes
-            - ``"radius"``: Voronoi cells clipped to residual-radius buffers
+            - ``"radius"``: Voronoi cells clipped to the radius buffers (see ``off_network_distance``)
             - ``"ways"``: Voronoi cells clipped to buffered road geometry
               (walk edges only on intermodal/walk graphs)
             - ``"separate"``: independent circular buffers per step
@@ -321,10 +332,16 @@ def get_stepped_graph_isochrones(
             100 metres for ``length_meter`` and 1 minute for ``time_min``.
 
         buffer_factor:
-            Residual-radius multiplier for geometry construction (default 0.7).
+            Buffer multiplier used by ``geometry_type="separate"`` (default 0.7).
 
         road_buffer_size:
             Edge buffer for ``geometry_type="ways"``, in metres (default 5.0).
+
+        off_network_distance (float | None, optional):
+            For ``geometry_type="radius"``: how far from the network, in metres, a place may lie and still count
+            as reached. Every reachable node is buffered by its remaining budget converted to a distance, but by
+            no more than this, so the area follows the network instead of growing into a straight-line circle
+            around the start. ``None`` buffers by the whole remaining budget. Defaults to 150.
 
     Returns:
         gpd.GeoDataFrame:
@@ -354,5 +371,6 @@ def get_stepped_graph_isochrones(
         zone=zone,
         buffer_factor=buffer_factor,
         road_buffer_size=road_buffer_size,
+        off_network_distance=off_network_distance,
         reverse=False,
     )
