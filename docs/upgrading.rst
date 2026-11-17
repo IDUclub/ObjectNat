@@ -38,7 +38,7 @@ What changes for existing code
      - :func:`~objectnat.simulate_noise` gives the same result on every run
      - None needed
    * - Installation
-     - Wheels contain the compiled extension; building from source requires Rust; IduEdu 2.4.2 or newer
+     - Wheels contain the compiled extension; building from source requires Rust; IduEdu 2.4.2 or newer, 3.x included
      - ``pip install -U objectnat`` installs a wheel, no compiler needed
 
 What is new

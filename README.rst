@@ -131,8 +131,8 @@ Installation
 
     pip install objectnat
 
-ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.2 or newer within the 2.x
-series. Wheels include the compiled extension ``objectnat._rust``, so ``pip`` needs no compiler. Installing from a
+ObjectNat supports Python 3.11–3.14 on Linux, macOS and Windows and installs IduEdu 2.4.2 or newer, 3.x
+included. Wheels include the compiled extension ``objectnat._rust``, so ``pip`` needs no compiler. Installing from a
 source checkout (``pip install .``) builds the extension and requires a Rust toolchain
 (`rustup <https://rustup.rs>`__). GeoTIFF terrain requires the optional ``rasterio`` package.
 
@@ -143,8 +143,8 @@ Street graphs from IduEdu
 
 Graph-based methods take an ``iduedu.UrbanGraph`` (nodes and edges as GeoDataFrames, edge weights ``time_min`` and
 ``length_meter``) and use IduEdu's Dijkstra routines; ObjectNat does not build graphs itself. IduEdu
-can download a Geofabrik extract and cut the territory out of it, so no Overpass request is needed (cutting
-requires ``pip install "iduedu[pbf]"``)::
+can download a Geofabrik extract and cut the territory out of it, so no Overpass request is needed (IduEdu 2.x
+needs ``pip install "iduedu[pbf]"`` for cutting, 3.x cuts without extras)::
 
     import iduedu
     from iduedu import get_4326_boundary, get_intermodal_graph

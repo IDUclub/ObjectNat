@@ -42,7 +42,7 @@ classifiers = [
 ]
 dependencies = [
     "geopandas>=1.1.0,<2.0.0",
-    "iduedu>=2.4.2,<3.0.0",
+    "iduedu>=2.4.2,<4.0.0",
     "loguru>=0.7.3,<0.8.0",
     "numpy>=2.0.0,<3.0.0; python_version < '3.14'",
     "numpy>=2.4.0,<3.0.0; python_version >= '3.14'",
@@ -92,7 +92,6 @@ release = [
     "python-semantic-release>=9.15.0,<10.0.0",
 ]
 test = [
-    "osmium>=4.0,<5",  # reads the Geofabrik extract of the test territory (iduedu[pbf])
     "matplotlib>=3.8.0,<4.0.0; python_version < '3.14'",
     "matplotlib>=3.10.7,<4.0.0; python_version >= '3.14'",
     "pyarrow>=23.0.1,<26.0.0",
