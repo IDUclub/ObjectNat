@@ -2,6 +2,29 @@
 
 <!-- version list -->
 
+## v3.0.1 (2026-11-17)
+
+### Bug Fixes
+
+- Support IduEdu 3.x ([#24](https://github.com/IDUclub/ObjectNat/pull/24),
+  [`68e87c3`](https://github.com/IDUclub/ObjectNat/commit/68e87c31bba86c8b7c940b9d415dccb7d5ca00e5))
+
+ObjectNat 3.0.0 pins `iduedu<3.0.0`, so it cannot be installed next to IduEdu 3.
+
+- The bound is now `iduedu>=2.4.2,<4.0.0`; the lock moves to IduEdu 3.1.1. The routing functions
+  ObjectNat calls (`multi_source_dijkstra`, `multi_source_dijkstra_nearest_source`,
+  `single_source_dijkstra`, `dijkstra_parallel`) and
+  `iduedu.graph.graph_inputs.resolve_graph_nodes_input` keep their signatures in IduEdu 3, so no
+  code changes are needed. - IduEdu 3 reads `.osm.pbf` files with its own Rust reader, so the
+  `osmium` test dependency is dropped. - README, README_RU, the installation section and the
+  "Upgrading to 3.0" page say that IduEdu 3.x is supported and that only 2.x needs the `pbf` extra
+  for cutting Geofabrik extracts; the Russian catalogues are updated.
+
+Checked locally on IduEdu 3.1.1: the full test suite including the network tests (154 passed),
+  pylint 10/10, black and isort clean, both docs builds without warnings, `docs/i18n.py check`
+  clean.
+
+
 ## v3.0.0 (2026-11-06)
 
 ### Features
