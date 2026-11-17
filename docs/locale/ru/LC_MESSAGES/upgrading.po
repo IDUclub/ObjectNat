@@ -80,8 +80,8 @@ msgstr "Ничего"
 msgid "Installation"
 msgstr "Установка"
 
-msgid "Wheels contain the compiled extension; building from source requires Rust; IduEdu 2.4.2 or newer"
-msgstr "Колёса (wheels) содержат скомпилированное расширение; сборка из исходного кода требует Rust; нужен IduEdu 2.4.2 или новее"
+msgid "Wheels contain the compiled extension; building from source requires Rust; IduEdu 2.4.2 or newer, 3.x included"
+msgstr "Колёса (wheels) содержат скомпилированное расширение; сборка из исходного кода требует Rust; нужен IduEdu 2.4.2 или новее, включая 3.x"
 
 msgid "``pip install -U objectnat`` installs a wheel, no compiler needed"
 msgstr "``pip install -U objectnat`` устанавливает колесо, компилятор не нужен"

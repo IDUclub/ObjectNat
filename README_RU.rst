@@ -138,8 +138,8 @@ Object-oriented Network Analysis Tools
 
     pip install objectnat
 
-ObjectNat поддерживает Python 3.11–3.14 в Linux, macOS и Windows и устанавливает IduEdu версии 2.4.2 или новее
-в пределах серии 2.x. Колёса (wheels) содержат скомпилированное расширение ``objectnat._rust``, поэтому
+ObjectNat поддерживает Python 3.11–3.14 в Linux, macOS и Windows и устанавливает IduEdu версии 2.4.2 или новее,
+включая серию 3.x. Колёса (wheels) содержат скомпилированное расширение ``objectnat._rust``, поэтому
 компилятор для ``pip`` не нужен. Установка из исходного кода (``pip install .``) собирает расширение и требует
 инструментов Rust (`rustup <https://rustup.rs>`__). Для чтения рельефа из GeoTIFF нужен необязательный пакет
 ``rasterio``.
@@ -152,7 +152,7 @@ ObjectNat поддерживает Python 3.11–3.14 в Linux, macOS и Windows
 Методы, работающие с графом, принимают ``iduedu.UrbanGraph`` (узлы и рёбра в виде GeoDataFrame, веса рёбер
 ``time_min`` и ``length_meter``) и используют алгоритмы Дейкстры из IduEdu; ObjectNat сам графы не строит.
 IduEdu загружает выгрузку Geofabrik и вырезает из неё территорию, поэтому запросы к Overpass не нужны
-(для вырезания требуется ``pip install "iduedu[pbf]"``)::
+(IduEdu 2.x для вырезания требует ``pip install "iduedu[pbf]"``, 3.x вырезает без дополнений)::
 
     import iduedu
     from iduedu import get_4326_boundary, get_intermodal_graph
