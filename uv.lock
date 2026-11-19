@@ -1026,7 +1026,7 @@ wheels = [
 
 [[package]]
 name = "iduedu"
-version = "3.3.1"
+version = "3.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "geopandas" },
@@ -1038,13 +1038,13 @@ dependencies = [
     { name = "scipy", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/81/5c/8e8c02122e99ef7f205fe77fce609bf0346e02ab735f6529fd74956d4b28/iduedu-3.3.1.tar.gz", hash = "sha256:749deeef9de6b38dacf54f47687e39e03099cc8295183dfcc7fbe4892f6dad32", size = 273695, upload-time = "2026-11-19T11:05:52.243Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f0/e3/4fc862b2d6daf21e21a41eeff4ecbc75c35b4ea330f1ec3046d1b3e0cf09/iduedu-3.3.2.tar.gz", hash = "sha256:c3ade306b54ba3ee3446c0f4ebbe4284ed2cb0be4bf93ca655d68c5e56481512", size = 277982, upload-time = "2026-11-19T16:56:00.361Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/19/c0/d69cc08517fefe9de0ced60fbf8d27fe109be9d9348a0a6480263a06bb6b/iduedu-3.3.1-cp311-abi3-macosx_10_12_x86_64.whl", hash = "sha256:376f2dbda088c3f99895834dfa29b8e4caab87fa01ae467b0e15d55f92e96b1e", size = 1489350, upload-time = "2026-11-19T11:05:44.403Z" },
-    { url = "https://files.pythonhosted.org/packages/37/47/ab0cd7344a7ecff2ae616b96099c2c1fb38bebf7b9c1cb0fa1d8b2a8ad38/iduedu-3.3.1-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:8358470573b4c53d76a49cef8a370d27e41588785808adcbc21f61deeaf2e42e", size = 1417628, upload-time = "2026-11-19T11:05:46.136Z" },
-    { url = "https://files.pythonhosted.org/packages/61/ad/87392f1afb707c198534baeb7bdd5959b57b8b985ac70fbf702dda80e91f/iduedu-3.3.1-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:2b5a108f00b2ea47a70314a41052abe6bcc1d96c8b793ece05bd5ee8dfa5e44c", size = 1499329, upload-time = "2026-11-19T11:05:47.833Z" },
-    { url = "https://files.pythonhosted.org/packages/c0/75/09ca24f942f59bc0a7ecf101b799431a73542c6561f2fe8eb91a5b07c5d6/iduedu-3.3.1-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:8b21913f72b5677db0c21619174510111655e2a36e5b87aaaab08eb21b239735", size = 1565404, upload-time = "2026-11-19T11:05:49.306Z" },
-    { url = "https://files.pythonhosted.org/packages/5a/0f/7e5599b124fb0d95d4e2c24ff3e6e360c1ae9e03bf1c44d8d293ab60b499/iduedu-3.3.1-cp311-abi3-win_amd64.whl", hash = "sha256:04a3f340f6bc1bdde61284232aaa88173ad54ad9fa69d051d203d2a073cc7a9e", size = 1460693, upload-time = "2026-11-19T11:05:50.833Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/7f/a387923d4a5f53ae7f769edcb74b35a5e30f0137e12a58e0e76564172cd3/iduedu-3.3.2-cp311-abi3-macosx_10_12_x86_64.whl", hash = "sha256:aefeb77eb5b2474b042cf3f54df16b528791270e55e7986fb0aed6fafc0359ab", size = 1495934, upload-time = "2026-11-19T16:55:53.001Z" },
+    { url = "https://files.pythonhosted.org/packages/45/46/30d563100f73ce77c8a7fbab6610b8f287a7aa3acde10ea033c515a2d585/iduedu-3.3.2-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:5fcd5baece3644470f6c052756920e12915207ee1e0e3f36c7a51561ef432ba4", size = 1425463, upload-time = "2026-11-19T16:55:54.546Z" },
+    { url = "https://files.pythonhosted.org/packages/96/d9/6110c6f8a533d33f00d326d5e6aa054f36064331ad8043d604aeeabcb1cd/iduedu-3.3.2-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:da7aae1d819353c0cba273c6b8ae20265aef4979b793dc9614ac66f03f40a89b", size = 1507089, upload-time = "2026-11-19T16:55:55.944Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/e3/faad344400f25d2822d1a440c3df0bd7b8b4d77fada498c49ce9f60cccfa/iduedu-3.3.2-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:9fb389e9799a4e57e59e7cbd23c15291dbff3b335fd166009664eb612e635c29", size = 1574843, upload-time = "2026-11-19T16:55:57.408Z" },
+    { url = "https://files.pythonhosted.org/packages/dc/23/48e49a4752d121a5c1d95c1a05f4926deda616b21e6dc3b10902b59fb83c/iduedu-3.3.2-cp311-abi3-win_amd64.whl", hash = "sha256:011aba0eb1b8280ffa3944b68d29f54e39fe242bbbb365b48d04efffad13b09f", size = 1457021, upload-time = "2026-11-19T16:55:58.876Z" },
 ]
 
 [[package]]
