@@ -4,8 +4,9 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 from iduedu import UrbanGraph, multi_source_dijkstra_nearest_source
-from shapely import concave_hull
+from shapely import concave_hull, multipoints
 
+from objectnat.methods.accessibility._geometry import dissolve_cells
 from objectnat.methods.accessibility._utils import (
     SteppedGeometryType,
     build_radius_clip_geometry,
@@ -172,7 +173,7 @@ def get_graph_coverage(
             road_buffer_size=float(road_buffer_size),
         )
     elif zone is None:
-        clip_zone = concave_hull(reachable_graph_nodes_gdf.union_all(), ratio=0.5)
+        clip_zone = concave_hull(multipoints(reachable_graph_nodes_gdf.geometry.to_numpy()), ratio=0.5)
     else:
         clip_zone = zone.to_crs(local_crs)
 
@@ -186,7 +187,7 @@ def get_graph_coverage(
         local_crs=local_crs,
         clip_geom=clip_zone if geometry_type is not None else None,
     )
-    result = cells.dissolve(by="node_to").reset_index().drop(columns=["node"])
+    result = dissolve_cells(cells, "node_to")
     zone_coverages = result.clip(clip_zone, keep_geom_type=True)
 
     source_index_by_node = pd.DataFrame(

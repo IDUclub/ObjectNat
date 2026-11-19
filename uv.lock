@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.11, <3.15"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -1026,7 +1026,7 @@ wheels = [
 
 [[package]]
 name = "iduedu"
-version = "3.1.1"
+version = "3.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "geopandas" },
@@ -1038,13 +1038,13 @@ dependencies = [
     { name = "scipy", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9f/c7/fb014dbad7d4ade7f53aa0a79acc5a10da021ffe2f53f1b244246c8ab8e0/iduedu-3.1.1.tar.gz", hash = "sha256:40e52c182f18ad72dec8c5a621ac5f2eb5e308b54f8e88c0295e795f4e0225c4", size = 244978, upload-time = "2026-11-12T13:53:42.279Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/5c/8e8c02122e99ef7f205fe77fce609bf0346e02ab735f6529fd74956d4b28/iduedu-3.3.1.tar.gz", hash = "sha256:749deeef9de6b38dacf54f47687e39e03099cc8295183dfcc7fbe4892f6dad32", size = 273695, upload-time = "2026-11-19T11:05:52.243Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/74/3a/e6947b1dce1208cb21232921d71f90e99bb6f19234888f7e7a67b5a5c38a/iduedu-3.1.1-cp311-abi3-macosx_10_12_x86_64.whl", hash = "sha256:09e378a4581ea3f1bac47b5723c8fa57acb33b882966c1443e9a624d42e1321b", size = 1415021, upload-time = "2026-11-12T13:53:34.027Z" },
-    { url = "https://files.pythonhosted.org/packages/0d/9f/5381c409148eaf56f25ca949cf4cd5782fefb88e40b0c6c5011a1dd9dd3b/iduedu-3.1.1-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:6030b7f4761886bce3b940554a5c265c3311ca6fa3c74c4f31ced9d92556ef8e", size = 1349153, upload-time = "2026-11-12T13:53:35.714Z" },
-    { url = "https://files.pythonhosted.org/packages/64/54/fa7c4e725ac83232de98f03f1b7af4b3bd20b4ad604ed3c47375c2859df4/iduedu-3.1.1-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:30cd6053f874e2a93a5475be645b00b2923a2b7de325eeae3f72ad455b61627b", size = 1427603, upload-time = "2026-11-12T13:53:37.748Z" },
-    { url = "https://files.pythonhosted.org/packages/c7/84/8997535bb3705cd2e73842b2178f0e7bd963ffb408ca53c22d0c44308e7c/iduedu-3.1.1-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:d82b256bda13e3255f903c7cf2a1826b8fe9e817f1bcc7fc41ca6b0eed5467da", size = 1489169, upload-time = "2026-11-12T13:53:39.163Z" },
-    { url = "https://files.pythonhosted.org/packages/f2/a5/856d0b72f7389da11dde553b532f7fea105689e66715755948857b974d75/iduedu-3.1.1-cp311-abi3-win_amd64.whl", hash = "sha256:31aada21c21c4351152bc5f88e4d6d6ada403f3c2840893f3b6379f9eee1a523", size = 1369151, upload-time = "2026-11-12T13:53:40.583Z" },
+    { url = "https://files.pythonhosted.org/packages/19/c0/d69cc08517fefe9de0ced60fbf8d27fe109be9d9348a0a6480263a06bb6b/iduedu-3.3.1-cp311-abi3-macosx_10_12_x86_64.whl", hash = "sha256:376f2dbda088c3f99895834dfa29b8e4caab87fa01ae467b0e15d55f92e96b1e", size = 1489350, upload-time = "2026-11-19T11:05:44.403Z" },
+    { url = "https://files.pythonhosted.org/packages/37/47/ab0cd7344a7ecff2ae616b96099c2c1fb38bebf7b9c1cb0fa1d8b2a8ad38/iduedu-3.3.1-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:8358470573b4c53d76a49cef8a370d27e41588785808adcbc21f61deeaf2e42e", size = 1417628, upload-time = "2026-11-19T11:05:46.136Z" },
+    { url = "https://files.pythonhosted.org/packages/61/ad/87392f1afb707c198534baeb7bdd5959b57b8b985ac70fbf702dda80e91f/iduedu-3.3.1-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:2b5a108f00b2ea47a70314a41052abe6bcc1d96c8b793ece05bd5ee8dfa5e44c", size = 1499329, upload-time = "2026-11-19T11:05:47.833Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/75/09ca24f942f59bc0a7ecf101b799431a73542c6561f2fe8eb91a5b07c5d6/iduedu-3.3.1-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:8b21913f72b5677db0c21619174510111655e2a36e5b87aaaab08eb21b239735", size = 1565404, upload-time = "2026-11-19T11:05:49.306Z" },
+    { url = "https://files.pythonhosted.org/packages/5a/0f/7e5599b124fb0d95d4e2c24ff3e6e360c1ae9e03bf1c44d8d293ab60b499/iduedu-3.3.1-cp311-abi3-win_amd64.whl", hash = "sha256:04a3f340f6bc1bdde61284232aaa88173ad54ad9fa69d051d203d2a073cc7a9e", size = 1460693, upload-time = "2026-11-19T11:05:50.833Z" },
 ]
 
 [[package]]

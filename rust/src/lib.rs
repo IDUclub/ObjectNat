@@ -1,5 +1,6 @@
 //! Python bindings: compiled into the `objectnat._rust` extension module.
 
+mod buffers;
 pub mod catchment;
 pub mod insolation;
 pub mod noise;
@@ -971,8 +972,34 @@ fn viewshed_count_grid<'py>(
     Ok((counts.into_pyarray(py), sums))
 }
 
+/// Mark point buffers that can contribute to their union.
+#[pyfunction]
+fn keep_point_buffers<'py>(
+    py: Python<'py>,
+    points: PyReadonlyArray2<'_, f64>,
+    radii: PyReadonlyArray1<'_, f64>,
+    quad_segs: usize,
+) -> PyResult<Bound<'py, PyArray1<bool>>> {
+    let points = points.as_array();
+    if points.ncols() != 2 || points.nrows() != radii.len()? || quad_segs == 0 {
+        return Err(PyValueError::new_err(
+            "expected (n, 2) points, n radii and positive quad_segs",
+        ));
+    }
+    let points = points
+        .rows()
+        .into_iter()
+        .map(|row| [row[0], row[1]])
+        .collect();
+    let radii = radii.as_array().iter().copied().collect();
+    Ok(py
+        .detach(|| buffers::keep_buffers(points, radii, quad_segs))
+        .into_pyarray(py))
+}
+
 #[pymodule]
 fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(keep_point_buffers, m)?)?;
     m.add_function(wrap_pyfunction!(insolation_day_stats, m)?)?;
     m.add_function(wrap_pyfunction!(line_of_sight, m)?)?;
     m.add_function(wrap_pyfunction!(rasterize_footprints, m)?)?;
