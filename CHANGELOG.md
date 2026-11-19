@@ -2,6 +2,49 @@
 
 <!-- version list -->
 
+## v3.0.2 (2026-11-19)
+
+### Performance Improvements
+
+- **accessibility**: Isochrones and coverage zones several times faster
+  ([#25](https://github.com/IDUclub/ObjectNat/pull/25),
+  [`0692002`](https://github.com/IDUclub/ObjectNat/commit/069200209ec900fa159edafb97b67b1d68847b4c))
+
+Isochrones and coverage zones several times faster, with the same results. Routing in IduEdu takes
+  under 0.1 s on a ready graph; almost all the time went into GEOS unions of node buffers, road
+  buffers and Voronoi cells.
+
+Changes: - New private module `objectnat/methods/accessibility/_geometry.py`: - point buffers that
+  lie inside a bigger neighbour's polygon are dropped before the union (new Rust kernel
+  `keep_point_buffers`, `rust/src/buffers.rs`); - buffers are unioned per spatial tile in one thread
+  pool for all origins, and the tiles are merged by a parallel tree reduction (`max_workers` bounds
+  the pool); - `"ways"` clips the road tiles by the radius area and keeps the components that hold a
+  reachable node, holes filled; - Voronoi cells come from one ordered diagram (no point-in-cell
+  join) and are dissolved by a parallel coverage union, with an area check and a plain union as
+  fallback. - `uv.lock` moves to IduEdu 3.3.2; `rust/Cargo.lock` carries the crate version 3.0.1;
+  AGENTS.md lists the new modules. - Public signatures and docstrings are unchanged.
+
+Benchmark: St Petersburg intermodal graph (IduEdu 3.3.2, 560k nodes), 3 origins, step 5 min, all
+  geometry types of `get_graph_isochrones`, `get_stepped_graph_isochrones`, `get_graph_coverage`,
+  `get_stepped_graph_coverage`. Seconds before → after:
+
+| Case | 15 min | 30 min | 60 min | |---|---:|---:|---:| | isochrones radius | 0.78 → 0.56 | 3.40 →
+  1.24 | 20.9 → 6.4 | | isochrones ways | 2.39 → 1.27 | 23.1 → 4.8 | 215 → 29.6 | | isochrones
+  separate | 1.37 → 0.60 | 8.19 → 1.32 | 48.1 → 6.5 | | stepped isochrones None / radius | 1.02 /
+  1.64 → 0.43 / 0.67 | 4.28 / 8.59 → 1.17 / 1.73 | 17.9 / 42.8 → 4.4 / 6.3 | | stepped isochrones
+  ways / separate | 4.13 / 1.05 → 1.09 / 0.38 | 33.3 / 4.95 → 4.51 / 1.29 | 222 / 22.2 → 20.2 / 6.2
+  | | coverage None / radius / ways | 1.04 / 1.62 / 4.20 → 0.46 / 0.71 / 1.08 | 4.83 / 9.35 / 36.4 →
+  1.44 / 1.75 / 4.69 | 19.8 / 43.0 / 214 → 5.7 / 6.2 / 20.0 | | stepped coverage None / radius /
+  ways / separate | 1.03 / 1.66 / 4.23 / 1.09 → 0.44 / 0.65 / 1.09 / 0.39 | 4.56 / 10.1 / 37.1 /
+  5.63 → 1.22 / 1.81 / 4.77 / 1.41 | 18.2 / 43.2 / 215 / 22.5 → 4.4 / 6.4 / 20.9 / 6.5 |
+
+In all 42 cases the rows, indexes, CRS and `dist` values are equal and the symmetric difference is
+  at most 2.1e-11 of the area.
+
+Checked locally: black, isort, pylint 10/10, cargo fmt and clippy, 29 Rust tests, the full pytest
+  suite including network tests (154 passed) on IduEdu 3.3.2 from PyPI.
+
+
 ## v3.0.1 (2026-11-17)
 
 ### Bug Fixes
