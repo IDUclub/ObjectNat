@@ -121,7 +121,7 @@ dependencies = [
 
 [[package]]
 name = "objectnat-rs"
-version = "2.2.0"
+version = "3.0.1"
 dependencies = [
  "numpy",
  "pyo3",

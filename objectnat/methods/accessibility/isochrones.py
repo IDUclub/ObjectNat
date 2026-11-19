@@ -1,24 +1,22 @@
-import os
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Iterable, Literal
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import shapely
 from iduedu import UrbanGraph, dijkstra_parallel, single_source_dijkstra
+from shapely.geometry import GeometryCollection
 
+from objectnat.methods.accessibility._geometry import buffer_unions
 from objectnat.methods.accessibility._utils import (
     SteppedGeometryType,
-    build_separated_dist_polygons,
     check_buffer_args,
     edge_speed_m_per_min,
-    finish_ways_clip_geometry,
     node_points,
-    radius_buffers,
+    radius_buffer_group,
     select_geometry_nodes,
+    separated_buffer_groups,
     stepped_accessibility,
-    ways_road_buffers,
+    ways_road_buffer_group,
 )
 
 
@@ -195,8 +193,9 @@ def get_graph_isochrones(
     zone_geom = zone.to_crs(local_crs).union_all() if zone is not None else None
     source_nodes = origin_nodes_s.to_numpy()
 
-    # 1. per origin, with pandas (sequential): reachable nodes and the polygons to merge
     prepared = []
+    groups = []
+    road_masks = {}
     for row_i, (source_index, distances) in enumerate(reachable_per_origin):
         distances = distances[np.isfinite(distances.to_numpy(dtype=float))]
         if distances.empty:
@@ -205,10 +204,10 @@ def get_graph_isochrones(
             {"dist": distances.to_numpy(dtype=float)}, index=pd.Index(distances.index, name="node")
         )
         reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, node_points(urban_graph, reachable))
-        parts = []
+        first_group = len(groups)
         if geometry_type in ("radius", "ways"):
-            parts.append(
-                radius_buffers(
+            groups.append(
+                radius_buffer_group(
                     reachable_graph_nodes_gdf,
                     weight_value=float(weight_value_cutoff),
                     weight_type=weight_type,
@@ -218,33 +217,28 @@ def get_graph_isochrones(
                 )
             )
         if geometry_type == "ways":
-            parts.append(ways_road_buffers(urban_graph, reachable_graph_nodes_gdf, float(road_buffer_size)))
+            road_masks[len(groups)] = first_group, reachable_graph_nodes_gdf.geometry.to_numpy()
+            groups.append(ways_road_buffer_group(urban_graph, reachable_graph_nodes_gdf, float(road_buffer_size)))
         if geometry_type == "separate":
-            parts.append(
-                build_separated_dist_polygons(
-                    reachable_graph_nodes_gdf,
-                    weight_value=float(weight_value_cutoff),
-                    weight_type=weight_type,
-                    step=float(weight_value_cutoff) if weight_value_cutoff > 0 else 1.0,
-                    speed_m_per_min=speed_m_per_min,
-                    buffer_ratio=float(buffer_factor),
-                ).geometry.values
+            # An unstepped isochrone has a single band, so there is no overlap to assign between bands.
+            _, buffers = separated_buffer_groups(
+                reachable_graph_nodes_gdf,
+                weight_value=float(weight_value_cutoff),
+                weight_type=weight_type,
+                step=float(weight_value_cutoff) if weight_value_cutoff > 0 else 1.0,
+                speed_m_per_min=speed_m_per_min,
+                buffer_ratio=float(buffer_factor),
             )
-        prepared.append((source_index, source_nodes[row_i], reachable_graph_nodes_gdf, parts))
+            groups.extend(buffers)
+        group_index = len(groups) - 1 if len(groups) > first_group else None
+        prepared.append((source_index, source_nodes[row_i], group_index))
 
-    # 2. the unions, the costly part, in threads (shapely releases the GIL; no shared pandas objects)
-    with ThreadPoolExecutor(max_workers=max_workers or os.cpu_count()) as pool:
-        merged = list(pool.map(lambda item: [shapely.union_all(p) for p in item[3]], prepared))
-
-    # 3. finishing touches (sequential)
+    merged = buffer_unions(groups, road_masks=road_masks, max_workers=max_workers or None)
     geometries = []
     result_index = []
     result_source_nodes = []
-    for (source_index, source_node, reachable_graph_nodes_gdf, _), unions in zip(prepared, merged):
-        if geometry_type == "ways":
-            geom = finish_ways_clip_geometry(unions[0], unions[1], reachable_graph_nodes_gdf, local_crs)
-        else:
-            geom = unions[0]
+    for source_index, source_node, group_index in prepared:
+        geom = merged[group_index] if group_index is not None else GeometryCollection()
         if zone_geom is not None:
             geom = geom.intersection(zone_geom)
         geometries.append(geom)

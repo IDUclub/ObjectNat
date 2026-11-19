@@ -102,6 +102,8 @@ objectnat/
       coverage.py    — get_graph_coverage, get_stepped_graph_coverage
       radius.py      — get_radius_coverage (graph-free: points + radius + Voronoi)
       _utils.py      — shared geometry builders (Voronoi cells, radius/ways/separate/stepped)
+      _geometry.py   — fast GEOS unions behind them: buffers pruned by containment (Rust), unions per spatial
+                       tile in one thread pool with a parallel tree merge, Voronoi cells dissolved by coverage union
     provision/       — get_service_provision, recalculate_links, clip_provision, ProvisionResult
                        (provision_calculating.py + provision_result.py + exceptions; _matrix.py reads
                        dense or pandas-sparse OD matrices without densifying them)
@@ -125,6 +127,7 @@ rust/                — Rust crate compiled by maturin into the extension `obje
   src/viewshed.rs    — footprint rasterization, per-observer visible cells and catchment counts (rayon)
   src/noise.rs       — receiver-grid noise: direct paths, first-order reflections and diffraction around one or
                        two building corners (Maekawa / ISO 9613-2), energy sum (rayon)
+  src/buffers.rs     — point buffers that lie inside a bigger neighbour's polygon (k-d tree), dropped before unions
   src/lib.rs         — Python bindings (`visibility_polygons`, `provision_allocate`, `noise_grid_energy`)
 ```
 
