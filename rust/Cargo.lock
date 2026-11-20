@@ -50,12 +50,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e9c71c2167ca323c882b99918929403426e2373ea17242ff5653e0d5e1058be"
 
 [[package]]
-name = "geo-straight-skeleton"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fa81297af607f4dfc27767c772b82022282574b739bcf126751a568ff50db56"
-
-[[package]]
 name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -149,7 +143,6 @@ name = "objectnat-rs"
 version = "3.0.2"
 dependencies = [
  "earcutr",
- "geo-straight-skeleton",
  "numpy",
  "pyo3",
  "rayon",

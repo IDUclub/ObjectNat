@@ -128,6 +128,7 @@ rust/                — Rust crate compiled by maturin into the extension `obje
   src/provision.rs   — gravity-probabilistic provision allocation on sparse OD entries (rayon)
   src/insolation.rs  — 2.5D scene (walls with roof heights + terrain grid): sunlight rays, lines of sight (rayon)
   src/roofs.rs       — builds piecewise-planar roof meshes, using a straight skeleton for hipped roofs
+  src/straight_skeleton/ — vendored straight skeleton (MIT)
   src/grid.rs        — classifies points against polygons and flags uncertain results for GEOS
   src/viewshed.rs    — footprint rasterization, per-observer visible cells and catchment counts (rayon)
   src/noise.rs       — receiver-grid noise: direct paths, first-order reflections and diffraction around one or

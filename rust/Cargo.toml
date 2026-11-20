@@ -19,7 +19,6 @@ crate-type = ["cdylib", "rlib"]
 numpy = "0.30"
 pyo3 = { version = "0.30", features = ["abi3-py311"] }
 rayon = "1.10"
-geo-straight-skeleton = "=0.1.1"
 earcutr = "0.5"
 
 [profile.release]
