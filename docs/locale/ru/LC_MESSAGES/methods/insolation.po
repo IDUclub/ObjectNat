@@ -224,26 +224,7 @@ msgstr "Доля пропущенного света в [0, 1], необходи
 msgid "Returns"
 msgstr "Возвращает"
 
-# | msgid "Receiver points in the CRS of ``buildings``; points inside
 # buildings
-# | are left out. Columns:  - ``sun_hours``: mean hours of direct sun per day
-# | (``0`` for ground that gets no direct sun on any   simulated day); -
-# | ``min_sun_hours``: hours on the worst day; - ``max_continuous_hours``: the
-# | longest uninterrupted sunlit period on the worst day (the least   of the
-# | daily longest periods), for which insolation norms usually set a minimum.
-# | ``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours``
-# | (mean time the sun is above ``min_sun_elevation``) and record the grid, so
-# | :func:`rasterize` turns any column into a :class:`Raster`."
-#| msgid "Receiver points in the CRS of ``buildings``; points inside footprints
-#| are left out, except below raised volumes in details mode. Columns:  -
-#| ``sun_hours``: mean hours of direct sun per day (``0`` for ground that gets
-#| no direct sun on any   simulated day); - ``min_sun_hours``: hours on the
-#| worst day; - ``max_continuous_hours``: the longest uninterrupted sunlit
-#| period on the worst day (the least   of the daily longest periods), for
-#| which insolation norms usually set a minimum.  ``attrs`` contain ``days``
-#| (the simulated dates) and ``day_length_hours`` (mean time the sun is above
-#| ``min_sun_elevation``) and record the grid, so :func:`rasterize` turns any
-#| column into a :class:`Raster`."
 msgid "Receiver points in the CRS of ``buildings``; points inside footprints are left out, except below raised volumes in details mode. Columns:  - ``sun_hours``: mean hours of direct sun per day (``0`` for ground that gets no direct sun on any   simulated day); - ``min_sun_hours``: hours on the worst day; - ``max_continuous_hours``: the longest uninterrupted sunlit period on the worst day (the least   of the daily longest periods), for which insolation norms usually set a minimum.  With ``trees``, ``sun_hours`` and ``min_sun_hours`` are transmittance-weighted; ``max_continuous_hours`` uses ``sunlit_threshold``. ``sun_hours_no_trees`` is the mean building/terrain-only hours, and ``attrs[\"trees\"]`` is the retained tree count. Receivers under crowns are retained. No trunks, branch structure or diffuse light are modelled.  ``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is above ``min_sun_elevation``) and record the grid, so :func:`rasterize` turns any column into a :class:`Raster`."
 msgstr "Receiver points in the CRS of ``buildings``; points inside footprints are left out, except below raised volumes in details mode. Columns:  - ``sun_hours``: mean hours of direct sun per day (``0`` for ground that gets no direct sun on any   simulated day); - ``min_sun_hours``: hours on the worst day; - ``max_continuous_hours``: the longest uninterrupted sunlit period on the worst day (the least   of the daily longest periods), for which insolation norms usually set a minimum.  With ``trees``, ``sun_hours`` and ``min_sun_hours`` are transmittance-weighted; ``max_continuous_hours`` uses ``sunlit_threshold``. ``sun_hours_no_trees`` is the mean building/terrain-only hours, and ``attrs[\"trees\"]`` is the retained tree count. Receivers under crowns are retained. No trunks, branch structure or diffuse light are modelled.  ``attrs`` contain ``days`` (the simulated dates) and ``day_length_hours`` (mean time the sun is above ``min_sun_elevation``) and record the grid, so :func:`rasterize` turns any column into a :class:`Raster`."
 
