@@ -7,6 +7,7 @@ pub mod insolation;
 pub mod noise;
 pub mod provision;
 pub mod roofs;
+mod straight_skeleton;
 pub mod viewshed;
 pub mod visibility;
 

@@ -1,14 +1,15 @@
 //! Piecewise-planar roofs, in a local unit-scale frame to avoid cancellation in projected CRS.
 //!
-//! Hips use the event-driven, equal-speed wavefront in geo-straight-skeleton 0.1.1. It is a
-//! dependency-free f64 Rust implementation (MIT OR Apache-2.0), supports holes and simultaneous
+//! Hips use the event-driven, equal-speed wavefront vendored from geo-straight-skeleton 0.1.1.
+//! The MIT-licensed f64 Rust implementation supports holes and simultaneous
 //! events, and has an upstream CGAL oracle corpus. We still validate every result independently.
 //! Floating-point failures fall back to a gable; this is not an exact-predicate implementation.
 
 use std::collections::BTreeMap;
 
-use geo_straight_skeleton::Skeleton;
 use rayon::prelude::*;
+
+use crate::straight_skeleton::Skeleton;
 
 type Pt = [f64; 2];
 type Face = Vec<[f64; 3]>;
