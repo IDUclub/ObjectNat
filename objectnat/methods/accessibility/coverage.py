@@ -8,12 +8,12 @@ from shapely import concave_hull, multipoints
 
 from objectnat.methods.accessibility._geometry import dissolve_cells
 from objectnat.methods.accessibility._utils import (
+    ReachedEdgeSpeeds,
     SteppedGeometryType,
     build_radius_clip_geometry,
     build_voronoi_cells,
     build_ways_clip_geometry,
     check_buffer_args,
-    edge_speed_m_per_min,
     node_points,
     select_geometry_nodes,
     stepped_accessibility,
@@ -140,7 +140,7 @@ def get_graph_coverage(
     )
     source_nodes_s = nearest_sources.attrs["source_nodes"]
     distances = nearest_sources["dist"].sparse.to_dense()
-    reachable_mask = distances < np.inf
+    reachable_mask = np.isfinite(distances)
     reachable_nodes = pd.DataFrame(
         {
             "node_to": nearest_sources.loc[reachable_mask, "source_node"],
@@ -152,9 +152,13 @@ def get_graph_coverage(
     if reachable_nodes.empty:
         return gpd.GeoDataFrame()
     reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, node_points(urban_graph, reachable_nodes))
+    speed_m_per_min = (
+        ReachedEdgeSpeeds(urban_graph).for_nodes(reachable_nodes.index)
+        if geometry_type is not None and weight_type == "time_min"
+        else None
+    )
 
     if geometry_type == "radius":
-        speed_m_per_min = edge_speed_m_per_min(urban_graph) if weight_type == "time_min" else None
         clip_zone = build_radius_clip_geometry(
             reachable_graph_nodes_gdf,
             weight_value=float(weight_value_cutoff),
@@ -163,7 +167,6 @@ def get_graph_coverage(
             max_distance=off_network_distance,
         )
     elif geometry_type == "ways":
-        speed_m_per_min = edge_speed_m_per_min(urban_graph) if weight_type == "time_min" else None
         clip_zone = build_ways_clip_geometry(
             urban_graph,
             reachable_graph_nodes_gdf,
