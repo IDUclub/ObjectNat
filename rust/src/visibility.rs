@@ -164,6 +164,32 @@ impl Grid {
 
     /// Visits the cells crossed by the segment `p -> q` in order; `visit` returns `true` to stop.
     pub(crate) fn walk_segment(&self, p: Pt, q: Pt, mut visit: impl FnMut(&[u32]) -> bool) {
+        self.walk_cells(p, q, |c, _, _| visit(self.ids(c)));
+    }
+
+    /// Cell-index variant with entry/exit parameters on the original segment, clamped to [0, 1].
+    #[inline(always)]
+    pub(crate) fn walk_cells(&self, p: Pt, q: Pt, mut visit: impl FnMut(usize, f64, f64) -> bool) {
+        self.walk_cells_impl::<false>(p, q, &mut visit);
+    }
+
+    /// Include the half-open owner of a corner even when DDA only touches that cell at one point.
+    /// Crown chord midpoints need a unique owner, including on mixed-direction diagonal rays.
+    pub(crate) fn walk_cells_owned(
+        &self,
+        p: Pt,
+        q: Pt,
+        mut visit: impl FnMut(usize, f64, f64) -> bool,
+    ) {
+        self.walk_cells_impl::<true>(p, q, &mut visit);
+    }
+
+    fn walk_cells_impl<const OWNED: bool>(
+        &self,
+        p: Pt,
+        q: Pt,
+        visit: &mut impl FnMut(usize, f64, f64) -> bool,
+    ) {
         // clip to the grid rectangle first, so the walk starts where the segment enters it
         let d0 = sub(q, p);
         let (x1, y1) = (
@@ -226,13 +252,31 @@ impl Grid {
             f64::INFINITY
         };
         let max_steps = (self.nx + self.ny) * 2 + 4;
+        let mut enter = 0.0f64;
         for _ in 0..max_steps {
-            if visit(self.cell_items(i as usize, j as usize)) {
+            let exit = if i == ti && j == tj {
+                1.0
+            } else {
+                t_max_x.min(t_max_y).clamp(enter, 1.0)
+            };
+            let s_enter = (t0 + enter * (t1 - t0)).clamp(0.0, 1.0);
+            let s_exit = (t0 + exit * (t1 - t0)).clamp(s_enter, 1.0);
+            if visit(j as usize * self.nx + i as usize, s_enter, s_exit) {
                 return;
             }
             if (i == ti && j == tj) || t_max_x.min(t_max_y) > 1.0 {
                 return;
             }
+            if OWNED && t_max_x == t_max_y && d[0] > 0.0 && d[1] < 0.0 {
+                // The normal y-first tie break visits (i,j-1), then (i+1,j-1).
+                // Half-open floor ownership at the corner is instead (i+1,j).
+                if i + 1 < self.nx as isize
+                    && visit(j as usize * self.nx + (i + 1) as usize, s_exit, s_exit)
+                {
+                    return;
+                }
+            }
+            enter = exit;
             if t_max_x < t_max_y {
                 i += step_i;
                 t_max_x += t_delta_x;
@@ -244,6 +288,43 @@ impl Grid {
                 return;
             }
         }
+    }
+
+    pub(crate) fn cell_count(&self) -> usize {
+        self.nx * self.ny
+    }
+
+    pub(crate) fn cell_at(&self, p: Pt) -> usize {
+        self.clamp_j(p[1]) * self.nx + self.clamp_i(p[0])
+    }
+
+    pub(crate) fn ids(&self, c: usize) -> &[u32] {
+        &self.items[self.starts[c] as usize..self.starts[c + 1] as usize]
+    }
+
+    pub(crate) fn bounds(&self, c: usize) -> [f64; 4] {
+        let i = c % self.nx;
+        let j = c / self.nx;
+        [
+            self.x0 + i as f64 * self.cell,
+            self.y0 + j as f64 * self.cell,
+            self.x0 + (i + 1) as f64 * self.cell,
+            self.y0 + (j + 1) as f64 * self.cell,
+        ]
+    }
+
+    pub(crate) fn box_cells(&self, bbox: &Seg, mut visit: impl FnMut(usize)) {
+        let (i0, j0, i1, j1) = self.cell_range(bbox);
+        for j in j0..=j1 {
+            for i in i0..=i1 {
+                visit(j * self.nx + i);
+            }
+        }
+    }
+
+    pub(crate) fn clear_ids(&mut self) {
+        self.items = Vec::new();
+        self.starts = Vec::new();
     }
 
     /// Nearest hit of the ray `o + t*d` (t > 0) with the segments, via Amanatides–Woo traversal.
@@ -761,6 +842,61 @@ pub fn ring_area(ring: &[Pt]) -> f64 {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn walk_cell_parameters_match_clipping() {
+        let grid = super::Grid::build(&[], [-10.0, -5.0, 10.0, 5.0], 16);
+        let mut state = 731_u64;
+        let mut random = || {
+            state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
+            (state >> 11) as f64 / ((1_u64 << 53) as f64)
+        };
+        for case in 0..4000 {
+            let p = [random() * 60.0 - 30.0, random() * 40.0 - 20.0];
+            let mut q = [random() * 60.0 - 30.0, random() * 40.0 - 20.0];
+            match case % 8 {
+                0 => q = p,
+                1 => q[0] = p[0],
+                2 => q[1] = p[1],
+                _ => {}
+            }
+            let mut visited = vec![false; grid.cell_count()];
+            let clip = |c| {
+                let b = grid.bounds(c);
+                let (mut lo, mut hi) = (0.0f64, 1.0f64);
+                for axis in 0..2 {
+                    let d = q[axis] - p[axis];
+                    if d == 0.0 {
+                        if p[axis] < b[axis] || p[axis] > b[axis + 2] {
+                            return None;
+                        }
+                    } else {
+                        let a = (b[axis] - p[axis]) / d;
+                        let z = (b[axis + 2] - p[axis]) / d;
+                        lo = lo.max(a.min(z));
+                        hi = hi.min(a.max(z));
+                    }
+                }
+                (lo <= hi).then_some((lo, hi))
+            };
+            grid.walk_cells(p, q, |c, enter, exit| {
+                assert!((0.0..=1.0).contains(&enter));
+                assert!((enter..=1.0).contains(&exit));
+                let (lo, hi) = clip(c).expect("visited cell intersects segment");
+                assert!((enter - lo).abs() < 1e-12, "case={case}, cell={c}");
+                assert!((exit - hi).abs() < 1e-12, "case={case}, cell={c}");
+                visited[c] = true;
+                false
+            });
+            for (c, seen) in visited.iter().enumerate() {
+                if let Some((lo, hi)) = clip(c) {
+                    if hi > lo {
+                        assert!(seen, "missed case={case}, cell={c}");
+                    }
+                }
+            }
+        }
+    }
+
     use super::*;
 
     fn square(cx: f64, cy: f64, h: f64) -> Vec<Seg> {

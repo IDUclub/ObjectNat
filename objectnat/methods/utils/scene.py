@@ -16,10 +16,20 @@ logger = config.logger
 
 TerrainInput = gpd.GeoDataFrame | str | os.PathLike | tuple
 MAX_TERRAIN_CELLS = 20_000_000
+_REACH_CLIP_ENABLED = True
 
 
 class Scene(NamedTuple):
-    """Buildings with heights on optional terrain in ``local_crs``, with their walls and roof tops."""
+    """Buildings on terrain in ``local_crs`` with wall tops, optionally at both segment endpoints.
+
+    Details-mode ``volumes`` has one polygon per row, retaining its input index label and parent label,
+    relative ``B``, ``E``, ``H``, absolute ``base``, mesher ``used_shape`` and ``status``. ``owner`` indexes
+    these rows. ``boundary_walls`` indexes facade pieces in ``segments`` with outward ``boundary_normals``.
+    ``undersides`` uses the roof mesher's XY/ring/polygon offsets and absolute bottom heights;
+    ``roof_faces`` retains absolute XYZ coordinates, face offsets and volume owners for inspection.
+    ``trees`` holds optional packed crowns for insolation; visibility kernels ignore them.
+    All optional fields default to None for existing callers.
+    """
 
     local_crs: object
     blds: gpd.GeoDataFrame
@@ -29,6 +39,13 @@ class Scene(NamedTuple):
     segments: np.ndarray
     tops: np.ndarray
     owner: np.ndarray  # building of every wall
+    volumes: gpd.GeoDataFrame | None = None
+    bottoms: np.ndarray | None = None
+    undersides: tuple | None = None
+    boundary_walls: np.ndarray | None = None  # None in meshed scenes: extracted lazily for facade receivers
+    boundary_normals: np.ndarray | None = None
+    roof_faces: tuple | None = None
+    trees: np.ndarray | None = None  # insolation-only packed crowns; visibility kernels ignore these
 
     def ground_at(self, xy: np.ndarray) -> np.ndarray:
         if self.terrain_grid is None:
@@ -39,8 +56,79 @@ class Scene(NamedTuple):
 def prepare_scene(
     buildings, area, terrain, terrain_height_column, terrain_cell,
     height_column, storeys_column, storey_height, default_height,
+    building_details: bool = False, default_roof_angle: float = 30.0,
+    *, reach=None, _context=None, _facade_reach=False,
 ) -> Scene:  # fmt: skip
-    """Buildings with heights standing on the terrain, in a local metric CRS, and their walls."""
+    """Prepare buildings on terrain in a local metric CRS.
+
+    ``building_details=False`` retains the original flat-roof scene. With True, optional S3DB tags
+    describe parts, raised bottoms and roof meshes; ``default_roof_angle`` supplies missing slopes in
+    degrees. See :func:`get_insolation` for the tags, inheritance rules and supported shapes.
+
+    Parameters
+    ----------
+    reach : tuple or None, keyword-only
+        Optional ``(local_area_geometry, minimum_sun_tangent)``. None keeps the full scene.
+        Heights and the complete terrain grid provide the conservative receiver lower bound.
+    _context : tuple or None, keyword-only
+        Internal precomputed local CRS and terrain grid, reused when sampling the sun before meshing.
+    _facade_reach : bool, keyword-only
+        Include whole target footprints and the outward window offset in the receiver region.
+    """
+    local_crs, terrain_grid = (
+        _prepare_scene_context(buildings, area, terrain, terrain_height_column, terrain_cell)
+        if _context is None
+        else _context
+    )
+
+    blds = buildings.to_crs(local_crs)
+    blds = blds[blds.geom_type.isin(["Polygon", "MultiPolygon"]) & ~blds.is_empty]
+    if building_details:
+        from objectnat.methods.utils._building_details import detailed_scene  # pylint: disable=import-outside-toplevel
+
+        return detailed_scene(
+            local_crs,
+            blds,
+            terrain_grid,
+            height_column,
+            storeys_column,
+            storey_height,
+            default_height,
+            default_roof_angle,
+            reach=reach,
+            facade_reach=_facade_reach,
+        )
+    building_height = _building_heights(blds, height_column, storeys_column, storey_height, default_height)
+    ok = ~np.isnan(building_height)
+    blds, building_height = blds[ok], building_height[ok]
+    if terrain_grid is not None:
+        points = shapely.get_coordinates(blds.representative_point().values)
+        base = np.nan_to_num(sample_terrain(terrain_grid, points), nan=0.0)
+    else:
+        base = np.zeros(len(blds))
+    if reach is not None and _REACH_CLIP_ENABLED:
+        keep = _reach_mask(
+            blds,
+            base + building_height,
+            base,
+            terrain_grid,
+            reach,
+            facade=_facade_reach,
+        )
+        blds, building_height, base = blds.iloc[np.flatnonzero(keep)], building_height[keep], base[keep]
+    # imported here: the visibility package itself builds on this module
+    from objectnat.methods.visibility._native import (  # pylint: disable=import-outside-toplevel
+        geometries_to_segments,
+    )
+
+    segments, _, owner = geometries_to_segments(blds.geometry.values, return_owner=True)
+    tops = (base + building_height)[owner] if len(segments) else np.empty(0)
+    owner = np.asarray(owner if len(segments) else np.empty(0), dtype=np.int64)
+    return Scene(local_crs, blds, building_height, base, terrain_grid, segments, tops, owner)
+
+
+def _prepare_scene_context(buildings, area, terrain, terrain_height_column, terrain_cell):
+    """Choose the original local CRS and prepare the complete terrain grid once."""
     if not isinstance(buildings, gpd.GeoDataFrame) or buildings.crs is None:
         raise ValueError("buildings must be a GeoDataFrame with a CRS")
     terrain_grid = None
@@ -56,25 +144,101 @@ def prepare_scene(
     else:
         local_crs = _estimate_local_crs(buildings, area, None)
 
-    blds = buildings.to_crs(local_crs)
-    blds = blds[blds.geom_type.isin(["Polygon", "MultiPolygon"]) & ~blds.is_empty]
-    building_height = _building_heights(blds, height_column, storeys_column, storey_height, default_height)
-    ok = ~np.isnan(building_height)
-    blds, building_height = blds[ok], building_height[ok]
-    if terrain_grid is not None:
-        points = shapely.get_coordinates(blds.representative_point().values)
-        base = np.nan_to_num(sample_terrain(terrain_grid, points), nan=0.0)
-    else:
-        base = np.zeros(len(blds))
-    # imported here: the visibility package itself builds on this module
-    from objectnat.methods.visibility._native import (  # pylint: disable=import-outside-toplevel
-        geometries_to_segments,
-    )
+    return local_crs, terrain_grid
 
-    segments, _, owner = geometries_to_segments(blds.geometry.values, return_owner=True)
-    tops = (base + building_height)[owner] if len(segments) else np.empty(0)
-    owner = np.asarray(owner if len(segments) else np.empty(0), dtype=np.int64)
-    return Scene(local_crs, blds, building_height, base, terrain_grid, segments, tops, owner)
+
+def _bbox_distance(bounds, envelope):
+    """Lower bound on geometry distance from distances between enclosing rectangles."""
+    dx = np.maximum(np.maximum(bounds[..., 0] - envelope[2], envelope[0] - bounds[..., 2]), 0)
+    dy = np.maximum(np.maximum(bounds[..., 1] - envelope[3], envelope[1] - bounds[..., 3]), 0)
+    return np.hypot(dx, dy)
+
+
+def _area_touching(polygons, bounds, area, envelope):
+    """Exact intersection only for polygons whose boxes overlap the area envelope."""
+    candidates = (bounds[:, 0] <= envelope[2]) & (bounds[:, 2] >= envelope[0])
+    candidates &= (bounds[:, 1] <= envelope[3]) & (bounds[:, 3] >= envelope[1])
+    touching = np.zeros(len(polygons), dtype=bool)
+    touching[candidates] = shapely.intersects(polygons[candidates], area)
+    return touching
+
+
+def _reach_mask(blds, tops, base, terrain_grid, reach, *, groups=None, parent_geometries=None, facade=False):
+    """Keep independent flat rows or whole detailed groups within conservative solar reach.
+
+    Rectangle distances underestimate true distances. The global height shortcut deliberately
+    keeps all rows when the largest reach covers the input extent, even if shorter rows could
+    individually be discarded. Neither shortcut can remove a relevant obstruction.
+    """
+    keep = np.ones(len(blds), dtype=bool)
+    if not _REACH_CLIP_ENABLED or reach is None or len(blds) == 0:
+        return keep
+    area, tangent = reach
+    if area.is_empty or not np.isfinite(tangent) or tangent <= 0:
+        return keep
+    envelope = np.asarray(area.bounds)
+    z_min = min(0.0, float(np.min(base)))
+    if terrain_grid is not None:
+        terrain = terrain_grid[0]
+        finite = terrain[np.isfinite(terrain)]
+        if finite.size:
+            z_min = min(z_min, float(finite.min()))
+    bound_max = max(float(np.max(tops)) - z_min, 0) / tangent * (1 + 1e-9) + 1.0
+    total = blds.total_bounds
+    # Farthest x and y displacements occur together at one of the rectangle's corners.
+    # Using the area envelope here is sufficient: the facade envelope can only be larger.
+    farthest_x = max(envelope[0] - total[0], total[2] - envelope[2], 0)
+    farthest_y = max(envelope[1] - total[1], total[3] - envelope[3], 0)
+    if np.all(np.isfinite(total)) and np.hypot(farthest_x, farthest_y) <= bound_max:
+        logger.debug(f"Building reach clip: {len(keep)}/{len(keep)} rows kept (global bound)")
+        return keep
+
+    polygons = np.asarray(blds.geometry, dtype=object)
+    bounds = shapely.bounds(polygons)
+    touching = _area_touching(polygons, bounds, area, envelope)
+    parent_bounds = None
+    if parent_geometries is not None:
+        parents = np.asarray(parent_geometries, dtype=object)
+        parent_bounds = shapely.bounds(parents)
+        touching |= _area_touching(parents, parent_bounds, area, envelope)
+    if groups is None:
+        group, n = None, len(blds)
+        group_touching, group_top = touching, tops
+    else:
+        # _volume_rows already computed parent IDs; no spatial parent search here.
+        _, group = np.unique(groups, return_inverse=True)
+        n = int(group.max()) + 1
+        group_touching = np.zeros(n, dtype=bool)
+        np.logical_or.at(group_touching, group, touching)
+        group_top = np.full(n, -np.inf)
+        np.maximum.at(group_top, group, tops)
+    if facade:
+        # All windows lie within target bounds expanded by their 0.1 m outward offset.
+        # Enclose that region and area directly, avoiding polygon unions and buffering.
+        targets = group_touching if group is None else group_touching[group]
+        if targets.any():
+            target_bounds = bounds[targets]
+            envelope = np.array(
+                [
+                    min(envelope[0], target_bounds[:, 0].min() - 0.101),
+                    min(envelope[1], target_bounds[:, 1].min() - 0.101),
+                    max(envelope[2], target_bounds[:, 2].max() + 0.101),
+                    max(envelope[3], target_bounds[:, 3].max() + 0.101),
+                ]
+            )
+    distance = _bbox_distance(bounds, envelope)
+    if parent_bounds is not None:
+        distance = np.minimum(distance, _bbox_distance(parent_bounds, envelope))
+    if group is None:
+        group_distance = distance
+    else:
+        group_distance = np.full(n, np.inf)
+        np.minimum.at(group_distance, group, distance)
+    bound = np.maximum(group_top - z_min, 0) / tangent * (1 + 1e-9) + 1.0
+    group_keep = group_touching | (group_distance <= bound) | ~np.isfinite(group_top) | ~np.isfinite(group_distance)
+    keep = group_keep if group is None else group_keep[group]
+    logger.debug(f"Building reach clip: {int(group_keep.sum())}/{n} groups, {int(keep.sum())}/{len(keep)} rows kept")
+    return keep
 
 
 def _estimate_local_crs(buildings, area, terrain):
@@ -225,4 +389,14 @@ def kernel_scene(scene: Scene, shift: np.ndarray) -> tuple[np.ndarray, np.ndarra
     if scene.terrain_grid is not None:
         z, tx0, ty0, sx, sy = scene.terrain_grid
         kwargs = {"terrain": np.ascontiguousarray(z), "terrain_grid": (tx0 - shift[0], ty0 - shift[1], sx, sy)}
+    if scene.bottoms is not None:
+        kwargs["bottoms"] = np.ascontiguousarray(scene.bottoms, dtype=float)
+    if scene.undersides is not None:
+        xy, rings, polys, z = scene.undersides
+        kwargs.update(
+            under_xy=np.ascontiguousarray(xy - shift, dtype=float),
+            under_ring_offsets=rings,
+            under_poly_offsets=polys,
+            under_z=z,
+        )
     return np.ascontiguousarray(segments, dtype=float), np.ascontiguousarray(scene.tops, dtype=float), kwargs
