@@ -146,7 +146,7 @@ dependencies = [
 
 [[package]]
 name = "objectnat-rs"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "earcutr",
  "geo-straight-skeleton",

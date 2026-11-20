@@ -33,7 +33,7 @@ def _prepare(trees, *, scene=None, footprints=None, spacing=None):
 
 def test_tree_numeric_defaults_shapes_cycles_and_terrain(monkeypatch):
     messages = []
-    monkeypatch.setattr("objectnat.methods.insolation._trees.config.logger.warning", messages.append)
+    monkeypatch.setattr("objectnat.methods.insolation._trees.logger.warning", messages.append)
     trees = gpd.GeoDataFrame(
         {
             "height": ["12,5 m", "bad", None, "8;9", "0", "-2", "10"],
@@ -73,7 +73,7 @@ def test_leaf_cycle_inference_and_explicit_overrides():
 
 def test_point_and_multipart_expansion_and_unsupported_geometry_warning(monkeypatch):
     messages = []
-    monkeypatch.setattr("objectnat.methods.insolation._trees.config.logger.warning", messages.append)
+    monkeypatch.setattr("objectnat.methods.insolation._trees.logger.warning", messages.append)
     geometries = np.array(
         [Point(0, 0), MultiPoint([(1, 0), (2, 0)]), GeometryCollection([Point(99, 99)]), Point()], dtype=object
     )
@@ -111,7 +111,7 @@ def test_polygon_hexagonal_spacing_holes_and_small_multipart_fallback():
 
 def test_footprint_drop_warns_unique_count_and_keeps_courtyard(monkeypatch):
     messages = []
-    monkeypatch.setattr("objectnat.methods.insolation._trees.config.logger.warning", messages.append)
+    monkeypatch.setattr("objectnat.methods.insolation._trees.logger.warning", messages.append)
     footprint = box(-5, -5, 5, 5).difference(box(-1, -1, 1, 1))
     buildings = gpd.GeoDataFrame(geometry=[footprint, footprint], crs=CRS)
     trees = gpd.GeoDataFrame(geometry=[MultiPoint([(0, 0), (3, 0), (10, 0)])], crs=CRS)

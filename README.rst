@@ -112,6 +112,8 @@ among buildings of known height and optional terrain (GeoDataFrame, GeoTIFF or a
 sun, including ground with no direct sun, the hours on the worst day and the longest continuous sunlit period, for
 which insolation norms set a minimum; ``rasterize`` draws them as a raster. ``get_facade_insolation`` computes the same quantities
 for facade points on every floor and checks them against a norm.
+With ``building_details=True``, both methods use OSM roof shapes, building parts and raised volumes, and
+``trees`` adds shade from tree crowns.
 
 .. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21_v2.gif
    :align: center

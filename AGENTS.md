@@ -110,13 +110,16 @@ objectnat/
     noise/           — simulate_noise_grid (Rust receiver grid), simulate_noise, calculate_simplified_noise_frame,
                        noise_reduce helpers
     insolation/      — get_insolation (sun hours on a ground grid), get_facade_insolation (per floor on facades);
-                       buildings with heights + terrain, NOAA sun position, single days or periods
+                       building details, trees and terrain; NOAA sun position for single days or periods
+      _points.py     — native point-in-polygon filters with GEOS fallback for uncertain results
+      _trees.py      — expands OSM tree features and prepares crowns with seasonal light attenuation
     visibility/      — get_visibility (exact visibility polygons, isovist metrics), get_isovist_grid
                        (isovist metrics on a grid), get_viewshed / get_viewshed_catchment (2.5D: lines of sight
                        over building heights and terrain), visibility catchment
     utils/
       geom_utils.py  — geometry helpers shared across methods
       scene.py       — 2.5D scene for insolation and viewsheds: building heights, terrain, local CRS
+      _building_details.py — OSM building parts, roof and height tags turned into volumes for the roof mesher
       raster.py      — Raster (values, transform, crs) and rasterize: grid points of insolation, noise, catchment
                        and isovist grids to rasters (matplotlib, GeoTIFF, folium); grid methods record their grid
                        in attrs; noise takes output="zones" | "receivers" | "both"
@@ -124,6 +127,8 @@ rust/                — Rust crate compiled by maturin into the extension `obje
   src/visibility.rs  — exact batch visibility polygons (grid index, critical directions, rayon)
   src/provision.rs   — gravity-probabilistic provision allocation on sparse OD entries (rayon)
   src/insolation.rs  — 2.5D scene (walls with roof heights + terrain grid): sunlight rays, lines of sight (rayon)
+  src/roofs.rs       — builds piecewise-planar roof meshes, using a straight skeleton for hipped roofs
+  src/grid.rs        — classifies points against polygons and flags uncertain results for GEOS
   src/viewshed.rs    — footprint rasterization, per-observer visible cells and catchment counts (rayon)
   src/noise.rs       — receiver-grid noise: direct paths, first-order reflections and diffraction around one or
                        two building corners (Maekawa / ISO 9613-2), energy sum (rayon)

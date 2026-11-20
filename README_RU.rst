@@ -119,6 +119,8 @@ Object-oriented Network Analysis Tools
 не попадает, часы в худший день и наибольшую непрерывную продолжительность инсоляции, для которой нормативы задают
 минимум; ``rasterize`` рисует эти величины растром. ``get_facade_insolation`` рассчитывает те же величины для точек на
 фасадах по этажам и проверяет их по нормативу.
+При ``building_details=True`` оба метода учитывают формы крыш, части зданий и приподнятые объёмы по данным OSM,
+а параметр ``trees`` добавляет затенение от крон деревьев.
 
 .. image:: https://raw.githubusercontent.com/IDUclub/ObjectNat/assets/insolation_shadows_2026-06-21_v2.gif
    :align: center

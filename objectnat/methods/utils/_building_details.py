@@ -10,6 +10,8 @@ from pyproj import Transformer
 from objectnat import config
 from objectnat.methods.utils.scene import Scene, _reach_mask, sample_terrain
 
+logger = config.logger
+
 SHAPES = dict(
     enumerate(
         (
@@ -342,7 +344,7 @@ def detailed_scene(
     ok = np.isfinite(top) & (top > bottom)
     skipped = int((~ok).sum())
     if skipped:
-        config.logger.warning(f"{skipped} building volumes without a height above their bottom are skipped")
+        logger.warning(f"{skipped} building volumes without a height above their bottom are skipped")
     rows = rows.iloc[np.flatnonzero(ok)].copy()
     bottom, eave, top, shapes = bottom[ok], eave[ok], top[ok], shapes[ok]
     volume_groups = volume_groups[ok]
@@ -396,11 +398,11 @@ def detailed_scene(
     xyz[:, :2] += shift
     fallbacks = int((status == 1).sum())
     if fallbacks:
-        config.logger.warning(f"{fallbacks} building roofs use an approximation or fallback shape")
+        logger.warning(f"{fallbacks} building roofs use an approximation or fallback shape")
     rows["B"], rows["E"], rows["H"] = bottom, eave, top
     rows["base"], rows["used_shape"], rows["status"] = base, used, status
     raised = bottom > 0
-    config.logger.debug(f"Building undersides: {int(exposed.sum())} retained of {int(raised.sum())} raised volumes")
+    logger.debug(f"Building undersides: {int(exposed.sum())} retained of {int(raised.sum())} raised volumes")
     under = (*polygon_arrays(rows.geometry.values[exposed], np.zeros(2)), (base + bottom)[exposed])
     return Scene(
         local_crs,
