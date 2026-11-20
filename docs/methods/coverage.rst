@@ -28,7 +28,8 @@ Method
    reachable nodes. ``geometry_type="radius"`` additionally clips them to buffers around the reachable nodes by the
    residual distance, at most ``off_network_distance`` (150 m by default, as for isochrones), and
    ``geometry_type="ways"`` to the buffered streets. For ``time_min`` the residual time is converted to a distance
-   with the median edge speed of the graph.
+   with the median speed (``length_meter / time_min``) of edges between reached nodes (walk edges on walk and
+   intermodal graphs). When these edges have usable speeds, unreached parts of the graph do not affect the conversion.
 
 On walk and intermodal graphs only pedestrian (``type == "walk"``) edges shape ``"ways"``, and only their end nodes
 shape any geometry, as for isochrones.

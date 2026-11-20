@@ -8,9 +8,9 @@ from shapely.geometry import GeometryCollection
 
 from objectnat.methods.accessibility._geometry import buffer_unions
 from objectnat.methods.accessibility._utils import (
+    ReachedEdgeSpeeds,
     SteppedGeometryType,
     check_buffer_args,
-    edge_speed_m_per_min,
     node_points,
     radius_buffer_group,
     select_geometry_nodes,
@@ -189,7 +189,7 @@ def get_graph_isochrones(
         max_workers=max_workers,
     )
 
-    speed_m_per_min = edge_speed_m_per_min(urban_graph) if weight_type == "time_min" else None
+    edge_speeds = ReachedEdgeSpeeds(urban_graph) if weight_type == "time_min" else None
     zone_geom = zone.to_crs(local_crs).union_all() if zone is not None else None
     source_nodes = origin_nodes_s.to_numpy()
 
@@ -200,6 +200,7 @@ def get_graph_isochrones(
         distances = distances[np.isfinite(distances.to_numpy(dtype=float))]
         if distances.empty:
             continue
+        speed_m_per_min = edge_speeds.for_nodes(distances.index) if edge_speeds is not None else None
         reachable = pd.DataFrame(
             {"dist": distances.to_numpy(dtype=float)}, index=pd.Index(distances.index, name="node")
         )

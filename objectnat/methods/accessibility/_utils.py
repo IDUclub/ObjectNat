@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import Any, Literal
 
 import geopandas as gpd
@@ -68,7 +69,7 @@ def stepped_accessibility(
         reverse=reverse,
         output="distances",
     ).sparse.to_dense()
-    reachable = distances < np.inf
+    reachable = np.isfinite(distances)
     reachable_nodes = pd.DataFrame(
         {"dist": distances[reachable].astype(float)}, index=pd.Index(distances.index[reachable], name="node")
     )
@@ -99,12 +100,18 @@ def geometry_edges(urban_graph: UrbanGraph) -> gpd.GeoDataFrame:
     Walk and intermodal graphs use their pedestrian (``type == "walk"``) edges; other
     graphs, or graphs without a ``type`` column, use every edge.
     """
+    mask = _geometry_edge_mask(urban_graph)
+    edges = urban_graph.edges_gdf
+    return edges if mask is None else edges.loc[mask]
+
+
+def _geometry_edge_mask(urban_graph: UrbanGraph) -> np.ndarray | None:
     edges = urban_graph.edges_gdf
     if urban_graph.type in _WALK_ONLY_GRAPH_TYPES and "type" in edges.columns:
-        walk_edges = edges[edges["type"] == "walk"]
-        if not walk_edges.empty:
-            return walk_edges
-    return edges
+        walk = edges["type"].eq("walk").to_numpy(dtype=bool, na_value=False)
+        if walk.any():
+            return walk
+    return None
 
 
 def select_geometry_nodes(urban_graph: UrbanGraph, reachable_graph_nodes_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -197,13 +204,48 @@ def build_voronoi_cells(
     )
 
 
+def _edge_speeds(edges: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    speeds = (edges["length_meter"] / edges["time_min"]).to_numpy(na_value=np.nan)
+    return speeds, np.isfinite(speeds) & (speeds > 0)
+
+
 def edge_speed_m_per_min(urban_graph: UrbanGraph) -> float:
-    edge_speeds = urban_graph.edges_gdf["length_meter"] / urban_graph.edges_gdf["time_min"]
-    edge_speeds = edge_speeds.replace([np.inf, -np.inf], np.nan).dropna()
-    edge_speeds = edge_speeds[edge_speeds > 0]
-    if edge_speeds.empty:
+    speeds, usable = _edge_speeds(urban_graph.edges_gdf)
+    if not usable.any():
         raise ValueError("Cannot calculate speed_m_per_min from edge length_meter/time_min")
-    return float(edge_speeds.median())
+    return float(np.median(speeds[usable]))
+
+
+class ReachedEdgeSpeeds:
+    """Prepare usable geometry edge speeds and endpoint positions once per search call."""
+
+    def __init__(self, urban_graph: UrbanGraph):
+        self._graph = urban_graph
+        self._nodes = urban_graph.nodes_gdf.index
+        edges = urban_graph.edges_gdf
+        speeds, usable = _edge_speeds(edges)
+        geometry_mask = _geometry_edge_mask(urban_graph)
+        if geometry_mask is not None:
+            usable &= geometry_mask
+        self._speeds = speeds[usable]
+        self._u = self._nodes.get_indexer(edges["u"].to_numpy()[usable])
+        self._v = self._nodes.get_indexer(edges["v"].to_numpy()[usable])
+
+    def for_nodes(self, reached_nodes: pd.Index) -> float:
+        """Return the median speed of usable edges with both endpoints reached."""
+        positions = self._nodes.get_indexer(reached_nodes)
+        # Reserve the last slot for missing endpoints, which get_indexer maps to -1.
+        reached = np.zeros(len(self._nodes) + 1, dtype=bool)
+        reached[positions[positions >= 0]] = True
+        speeds = self._speeds[reached[self._u] & reached[self._v]]
+        return float(np.median(speeds)) if speeds.size else self.fallback_speed
+
+    @cached_property
+    def fallback_speed(self) -> float:
+        """Use all usable geometry edges, falling back to all graph edges."""
+        if self._speeds.size:
+            return float(np.median(self._speeds))
+        return edge_speed_m_per_min(self._graph)
 
 
 def radius_buffer_group(
@@ -362,8 +404,10 @@ def build_stepped_accessibility_geometry(
     if reachable_graph_nodes_gdf.empty:
         return gpd.GeoDataFrame()
 
+    speed_m_per_min = (
+        ReachedEdgeSpeeds(urban_graph).for_nodes(reachable_graph_nodes_gdf.index) if weight_type == "time_min" else None
+    )
     reachable_graph_nodes_gdf = select_geometry_nodes(urban_graph, reachable_graph_nodes_gdf)
-    speed_m_per_min = edge_speed_m_per_min(urban_graph) if weight_type == "time_min" else None
 
     if geometry_type == "separate":
         result = _build_separated_dist_polygons(

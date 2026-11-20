@@ -19,8 +19,10 @@ Method
    (minutes, default) or ``length_meter`` (metres), up to ``weight_value_cutoff``. The searches of all origins run in
    one parallel call of IduEdu's Numba routines.
 3. The reachable nodes are turned into a polygon according to ``geometry_type``. The residual budget of a node
-   (cutoff minus its cost) is converted to a distance, for ``time_min`` with the median edge speed of the graph
-   (``length_meter / time_min``):
+   (cutoff minus its cost) is converted to a distance. For ``time_min``, the conversion uses the median speed
+   (``length_meter / time_min``) of edges between nodes reached from that origin (walk edges on walk and intermodal
+   graphs). When these edges have usable speeds, unreached parts of the graph do not affect the conversion.
+   The geometry is then built as follows:
 
    - ``"radius"`` (default): union of buffers around the reachable nodes; the radius of a buffer is the residual
      distance of its node, but at most ``off_network_distance`` (150 m by default);
