@@ -2,13 +2,17 @@
 
 mod buffers;
 pub mod catchment;
+mod grid;
 pub mod insolation;
 pub mod noise;
 pub mod provision;
+pub mod roofs;
 pub mod viewshed;
 pub mod visibility;
 
-use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
+use numpy::{
+    IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArrayDyn,
+};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
@@ -25,6 +29,12 @@ type RaggedCells<'py> = (Bound<'py, PyArray1<u32>>, Bound<'py, PyArray1<i64>>);
 /// Sunlit counts and longest sunlit runs, ``(n, days)`` uint32 each.
 type DayStats<'py> = (Bound<'py, PyArray2<u32>>, Bound<'py, PyArray2<u32>>);
 
+type TreeDayStats<'py> = (
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray2<u32>>,
+    Bound<'py, PyArray2<u32>>,
+);
+
 /// ``(ny, nx)`` uint32 counts and optional float64 weight sums.
 type CountArrays<'py> = (Bound<'py, PyArray2<u32>>, Option<Bound<'py, PyArray2<f64>>>);
 
@@ -34,6 +44,268 @@ type LabelRings<'py> = (
     Bound<'py, PyArray1<i64>>,
     Bound<'py, PyArray1<u8>>,
 );
+
+type PolygonRings = Vec<Vec<Vec<[f64; 2]>>>;
+type RoofArrays<'py> = (
+    (Bound<'py, PyArray2<f64>>, Bound<'py, PyArray1<i64>>),
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray1<u8>>,
+    Bound<'py, PyArray1<u8>>,
+);
+
+/// Rings are indexed by vertex offsets; polygons by ring offsets. Empty batches use offsets [0].
+fn polygon_arrays(
+    xy: &PyReadonlyArray2<'_, f64>,
+    ring_offsets: &PyReadonlyArray1<'_, i64>,
+    poly_offsets: &PyReadonlyArray1<'_, i64>,
+) -> PyResult<PolygonRings> {
+    let xy = xy.as_array();
+    if xy.ncols() != 2 || xy.iter().any(|v| !v.is_finite()) {
+        return Err(PyValueError::new_err(
+            "xy must have shape (n, 2) with finite coordinates",
+        ));
+    }
+    let offsets =
+        |values: &PyReadonlyArray1<'_, i64>, end: usize, name: &str| -> PyResult<Vec<usize>> {
+            let values: Vec<usize> = values
+                .as_array()
+                .iter()
+                .map(|&v| usize::try_from(v).unwrap_or(usize::MAX))
+                .collect();
+            if values.first() != Some(&0)
+                || values.last() != Some(&end)
+                || values.windows(2).any(|w| w[0] > w[1])
+            {
+                return Err(PyValueError::new_err(format!(
+                    "{name} must start at 0, be non-decreasing and end at {end}"
+                )));
+            }
+            Ok(values)
+        };
+    let ro = offsets(ring_offsets, xy.nrows(), "ring_offsets")?;
+    let po = offsets(poly_offsets, ro.len() - 1, "poly_offsets")?;
+    if ro.windows(2).any(|w| w[1] - w[0] < 3) || po.windows(2).any(|w| w[0] == w[1]) {
+        return Err(PyValueError::new_err(
+            "each polygon needs an exterior ring; each ring needs at least 3 coordinates",
+        ));
+    }
+    Ok(po
+        .windows(2)
+        .map(|p| {
+            (p[0]..p[1])
+                .map(|r| {
+                    (ro[r]..ro[r + 1])
+                        .map(|k| [xy[[k, 0]], xy[[k, 1]]])
+                        .collect()
+                })
+                .collect()
+        })
+        .collect())
+}
+
+type PointPairs<'py> = (Bound<'py, PyArray2<i64>>, Bound<'py, PyArray2<i64>>);
+type GridClassification<'py> = (Bound<'py, PyArray1<u8>>, PointPairs<'py>);
+
+fn hit_arrays<'py>(py: Python<'py>, hits: grid::Hits) -> PointPairs<'py> {
+    let pairs = |items: Vec<(usize, usize)>| {
+        numpy::ndarray::Array2::from_shape_fn((2, items.len()), |(row, col)| {
+            if row == 0 {
+                items[col].0 as i64
+            } else {
+                items[col].1 as i64
+            }
+        })
+        .into_pyarray(py)
+    };
+    (pairs(hits.inside), pairs(hits.uncertain))
+}
+
+/// Conservative regular-grid classifier: 0 outside, 1 inside, 2 uncertain (resolve in GEOS).
+/// With union=true return union states; otherwise return (point, polygon) inside/uncertain pairs.
+/// Inputs use the roof polygon-array contract, in the original projected coordinates.
+#[pyfunction]
+#[pyo3(signature = (xy, ring_offsets, poly_offsets, gx, gy, *, union=false, n_threads=None))]
+#[allow(clippy::too_many_arguments)]
+fn classify_grid<'py>(
+    py: Python<'py>,
+    xy: PyReadonlyArray2<'py, f64>,
+    ring_offsets: PyReadonlyArray1<'py, i64>,
+    poly_offsets: PyReadonlyArray1<'py, i64>,
+    gx: PyReadonlyArray1<'py, f64>,
+    gy: PyReadonlyArray1<'py, f64>,
+    union: bool,
+    n_threads: Option<usize>,
+) -> PyResult<GridClassification<'py>> {
+    let polygons = polygon_arrays(&xy, &ring_offsets, &poly_offsets)?;
+    let gx = gx.as_array().to_vec();
+    let gy = gy.as_array().to_vec();
+    for axis in [&gx, &gy] {
+        if axis.iter().any(|v| !v.is_finite()) || axis.windows(2).any(|w| w[0] > w[1]) {
+            return Err(PyValueError::new_err(
+                "grid axes must be finite and non-decreasing",
+            ));
+        }
+    }
+    let count = gx
+        .len()
+        .checked_mul(gy.len())
+        .ok_or_else(|| PyValueError::new_err("grid is too large"))?;
+    let (states, hits) = py.detach(move || {
+        in_pool(n_threads, || {
+            let hits = grid::grid_pairs(&polygons, &gx, &gy);
+            if union {
+                (grid::area_states(&hits, count), grid::Hits::default())
+            } else {
+                (Vec::new(), hits)
+            }
+        })
+    });
+    Ok((states.into_pyarray(py), hit_arrays(py, hits)))
+}
+
+/// Conservative arbitrary-point classifier, indexed by polygon bounding boxes.
+/// Return inside/uncertain (point, polygon) pairs; uncertain pairs must be resolved in GEOS.
+#[pyfunction]
+#[pyo3(signature = (xy, ring_offsets, poly_offsets, points, *, n_threads=None))]
+fn classify_points<'py>(
+    py: Python<'py>,
+    xy: PyReadonlyArray2<'py, f64>,
+    ring_offsets: PyReadonlyArray1<'py, i64>,
+    poly_offsets: PyReadonlyArray1<'py, i64>,
+    points: PyReadonlyArray2<'py, f64>,
+    n_threads: Option<usize>,
+) -> PyResult<PointPairs<'py>> {
+    let polygons = polygon_arrays(&xy, &ring_offsets, &poly_offsets)?;
+    let points = points.as_array();
+    if points.ncols() != 2 || points.iter().any(|v| !v.is_finite()) {
+        return Err(PyValueError::new_err(
+            "points must have shape (n, 2) with finite coordinates",
+        ));
+    }
+    let points: Vec<_> = points.rows().into_iter().map(|p| [p[0], p[1]]).collect();
+    let hits = py.detach(move || in_pool(n_threads, || grid::point_pairs(&polygons, &points)));
+    Ok(hit_arrays(py, hits))
+}
+
+/// Batch piecewise-planar roofs over projected XY footprints.
+///
+/// Args:
+///     xy: (n, 2) float64, finite projected coordinates. Rings may be open or closed, either winding.
+///     ring_offsets: (r+1,) int64 vertex offsets, starting at 0 and ending at n.
+///     poly_offsets: (p+1,) int64 ring offsets, starting at 0 and ending at r;
+///         the exterior precedes the holes of each polygon. Empty batches use [0] for both offsets.
+///     shape: (p,) uint8 codes: 0 flat, 1 skillion, 2 gabled, 3 hipped, 4 pyramidal,
+///         5 cone, 6 dome, 7 onion, 8 half-dome, 9 round, 10 half-hipped, 11 side_hipped,
+///         12 quadruple_saltbox, 13 mansard, 14 gambrel, 15 saltbox, 16 many.
+///     eave, ridge: (p,) float64 finite absolute roof-start and roof-top heights.
+///     direction: optional (p,) float64 downslope compass bearings in radians clockwise from
+///         grid north; NaN means absent. Overrides across. Without a bearing, the ridge follows
+///         the longer side of the minimum rotated rectangle (shorter side if across is true).
+///     across: optional (p,) bool, default false.
+///     n_threads: worker threads; None or 0 uses the global pool. Work releases the GIL.
+///
+/// Returns:
+///     ((face_xyz, face_offsets), face_owner, edges, edge_owner, status, used_shape).
+///     face_xyz: (k, 3) float64; face_offsets: (f+1,) int64. Each slice is an open CCW
+///     planar ring without holes (implicit closing edge). Holed planar faces are triangulated;
+///     concave footprints may also have extra coplanar subdivisions. face_owner: (f,) int64.
+///     edges: (e, 6) float64 [x1,y1,z1,x2,y2,z2], unique undirected subdivision edges including
+///     boundary edges split at every facet junction; edge_owner: (e,) int64. Owners are zero-based
+///     input polygon indices. Faces and edges are grouped in input order; no ordering within a roof
+///     is promised. status: (p,) uint8, 0 requested shape, 1 approximation or fallback.
+///     used_shape: (p,) uint8 gives the actual base shape (0..9).
+///
+/// Hipped roofs use geo-straight-skeleton 0.1.1 (pure Rust f64, MIT/Apache-2.0, supports holes),
+/// validated for planarity, coverage, overlap and height bounds; failures fall back to gabled.
+/// Non-star-shaped or holed pyramidal/cone/dome/onion/half-dome roofs fall back to hipped,
+/// then gabled if necessary. Dome variants use the same four-tier quarter-ellipse approximation;
+/// round uses four strips per side. Codes 10..13 approximate hipped; 14..15 approximate gabled;
+/// many and unknown codes use flat. Zero-area inputs or ridge <= eave use flat at max(eave,ridge).
+#[pyfunction]
+#[pyo3(signature = (xy, ring_offsets, poly_offsets, shape, eave, ridge, direction=None, across=None, n_threads=None))]
+#[allow(clippy::too_many_arguments)]
+fn roof_mesh<'py>(
+    py: Python<'py>,
+    xy: PyReadonlyArray2<'py, f64>,
+    ring_offsets: PyReadonlyArray1<'py, i64>,
+    poly_offsets: PyReadonlyArray1<'py, i64>,
+    shape: PyReadonlyArray1<'py, u8>,
+    eave: PyReadonlyArray1<'py, f64>,
+    ridge: PyReadonlyArray1<'py, f64>,
+    direction: Option<PyReadonlyArray1<'py, f64>>,
+    across: Option<PyReadonlyArray1<'py, bool>>,
+    n_threads: Option<usize>,
+) -> PyResult<RoofArrays<'py>> {
+    let polygons = polygon_arrays(&xy, &ring_offsets, &poly_offsets)?;
+    let p = polygons.len();
+    let (shape, eave, ridge) = (shape.as_array(), eave.as_array(), ridge.as_array());
+    if shape.len() != p
+        || eave.len() != p
+        || ridge.len() != p
+        || eave.iter().chain(ridge.iter()).any(|z| !z.is_finite())
+    {
+        return Err(PyValueError::new_err(
+            "shape, eave and ridge must have shape (p,); heights must be finite",
+        ));
+    }
+    let direction = direction
+        .map(|a| a.as_array().iter().copied().collect::<Vec<_>>())
+        .unwrap_or_else(|| vec![f64::NAN; p]);
+    let across = across
+        .map(|a| a.as_array().iter().copied().collect::<Vec<_>>())
+        .unwrap_or_else(|| vec![false; p]);
+    if direction.len() != p || direction.iter().any(|v| v.is_infinite()) || across.len() != p {
+        return Err(PyValueError::new_err(
+            "direction and across must have shape (p,); direction must be finite or NaN",
+        ));
+    }
+    let specs: Vec<_> = (0..p)
+        .map(|k| roofs::RoofSpec {
+            shape: shape[k],
+            eave: eave[k],
+            ridge: ridge[k],
+            direction: direction[k],
+            across: across[k],
+        })
+        .collect();
+    let meshes = py.detach(|| run_in_pool(n_threads, || roofs::roof_meshes(&polygons, &specs)));
+    let (mut xyz, mut offsets, mut owners, mut edges, mut edge_owners, mut status, mut used) = (
+        Vec::new(),
+        vec![0i64],
+        Vec::new(),
+        Vec::new(),
+        Vec::new(),
+        Vec::new(),
+        Vec::new(),
+    );
+    for (owner, mesh) in meshes.into_iter().enumerate() {
+        for face in mesh.faces {
+            xyz.extend(face.iter().flatten().copied());
+            offsets.push((xyz.len() / 3) as i64);
+            owners.push(owner as i64);
+        }
+        for edge in mesh.edges {
+            edges.extend(edge);
+            edge_owners.push(owner as i64);
+        }
+        status.push(mesh.status);
+        used.push(mesh.used_shape);
+    }
+    let xyz = numpy::ndarray::Array2::from_shape_vec((xyz.len() / 3, 3), xyz)
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    let edges = numpy::ndarray::Array2::from_shape_vec((edges.len() / 6, 6), edges)
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    Ok((
+        (xyz.into_pyarray(py), offsets.into_pyarray(py)),
+        owners.into_pyarray(py),
+        edges.into_pyarray(py),
+        edge_owners.into_pyarray(py),
+        status.into_pyarray(py),
+        used.into_pyarray(py),
+    ))
+}
 
 type Scene = (Vec<[f64; 2]>, Vec<f64>, Vec<Wall>);
 
@@ -616,9 +888,14 @@ fn noise_grid_energy<'py>(
 /// among walls ``(m, 4)`` with absolute roof heights ``tops`` and an optional terrain grid ``(ny, nx)``
 /// placed by ``terrain_grid = (x0, y0, sx, sy)``. Facade receivers pass their outward unit ``normals``
 /// ``(n, 2)``: the sun then counts only while ``normal . sun_dir > min_facing``.
+/// ``tops`` may be ``(m,)`` or ``(m, 2)`` endpoint heights. Optional keyword-only ``bottoms``
+/// (``(m,)``, finite or -inf) exclude wall crossings at or below the bottom. Undersides are supplied
+/// together as ``under_xy`` (``(k, 2)``), ``under_ring_offsets`` (``(r+1,)`` int64 vertex offsets),
+/// ``under_poly_offsets`` (``(p+1,)`` int64 ring offsets), and finite ``under_z`` (``(p,)``).
+/// Rings use even-odd filling, arbitrary winding and optional closing vertices.
 #[pyfunction]
 #[pyo3(signature = (receivers, suns, day_offsets, segments, tops, terrain=None, terrain_grid=None, normals=None,
-    min_facing=0.0, n_threads=None))]
+    min_facing=0.0, n_threads=None, *, bottoms=None, under_xy=None, under_ring_offsets=None, under_poly_offsets=None, under_z=None))]
 #[allow(clippy::too_many_arguments)]
 fn insolation_day_stats<'py>(
     py: Python<'py>,
@@ -626,12 +903,17 @@ fn insolation_day_stats<'py>(
     suns: PyReadonlyArray2<'py, f64>,
     day_offsets: PyReadonlyArray1<'py, i64>,
     segments: PyReadonlyArray2<'py, f64>,
-    tops: PyReadonlyArray1<'py, f64>,
+    tops: PyReadonlyArrayDyn<'py, f64>,
     terrain: Option<PyReadonlyArray2<'py, f64>>,
     terrain_grid: Option<(f64, f64, f64, f64)>,
     normals: Option<PyReadonlyArray2<'py, f64>>,
     min_facing: f64,
     n_threads: Option<usize>,
+    bottoms: Option<PyReadonlyArray1<'py, f64>>,
+    under_xy: Option<PyReadonlyArray2<'py, f64>>,
+    under_ring_offsets: Option<PyReadonlyArray1<'py, i64>>,
+    under_poly_offsets: Option<PyReadonlyArray1<'py, i64>>,
+    under_z: Option<PyReadonlyArray1<'py, f64>>,
 ) -> PyResult<DayStats<'py>> {
     let rec = receivers.as_array();
     let sun = suns.as_array();
@@ -649,7 +931,18 @@ fn insolation_day_stats<'py>(
             tan_el: r[2],
         })
         .collect();
-    let scene = scene_from_arrays(segments, tops, terrain, terrain_grid)?;
+    let scene = scene_from_arrays(
+        segments,
+        tops,
+        terrain,
+        terrain_grid,
+        bottoms,
+        under_xy,
+        under_ring_offsets,
+        under_poly_offsets,
+        under_z,
+        None,
+    )?;
     let offsets: Vec<usize> = day_offsets
         .as_array()
         .iter()
@@ -699,10 +992,184 @@ fn insolation_day_stats<'py>(
     ))
 }
 
+/// Tree-weighted direct sun: (weighted f64 counts, opaque-only u32 counts, longest u32 runs),
+/// all (n, days). Crown records (k, 8) are [x, y, z, r, h, mu_on, mu_off, shape]: shape 0
+/// is a spheroid centred at z with vertical semi-axis h; shape 1 is a cone based at z with
+/// full height h. All coordinates are absolute in the scene CRS; extinction is per metre.
+/// leaf_on is one uint8 0/1 per simulated day; evergreen records use mu_off = mu_on.
+/// Opaque arrays, terrain and facade normals use the insolation_day_stats contract unchanged.
+#[pyfunction]
+#[pyo3(signature = (receivers, suns, day_offsets, segments, tops, trees, leaf_on, sunlit_threshold=0.5, terrain=None, terrain_grid=None, normals=None,
+    min_facing=0.0, n_threads=None, *, bottoms=None, under_xy=None, under_ring_offsets=None, under_poly_offsets=None, under_z=None))]
+#[allow(clippy::too_many_arguments)]
+fn insolation_day_stats_trees<'py>(
+    py: Python<'py>,
+    receivers: PyReadonlyArray2<'py, f64>,
+    suns: PyReadonlyArray2<'py, f64>,
+    day_offsets: PyReadonlyArray1<'py, i64>,
+    segments: PyReadonlyArray2<'py, f64>,
+    tops: PyReadonlyArrayDyn<'py, f64>,
+    trees: PyReadonlyArray2<'py, f64>,
+    leaf_on: PyReadonlyArray1<'py, u8>,
+    sunlit_threshold: f64,
+    terrain: Option<PyReadonlyArray2<'py, f64>>,
+    terrain_grid: Option<(f64, f64, f64, f64)>,
+    normals: Option<PyReadonlyArray2<'py, f64>>,
+    min_facing: f64,
+    n_threads: Option<usize>,
+    bottoms: Option<PyReadonlyArray1<'py, f64>>,
+    under_xy: Option<PyReadonlyArray2<'py, f64>>,
+    under_ring_offsets: Option<PyReadonlyArray1<'py, i64>>,
+    under_poly_offsets: Option<PyReadonlyArray1<'py, i64>>,
+    under_z: Option<PyReadonlyArray1<'py, f64>>,
+) -> PyResult<TreeDayStats<'py>> {
+    let rec = receivers.as_array();
+    let sun = suns.as_array();
+    if (rec.nrows() > 0 && rec.ncols() != 3) || (sun.nrows() > 0 && sun.ncols() != 3) {
+        return Err(PyValueError::new_err(
+            "receivers must be (n, 3) and suns (t, 3)",
+        ));
+    }
+    let points: Vec<[f64; 3]> = rec.rows().into_iter().map(|r| [r[0], r[1], r[2]]).collect();
+    let sun_list: Vec<insolation::Sun> = sun
+        .rows()
+        .into_iter()
+        .map(|r| insolation::Sun {
+            dir: [r[0], r[1]],
+            tan_el: r[2],
+        })
+        .collect();
+    let tree_array = trees.as_array();
+    if tree_array.ncols() != 8
+        || tree_array.rows().into_iter().any(|r| {
+            r.iter().any(|v| !v.is_finite())
+                || r[3] <= 0.0
+                || r[4] <= 0.0
+                || r[5] < 0.0
+                || r[6] < 0.0
+                || (r[7] != 0.0 && r[7] != 1.0)
+        })
+    {
+        return Err(PyValueError::new_err("trees must be finite (k, 8) crown records with positive r/h, nonnegative mu and shape 0 or 1"));
+    }
+    if !sunlit_threshold.is_finite() || !(0.0..=1.0).contains(&sunlit_threshold) {
+        return Err(PyValueError::new_err(
+            "sunlit_threshold must be finite and in [0, 1]",
+        ));
+    }
+    if rec.ncols() != 3
+        || sun.ncols() != 3
+        || rec.iter().chain(sun.iter()).any(|v| !v.is_finite())
+        || sun
+            .rows()
+            .into_iter()
+            .any(|r| (r[0].hypot(r[1]) - 1.0).abs() > 1e-8)
+    {
+        return Err(PyValueError::new_err(
+            "receivers/suns must be finite (n, 3)/(t, 3), with unit horizontal sun directions",
+        ));
+    }
+    let crowns = tree_array
+        .rows()
+        .into_iter()
+        .map(|r| insolation::Crown {
+            x: r[0],
+            y: r[1],
+            z: r[2],
+            r: r[3],
+            h: r[4],
+            mu_on: r[5],
+            mu_off: r[6],
+            shape: r[7] as u8,
+        })
+        .collect();
+    let scene = scene_from_arrays(
+        segments,
+        tops,
+        terrain,
+        terrain_grid,
+        bottoms,
+        under_xy,
+        under_ring_offsets,
+        under_poly_offsets,
+        under_z,
+        Some(crowns),
+    )?;
+    let offsets: Vec<usize> = day_offsets
+        .as_array()
+        .iter()
+        .map(|&v| usize::try_from(v).unwrap_or(usize::MAX))
+        .collect();
+    if offsets.is_empty()
+        || offsets.windows(2).any(|w| w[0] > w[1])
+        || *offsets.last().unwrap_or(&0) > sun_list.len()
+    {
+        return Err(PyValueError::new_err(
+            "day_offsets must be non-decreasing positions within suns",
+        ));
+    }
+    let normals: Option<Vec<[f64; 2]>> = match normals {
+        Some(a) => {
+            let a = a.as_array();
+            if a.nrows() != points.len() || (a.nrows() > 0 && a.ncols() != 2) {
+                return Err(PyValueError::new_err(
+                    "normals must be (n, 2), one per receiver",
+                ));
+            }
+            Some(a.rows().into_iter().map(|r| [r[0], r[1]]).collect())
+        }
+        None => None,
+    };
+    let leaves: Vec<u8> = leaf_on.as_array().iter().copied().collect();
+    if leaves.len() != offsets.len() - 1 || leaves.iter().any(|&v| v > 1) {
+        return Err(PyValueError::new_err(
+            "leaf_on must contain one 0/1 value per day",
+        ));
+    }
+    if !min_facing.is_finite()
+        || normals
+            .as_ref()
+            .is_some_and(|v| v.iter().flatten().any(|x| !x.is_finite()))
+    {
+        return Err(PyValueError::new_err(
+            "normals and min_facing must be finite",
+        ));
+    }
+    let n = points.len();
+    let days = offsets.len() - 1;
+    let (weighted, counts, longest) = py.detach(|| {
+        let facing = normals.as_deref().map(|v| (v, min_facing));
+        run_in_pool(n_threads, || {
+            insolation::day_stats_trees(
+                &scene,
+                &points,
+                &sun_list,
+                &offsets,
+                &leaves,
+                sunlit_threshold,
+                facing,
+            )
+        })
+    });
+    let shape = |v| {
+        numpy::ndarray::Array2::from_shape_vec((n, days), v)
+            .map_err(|e| PyValueError::new_err(e.to_string()))
+    };
+    let weighted = numpy::ndarray::Array2::from_shape_vec((n, days), weighted)
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    Ok((
+        weighted.into_pyarray(py),
+        shape(counts)?.into_pyarray(py),
+        shape(longest)?.into_pyarray(py),
+    ))
+}
+
 /// Lines of sight: 1 for every target ``(m, 3)`` visible from its eye ``eyes[owner]`` (``(k, 3)``, x y z)
 /// among walls ``(w, 4)`` with absolute roof heights ``tops`` and an optional terrain grid.
+/// ``tops`` accepts ``(w,)`` or ``(w, 2)`` endpoint heights. Keyword-only ``bottoms`` and the four
+/// ``under_*`` arrays describe raised volumes; their encoding is documented by ``insolation_day_stats``.
 #[pyfunction]
-#[pyo3(signature = (eyes, targets, owner, segments, tops, terrain=None, terrain_grid=None, n_threads=None))]
+#[pyo3(signature = (eyes, targets, owner, segments, tops, terrain=None, terrain_grid=None, n_threads=None, *, bottoms=None, under_xy=None, under_ring_offsets=None, under_poly_offsets=None, under_z=None))]
 #[allow(clippy::too_many_arguments)]
 fn line_of_sight<'py>(
     py: Python<'py>,
@@ -710,10 +1177,15 @@ fn line_of_sight<'py>(
     targets: PyReadonlyArray2<'py, f64>,
     owner: PyReadonlyArray1<'py, i64>,
     segments: PyReadonlyArray2<'py, f64>,
-    tops: PyReadonlyArray1<'py, f64>,
+    tops: PyReadonlyArrayDyn<'py, f64>,
     terrain: Option<PyReadonlyArray2<'py, f64>>,
     terrain_grid: Option<(f64, f64, f64, f64)>,
     n_threads: Option<usize>,
+    bottoms: Option<PyReadonlyArray1<'py, f64>>,
+    under_xy: Option<PyReadonlyArray2<'py, f64>>,
+    under_ring_offsets: Option<PyReadonlyArray1<'py, i64>>,
+    under_poly_offsets: Option<PyReadonlyArray1<'py, i64>>,
+    under_z: Option<PyReadonlyArray1<'py, f64>>,
 ) -> PyResult<Bound<'py, PyArray1<u8>>> {
     let (eyes, targets, owner) = (eyes.as_array(), targets.as_array(), owner.as_array());
     if (eyes.nrows() > 0 && eyes.ncols() != 3)
@@ -736,7 +1208,18 @@ fn line_of_sight<'py>(
         .map(|r| [r[0], r[1], r[2]])
         .collect();
     let owner: Vec<usize> = owner.iter().map(|&k| k as usize).collect();
-    let scene = scene_from_arrays(segments, tops, terrain, terrain_grid)?;
+    let scene = scene_from_arrays(
+        segments,
+        tops,
+        terrain,
+        terrain_grid,
+        bottoms,
+        under_xy,
+        under_ring_offsets,
+        under_poly_offsets,
+        under_z,
+        None,
+    )?;
     let seen = py.detach(|| {
         let run = || insolation::line_of_sight(&scene, &eye_pts, &target_pts, &owner);
         match n_threads {
@@ -751,20 +1234,50 @@ fn line_of_sight<'py>(
     Ok(seen.into_pyarray(py))
 }
 
-/// Walls ``(m, 4)`` with roof heights and an optional terrain grid as an indexed 2.5D scene.
+/// Walls and optional raised-volume details as an indexed 2.5D scene.
+#[allow(clippy::too_many_arguments)]
 fn scene_from_arrays(
     segments: PyReadonlyArray2<'_, f64>,
-    tops: PyReadonlyArray1<'_, f64>,
+    tops: PyReadonlyArrayDyn<'_, f64>,
     terrain: Option<PyReadonlyArray2<'_, f64>>,
     terrain_grid: Option<(f64, f64, f64, f64)>,
+    bottoms: Option<PyReadonlyArray1<'_, f64>>,
+    under_xy: Option<PyReadonlyArray2<'_, f64>>,
+    under_ring_offsets: Option<PyReadonlyArray1<'_, i64>>,
+    under_poly_offsets: Option<PyReadonlyArray1<'_, i64>>,
+    under_z: Option<PyReadonlyArray1<'_, f64>>,
+    trees: Option<Vec<insolation::Crown>>,
 ) -> PyResult<insolation::Scene> {
     let segs = segments.as_array();
     let tops = tops.as_array();
-    if (segs.nrows() > 0 && segs.ncols() != 4) || tops.len() != segs.nrows() {
+    if segs.ncols() != 4 {
+        return Err(PyValueError::new_err("segments must have shape (m, 4)"));
+    }
+    let m = segs.nrows();
+    if tops.shape() != [m] && tops.shape() != [m, 2] {
+        return Err(PyValueError::new_err("tops must have shape (m,) or (m, 2)"));
+    }
+    let bottoms = bottoms.map(|v| v.as_array().iter().copied().collect::<Vec<_>>());
+    if bottoms
+        .as_ref()
+        .is_some_and(|v| v.len() != m || v.iter().any(|z| z.is_nan() || *z == f64::INFINITY))
+    {
         return Err(PyValueError::new_err(
-            "segments must be (m, 4) with one top height each",
+            "bottoms must have shape (m,) and contain finite heights or -inf",
         ));
     }
+    let undersides = match (under_xy, under_ring_offsets, under_poly_offsets, under_z) {
+        (None, None, None, None) => Vec::new(),
+        (Some(xy), Some(ro), Some(po), Some(z)) => {
+            let rings = polygon_arrays(&xy, &ro, &po)?;
+            let z = z.as_array();
+            if z.len() != rings.len() || z.iter().any(|v| !v.is_finite()) {
+                return Err(PyValueError::new_err("under_z must have shape (p,) with finite heights"));
+            }
+            rings.into_iter().zip(z).map(|(rings, &z)| insolation::Underside { rings, z }).collect()
+        }
+        _ => return Err(PyValueError::new_err("under_xy, under_ring_offsets, under_poly_offsets and under_z must be supplied together")),
+    };
     let walls: Vec<Seg> = segs
         .rows()
         .into_iter()
@@ -795,11 +1308,24 @@ fn scene_from_arrays(
         (None, _) => None,
         (Some(_), None) => return Err(PyValueError::new_err("terrain needs terrain_grid")),
     };
-    Ok(insolation::Scene::new(
-        walls,
-        tops.iter().copied().collect(),
-        terrain,
-    ))
+    if trees.is_none() && tops.ndim() == 1 && bottoms.is_none() && undersides.is_empty() {
+        return Ok(insolation::Scene::new(
+            walls,
+            tops.iter().copied().collect(),
+            terrain,
+        ));
+    }
+    let heights = if tops.ndim() == 1 {
+        tops.iter().map(|&z| [z, z]).collect()
+    } else {
+        (0..m).map(|k| [tops[[k, 0]], tops[[k, 1]]]).collect()
+    };
+    Ok(match trees {
+        Some(trees) => insolation::Scene::with_details_and_trees(
+            walls, heights, bottoms, undersides, terrain, trees,
+        ),
+        None => insolation::Scene::with_details(walls, heights, bottoms, undersides, terrain),
+    })
 }
 
 fn run_in_pool<T: Send>(n_threads: Option<usize>, run: impl FnOnce() -> T + Send) -> T {
@@ -893,8 +1419,10 @@ fn rasterize_footprints<'py>(
 
 /// Visible cells of every eye ``(k, 3)`` within its radius on ``grid`` with target heights ``target_z``
 /// ``(ny, nx)`` (NaN = not a target): flat cell indices of all eyes concatenated, and ``(k + 1)`` offsets.
+/// ``tops`` accepts one or two endpoint heights per wall; keyword-only ``bottoms`` and ``under_*``
+/// have the same raised-volume encoding as ``insolation_day_stats``.
 #[pyfunction]
-#[pyo3(signature = (eyes, radii, grid, target_z, segments, tops, terrain=None, terrain_grid=None, n_threads=None))]
+#[pyo3(signature = (eyes, radii, grid, target_z, segments, tops, terrain=None, terrain_grid=None, n_threads=None, *, bottoms=None, under_xy=None, under_ring_offsets=None, under_poly_offsets=None, under_z=None))]
 #[allow(clippy::too_many_arguments)]
 fn viewshed_cells<'py>(
     py: Python<'py>,
@@ -903,15 +1431,31 @@ fn viewshed_cells<'py>(
     grid: (f64, f64, f64, usize, usize),
     target_z: PyReadonlyArray2<'py, f64>,
     segments: PyReadonlyArray2<'py, f64>,
-    tops: PyReadonlyArray1<'py, f64>,
+    tops: PyReadonlyArrayDyn<'py, f64>,
     terrain: Option<PyReadonlyArray2<'py, f64>>,
     terrain_grid: Option<(f64, f64, f64, f64)>,
     n_threads: Option<usize>,
+    bottoms: Option<PyReadonlyArray1<'py, f64>>,
+    under_xy: Option<PyReadonlyArray2<'py, f64>>,
+    under_ring_offsets: Option<PyReadonlyArray1<'py, i64>>,
+    under_poly_offsets: Option<PyReadonlyArray1<'py, i64>>,
+    under_z: Option<PyReadonlyArray1<'py, f64>>,
 ) -> PyResult<RaggedCells<'py>> {
     let grid = cell_grid(grid)?;
     let (eyes, radii) = eyes_and_radii(&eyes, &radii)?;
     let target_z = target_heights(&target_z, &grid)?;
-    let scene = scene_from_arrays(segments, tops, terrain, terrain_grid)?;
+    let scene = scene_from_arrays(
+        segments,
+        tops,
+        terrain,
+        terrain_grid,
+        bottoms,
+        under_xy,
+        under_ring_offsets,
+        under_poly_offsets,
+        under_z,
+        None,
+    )?;
     let seen = py.detach(|| {
         run_in_pool(n_threads, || {
             viewshed::visible_cells_many(&scene, &eyes, &radii, &grid, &target_z)
@@ -928,9 +1472,11 @@ fn viewshed_cells<'py>(
 
 /// Per cell of ``grid``: the number of eyes that see it (uint32 ``(ny, nx)``) and, with ``weights``, the sum
 /// of their weights (float64 ``(ny, nx)``).
+/// ``tops`` accepts one or two endpoint heights per wall; keyword-only ``bottoms`` and ``under_*``
+/// have the same raised-volume encoding as ``insolation_day_stats``.
 #[pyfunction]
 #[pyo3(signature = (eyes, radii, grid, target_z, segments, tops, weights=None, terrain=None, terrain_grid=None,
-    n_threads=None))]
+    n_threads=None, *, bottoms=None, under_xy=None, under_ring_offsets=None, under_poly_offsets=None, under_z=None))]
 #[allow(clippy::too_many_arguments)]
 fn viewshed_count_grid<'py>(
     py: Python<'py>,
@@ -939,11 +1485,16 @@ fn viewshed_count_grid<'py>(
     grid: (f64, f64, f64, usize, usize),
     target_z: PyReadonlyArray2<'py, f64>,
     segments: PyReadonlyArray2<'py, f64>,
-    tops: PyReadonlyArray1<'py, f64>,
+    tops: PyReadonlyArrayDyn<'py, f64>,
     weights: Option<PyReadonlyArray1<'py, f64>>,
     terrain: Option<PyReadonlyArray2<'py, f64>>,
     terrain_grid: Option<(f64, f64, f64, f64)>,
     n_threads: Option<usize>,
+    bottoms: Option<PyReadonlyArray1<'py, f64>>,
+    under_xy: Option<PyReadonlyArray2<'py, f64>>,
+    under_ring_offsets: Option<PyReadonlyArray1<'py, i64>>,
+    under_poly_offsets: Option<PyReadonlyArray1<'py, i64>>,
+    under_z: Option<PyReadonlyArray1<'py, f64>>,
 ) -> PyResult<CountArrays<'py>> {
     let grid = cell_grid(grid)?;
     let (eyes, radii) = eyes_and_radii(&eyes, &radii)?;
@@ -952,7 +1503,18 @@ fn viewshed_count_grid<'py>(
     if weights.as_ref().is_some_and(|w| w.len() != eyes.len()) {
         return Err(PyValueError::new_err("weights must have one value per eye"));
     }
-    let scene = scene_from_arrays(segments, tops, terrain, terrain_grid)?;
+    let scene = scene_from_arrays(
+        segments,
+        tops,
+        terrain,
+        terrain_grid,
+        bottoms,
+        under_xy,
+        under_ring_offsets,
+        under_poly_offsets,
+        under_z,
+        None,
+    )?;
     let (counts, sums) = py.detach(|| {
         run_in_pool(n_threads, || {
             viewshed::count_grid(&scene, &eyes, &radii, weights.as_deref(), &grid, &target_z)
@@ -1000,7 +1562,11 @@ fn keep_point_buffers<'py>(
 #[pymodule]
 fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(keep_point_buffers, m)?)?;
+    m.add_function(wrap_pyfunction!(classify_grid, m)?)?;
+    m.add_function(wrap_pyfunction!(classify_points, m)?)?;
+    m.add_function(wrap_pyfunction!(roof_mesh, m)?)?;
     m.add_function(wrap_pyfunction!(insolation_day_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(insolation_day_stats_trees, m)?)?;
     m.add_function(wrap_pyfunction!(line_of_sight, m)?)?;
     m.add_function(wrap_pyfunction!(rasterize_footprints, m)?)?;
     m.add_function(wrap_pyfunction!(viewshed_cells, m)?)?;

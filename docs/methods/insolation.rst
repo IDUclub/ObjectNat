@@ -64,6 +64,108 @@ Time steps are discrete, so every value is a multiple of ``time_step_min``.
 **Periods.** ``date=("2026-04-22", "2026-08-22")`` simulates every ``day_step``-th day of the period and its last
 day; the scene is built once.
 
+Building details from OSM
+-------------------------
+
+Set ``building_details=True`` in either insolation function to read optional Simple 3D Buildings (S3DB)
+columns: ``building:part``, ``height``, ``min_height``, ``building:levels``, ``building:min_level``,
+``roof:shape``, ``roof:height``, ``roof:levels``, ``roof:angle``, ``roof:direction`` and ``roof:orientation``.
+Missing columns mean no data. Numeric values accept units, decimal commas and semicolon lists (the first
+number is used). Roof directions accept degrees or the 16 compass points and are corrected from true to grid
+north; ``roof:orientation="across"`` turns the default ridge across the longer footprint side.
+
+Outlines containing parts are replaced by those parts; any uncovered remainder stays a flat volume
+with the outline's height. An isolated part remains a volume of its own.
+Parts with neither ``height`` nor ``building:levels`` inherit the parent outline height or levels;
+if the parent has neither, the part's configured height fallbacks apply. Bottom and roof tags are not inherited.
+``height`` includes the roof; ``building:levels`` excludes it. The bottom is ``min_height`` or
+``building:min_level`` times ``storey_height``. Roof height is ``roof:height``, then ``roof:levels`` times
+``storey_height``, then the slope from ``roof:angle`` or ``default_roof_angle=30.0`` and the footprint width.
+The slope uses half the shorter side of the minimum rotated rectangle (the full shorter side for skillion).
+Volumes stand on terrain sampled at their representative points. Heights are clamped to keep the eave between
+the bottom and top; volumes with no height above their bottom are skipped with a counted warning.
+
+Flat, skillion, gabled, hipped, pyramidal and cone roofs, building parts and raised parts with flat undersides
+are modelled exactly. Dome, onion, half-dome and round use planar facets. Half-hipped, side_hipped,
+quadruple_saltbox and mansard use hipped; gambrel and saltbox use gabled; many and unknown shapes use flat.
+Holed or non-star-shaped apex roofs use hipped. Invalid hipped meshes fall back to gabled; approximations and
+fallbacks are counted in a warning. Balconies, loggias, eaves overhangs, dormers, chimneys, parapets and sloped
+undersides are not modelled.
+
+Ground receivers below raised volumes are retained, so archways can receive sun. Facade points follow the
+volume boundary, including gables, and only occupy heights between the bottom and the local wall top.
+Points inside another volume at the same height are removed. Facade output uses ``building`` for the parent
+outline label and adds ``part`` for the input volume row label; floors remain measured from the base ground.
+
+.. code-block:: python
+
+   import geopandas as gpd
+   from objectnat import get_insolation, get_facade_insolation
+
+   buildings = gpd.read_parquet("examples/examples_data/buildings_osm3d.parquet")
+   receivers = get_insolation(
+       buildings, "2026-06-21", building_details=True, default_height=12.0,
+       default_roof_angle=30.0,
+   )
+   windows = get_facade_insolation(
+       buildings, "2026-06-21", building_details=True, default_height=12.0,
+   )
+
+With ``building_details=False`` (the default), the original flat-roof calculation and output columns are retained.
+
+Trees
+-----
+
+Both :func:`objectnat.get_insolation` and :func:`objectnat.get_facade_insolation` accept an optional
+``trees`` GeoDataFrame, with either value of ``building_details``. Its CRS may differ from the buildings'.
+Point/MultiPoint geometries describe individual trees. LineString/MultiLineString geometries become centred
+rows with ``tree_spacing`` between trunks (by default, the feature's crown diameter), leaving at least half
+a spacing at either end; a shorter line gets one tree at its midpoint. Polygon/MultiPolygon geometries become
+a hexagonal lattice with that spacing, clipped to the polygon and its holes. Small polygons with no lattice
+points receive one tree at their representative point. Unsupported geometry types are skipped with a warning.
+
+Optional OSM columns are ``height`` (or ``est_height``), ``diameter_crown``, ``leaf_type`` and ``leaf_cycle``.
+Numeric tags accept units, decimal commas and semicolon lists, using the first number. Missing heights and
+diameters use ``tree_height=10.0`` m and ``tree_crown_diameter=6.0`` m. Non-positive values are skipped with a
+counted warning. Trunks stand on the terrain sampled at their position; trunks inside building footprints are
+dropped with a counted warning. Ground receivers under crowns and facade receiver placement are retained.
+
+Broadleaved crowns are spheroids; needleleaved crowns are upright cones. Mixed and unknown leaf types use
+spheroids. Crowns span from ``tree_crown_base=0.3`` times the tree height to its top; the base fraction must be
+in [0, 1). Trunks and branch structure are not modelled. These idealised crowns attenuate direct light using
+the exact three-dimensional chord along each receiver-to-sun ray. Beer–Lambert transmission is
+``T = exp(-sum(mu * chord_length))``, where ``mu = -log(tau) / crown_diameter``. Thus
+``tree_transmittance=(0.2, 0.6)`` specifies leaf-on/leaf-off transmission through a full horizontal diameter,
+rather than a fixed multiplier for every intersecting ray. Shorter chords transmit more light, and overlapping
+crowns multiply transmission. Transmittances must be in (0, 1]. Buildings and terrain remain opaque.
+
+The inclusive deciduous season is ``leaf_on=("05-01", "10-15")``; it may cross New Year, for example
+``("10-01", "04-30")``. Evergreen trees use leaf-on transmission throughout the year. A missing ``leaf_cycle``
+means deciduous for broadleaved trees and evergreen for needleleaved trees. Explicit ``deciduous`` and
+``evergreen`` override this inference; ``semi_deciduous`` and ``semi_evergreen`` use the deciduous season.
+All numeric defaults and ``tree_spacing`` must be finite and positive where applicable.
+
+With ``trees`` supplied (including an empty frame), ``sun_hours`` and ``min_sun_hours`` report
+transmittance-weighted hours. ``max_continuous_hours`` counts consecutive sun positions whose transmission
+is at least ``sunlit_threshold=0.5`` (range [0, 1]); facade orientation still applies. At threshold 0 even
+fully shaded positions count. ``sun_hours_no_trees`` gives the original mean daily building/terrain-only
+hours, and ``attrs["trees"]`` records the retained number of trees after expansion and filtering. An accumulated
+transmission below 1e-6 is treated as zero. With ``trees=None`` the original calculation, columns and attributes
+are unchanged. Visibility and viewshed methods are unaffected.
+
+.. code-block:: python
+
+   receivers = get_insolation(
+       buildings, "2026-06-21", trees=trees, tree_height=10.0,
+       tree_crown_diameter=6.0, tree_crown_base=0.3,
+       tree_transmittance=(0.2, 0.6), leaf_on=("05-01", "10-15"),
+       tree_spacing=None, sunlit_threshold=0.5,
+   )
+
+Only direct sunlight is attenuated: diffuse sky light, reflections, detailed foliage and meteorological
+conditions are excluded. Normative insolation calculations usually ignore greenery; trees are optional so
+they can be included for environmental analysis when appropriate.
+
 Ground insolation
 -----------------
 
@@ -142,7 +244,8 @@ which windows it shades.
 Limitations
 -----------
 
-- Roofs are flat. Pitched roofs, balconies, loggias, eaves and trees are not modelled.
+- Roofs are flat by default; enable ``building_details`` for the roof shapes and parts described above.
+  Optional trees use the idealised crowns described above, without trunks or branch structure.
 - Facade points lie in front of the outer wall surface; window reveals (the wall depth) are not modelled, so the
   sun angles that a deep window opening would cut off still count, unless ``min_facade_angle`` excludes them.
 - Only direct sunlight is counted; diffuse sky light and reflected light are not, and cloud cover is ignored.
