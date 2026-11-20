@@ -9,6 +9,7 @@
     methods/noise
     methods/insolation
     methods/rasters
+    methods/skeleton
     methods/examples/index
     upgrading
 
@@ -88,6 +89,9 @@ computed, the algorithm, the parameters and outputs with units, an example figur
    * - :doc:`methods/rasters`
      - Grid results as rasters: matplotlib plots, GeoTIFF files, folium web-map overlays
      - :func:`~objectnat.rasterize`, :class:`~objectnat.Raster`
+   * - :doc:`methods/skeleton`
+     - Straight skeleton of polygons: centre lines with the local width, faces of hipped roofs
+     - :func:`~objectnat.get_straight_skeleton`
 
 The computationally intensive parts (exact visibility, 2.5D lines of sight, insolation, receiver-grid noise and
 provision allocation) run in parallel threads in a compiled Rust extension, ``objectnat._rust``; graph searches use

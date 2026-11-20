@@ -1,0 +1,124 @@
+# ru translation of the ObjectNat documentation, see docs/i18n.py
+msgid ""
+msgstr ""
+"Project-Id-Version: ObjectNat VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/IDUclub/ObjectNat/issues\n"
+"POT-Creation-Date: 2026-11-20 17:50+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Straight Skeleton"
+msgstr "Прямой скелет"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "The straight skeleton of a polygon is what its boundary traces when every edge moves inwards at the same speed. Each edge sweeps one face, the faces meet along the arcs of the skeleton, and every point of the skeleton lies at a known distance from the boundary. :func:`objectnat.get_straight_skeleton` returns either the arcs or the faces:"
+msgstr "Прямой скелет полигона — это след его границы, когда каждое ребро движется внутрь с одной и той же скоростью. Каждое ребро заметает одну грань, грани сходятся вдоль дуг скелета, и каждая точка скелета лежит на известном расстоянии от границы. :func:`objectnat.get_straight_skeleton` возвращает либо дуги, либо грани:"
+
+msgid "the arcs between inner vertices follow the middle of the polygon: they are the **centre lines** of road, river or corridor polygons, and twice the distance to the boundary is the local width;"
+msgstr "дуги между внутренними вершинами идут по середине полигона: это **осевые линии** полигонов дорог, рек или коридоров, а удвоенное расстояние до границы — местная ширина;"
+
+msgid "the faces are the slopes of a **hipped roof** over a building outline; with ``roof_angle`` they are returned in 3D."
+msgstr "грани — это скаты **вальмовой крыши** над контуром здания; при заданном ``roof_angle`` они возвращаются в 3D."
+
+msgid "Roof faces of buildings and centre lines of a street polygon"
+msgstr "Скаты крыш зданий и осевые линии полигона улиц"
+
+msgid "Left: roof faces of buildings in the example district, coloured by their height above the eaves at a slope of 30°. Right: centre lines of a street polygon (pedestrian ways of the test district buffered by 6 m), coloured by the street width."
+msgstr "Слева: скаты крыш зданий района из примера, цвет — высота над карнизом при уклоне 30°. Справа: осевые линии полигона улиц (пешеходные пути тестового района с буфером 6 м), цвет — ширина улицы."
+
+msgid "Method"
+msgstr "Метод"
+
+msgid "Polygons and the parts of MultiPolygons are processed independently and in parallel by the compiled extension; a geographic CRS is projected to its UTM zone for the calculation, so distances are in metres. The algorithm is an event-driven wavefront: every edge moves inwards at unit speed, and the skeleton records where edges vanish or the wavefront splits. It handles holes, simultaneous events (squares, regular and rectilinear shapes) and thin strips with nearly parallel sides. The Rust code is vendored from the ``geo-straight-skeleton`` crate (MIT licence), which is checked against CGAL's straight skeleton."
+msgstr "Полигоны и части MultiPolygon обрабатываются независимо и параллельно в скомпилированном расширении; географическая система координат на время расчёта проецируется в свою зону UTM, поэтому расстояния получаются в метрах. Алгоритм — событийный волновой фронт: каждое ребро движется внутрь с единичной скоростью, а скелет фиксирует, где рёбра исчезают или фронт разделяется. Он справляется с дырами, одновременными событиями (квадраты, правильные и прямоугольные фигуры) и узкими полосами с почти параллельными сторонами. Код на Rust перенесён из пакета ``geo-straight-skeleton`` (лицензия MIT), который сверен с прямым скелетом CGAL."
+
+msgid "``output=\"arcs\"``: one LineString per arc, with ``dist_start`` and ``dist_end``, the distance from the boundary at its ends. The arcs that start at polygon corners (bisectors) are included unless ``include_bisectors=False``, which keeps the centre lines only."
+msgstr "``output=\"arcs\"``: одна LineString на дугу, с ``dist_start`` и ``dist_end`` — расстоянием от границы на её концах. Дуги, которые начинаются в углах полигона (биссектрисы), включаются, если не задано ``include_bisectors=False``: тогда остаются только осевые линии."
+
+msgid "``output=\"faces\"``: one Polygon per polygon edge, with ``ring`` (0 for the exterior, then the holes) and ``edge`` (the edge number within the ring). The faces cover the polygon exactly. With ``roof_angle`` the height of every vertex is its distance from the boundary times ``tan(roof_angle)``."
+msgstr "``output=\"faces\"``: один Polygon на ребро полигона, с ``ring`` (0 — внешнее кольцо, затем дыры) и ``edge`` (номер ребра в кольце). Грани точно покрывают полигон. При ``roof_angle`` высота каждой вершины равна её расстоянию от границы, умноженному на ``tan(roof_angle)``."
+
+msgid "Every row keeps the index of its source row and has a ``part`` column, the part of a MultiPolygon."
+msgstr "Каждая строка сохраняет индекс исходной строки и содержит столбец ``part`` — номер части MultiPolygon."
+
+msgid "Notes:"
+msgstr "Примечания:"
+
+msgid "A polygon with crossing or touching edges, a ring of zero area or a hole outside the exterior has no straight skeleton; it is skipped with a warning that counts the skipped polygons by reason."
+msgstr "У полигона с пересекающимися или касающимися рёбрами, кольцом нулевой площади или дырой вне внешнего кольца прямого скелета нет; он пропускается с предупреждением, в котором пропущенные полигоны посчитаны по причинам."
+
+msgid "The centre line of a strip stops half its width before the end of the strip, where the corner arcs meet."
+msgstr "Осевая линия полосы обрывается за половину её ширины до конца полосы, там, где сходятся угловые дуги."
+
+msgid "Small bends of the boundary produce short side arcs; they can be dropped by length or by distance."
+msgstr "Небольшие изломы границы дают короткие боковые дуги; их можно отбросить по длине или по расстоянию."
+
+msgid "Straight skeleton"
+msgstr "Прямой скелет"
+
+msgid "Calculate the straight skeleton of polygons: their centre lines or the faces of a hipped roof."
+msgstr "Рассчитать прямой скелет полигонов: их осевые линии или скаты вальмовой крыши."
+
+msgid "The straight skeleton is what the boundary of a polygon traces when every edge moves inwards at the same speed. Each edge sweeps one face, the faces meet along the arcs of the skeleton, and every skeleton vertex lies at a known distance from the boundary. The arcs between inner vertices follow the middle of the polygon: the centre line of a road, river or corridor polygon, with half its width as the distance. The faces are the slopes of a hipped roof over a building outline. Polygons are processed in parallel by the compiled extension."
+msgstr "Прямой скелет — это след границы полигона, когда каждое ребро движется внутрь с одной и той же скоростью. Каждое ребро заметает одну грань, грани сходятся вдоль дуг скелета, и каждая вершина скелета лежит на известном расстоянии от границы. Дуги между внутренними вершинами идут по середине полигона: это осевая линия полигона дороги, реки или коридора, а расстояние равно половине его ширины. Грани — это скаты вальмовой крыши над контуром здания. Полигоны обрабатываются параллельно в скомпилированном расширении."
+
+msgid "Parameters"
+msgstr "Параметры"
+
+msgid "Polygons or MultiPolygons, in any CRS. Every part of a MultiPolygon gets its own skeleton; rows of other geometry types and empty geometries are skipped."
+msgstr "Polygon или MultiPolygon в любой системе координат. Каждая часть MultiPolygon получает свой скелет; строки с геометрией других типов и пустые геометрии пропускаются."
+
+msgid "What to return:  - ``\"arcs\"``: one LineString per skeleton arc, with ``dist_start`` and ``dist_end``, the distance from   the polygon boundary at the two ends of the arc; - ``\"faces\"``: one Polygon per polygon edge, with ``ring`` (0 for the exterior, then the holes in their   order) and ``edge`` (the edge number within the ring, from its first point)."
+msgstr "What to return:  - ``\"arcs\"``: one LineString per skeleton arc, with ``dist_start`` and ``dist_end``, the distance from   the polygon boundary at the two ends of the arc; - ``\"faces\"``: one Polygon per polygon edge, with ``ring`` (0 for the exterior, then the holes in their   order) and ``edge`` (the edge number within the ring, from its first point)."
+
+msgid "What to return:"
+msgstr "Что возвращать:"
+
+msgid "``\"arcs\"``: one LineString per skeleton arc, with ``dist_start`` and ``dist_end``, the distance from the polygon boundary at the two ends of the arc;"
+msgstr "``\"arcs\"``: одна LineString на дугу скелета, с ``dist_start`` и ``dist_end`` — расстоянием от границы полигона на двух концах дуги;"
+
+msgid "``\"faces\"``: one Polygon per polygon edge, with ``ring`` (0 for the exterior, then the holes in their order) and ``edge`` (the edge number within the ring, from its first point)."
+msgstr "``\"faces\"``: один Polygon на ребро полигона, с ``ring`` (0 — внешнее кольцо, затем дыры по порядку) и ``edge`` (номер ребра в кольце, по его первой точке)."
+
+msgid "For ``output=\"arcs\"``: also return the arcs that start at the polygon corners. ``False`` keeps only the arcs between inner vertices, the centre lines."
+msgstr "Для ``output=\"arcs\"``: возвращать также дуги, которые начинаются в углах полигона. ``False`` оставляет только дуги между внутренними вершинами — осевые линии."
+
+msgid "For ``output=\"faces\"``: slope of the roof in degrees (between 0 and 90). The faces are then returned in 3D, with the height of a point equal to its distance from the boundary times ``tan(roof_angle)``."
+msgstr "Для ``output=\"faces\"``: уклон крыши в градусах (от 0 до 90). Тогда грани возвращаются в 3D, а высота точки равна её расстоянию от границы, умноженному на ``tan(roof_angle)``."
+
+msgid "Number of threads. Defaults to all cores."
+msgstr "Число потоков. По умолчанию — все ядра."
+
+msgid "Returns"
+msgstr "Возвращает"
+
+msgid "Skeleton arcs or faces with the column ``part`` (the part of a MultiPolygon, 0 for a Polygon) and the columns described in ``output``. The index repeats the index of the source row. Returned in the CRS of ``gdf``; distances are in the units of a projected CRS, and in metres for a geographic CRS, which is projected to its UTM zone for the calculation."
+msgstr "Дуги или грани скелета со столбцом ``part`` (номер части MultiPolygon, 0 для Polygon) и столбцами, описанными в ``output``. Индекс повторяет индекс исходной строки. Возвращаются в системе координат ``gdf``; расстояния — в единицах проекционной системы координат, а для географической — в метрах: на время расчёта она проецируется в свою зону UTM."
+
+msgid "Return type"
+msgstr "Тип возвращаемого значения"
+
+msgid "Raises"
+msgstr "Исключения"
+
+msgid "If ``output``, ``roof_angle`` or ``max_workers`` is invalid."
+msgstr "Если ``output``, ``roof_angle`` или ``max_workers`` заданы неверно."
+
+msgid "Notes"
+msgstr "Примечания"
+
+msgid "Polygons with crossing or touching edges, zero-area rings or holes outside the exterior have no straight skeleton; they are skipped with a warning that counts them by reason."
+msgstr "У полигонов с пересекающимися или касающимися рёбрами, кольцами нулевой площади или дырами вне внешнего кольца прямого скелета нет; они пропускаются с предупреждением, в котором они посчитаны по причинам."
+
+msgid "The centre line of a strip stops half its width before the strip ends, where the corner arcs meet."
+msgstr "Осевая линия полосы обрывается за половину её ширины до конца полосы, там, где сходятся угловые дуги."
+

@@ -7,6 +7,7 @@ pub mod insolation;
 pub mod noise;
 pub mod provision;
 pub mod roofs;
+mod skeleton;
 mod straight_skeleton;
 pub mod viewshed;
 pub mod visibility;
@@ -1560,8 +1561,86 @@ fn keep_point_buffers<'py>(
         .into_pyarray(py))
 }
 
+/// Arrays of `straight_skeletons`, see `skeleton::Skeletons`.
+type SkeletonArrays<'py> = (
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray1<bool>>,
+    Bound<'py, PyArray2<u32>>,
+    Bound<'py, PyArray1<u32>>,
+    Bound<'py, PyArray1<u32>>,
+    Bound<'py, PyArray1<u64>>,
+    Bound<'py, PyArray1<u32>>,
+    Bound<'py, PyArray1<u32>>,
+    Bound<'py, PyArray1<u32>>,
+    Bound<'py, PyArray1<u8>>,
+);
+
+/// Straight skeletons of polygons given as flat rings (`polygon_arrays` contract); a polygon without a skeleton
+/// gets a non-zero error code instead of failing the batch.
+#[pyfunction]
+#[pyo3(signature = (xy, ring_offsets, poly_offsets, n_threads=None))]
+fn straight_skeletons<'py>(
+    py: Python<'py>,
+    xy: PyReadonlyArray2<'py, f64>,
+    ring_offsets: PyReadonlyArray1<'py, i64>,
+    poly_offsets: PyReadonlyArray1<'py, i64>,
+    n_threads: Option<usize>,
+) -> PyResult<SkeletonArrays<'py>> {
+    let xy = xy.as_array();
+    if xy.ncols() != 2 {
+        return Err(PyValueError::new_err("xy must have shape (n, 2)"));
+    }
+    let offsets = |values: &PyReadonlyArray1<'_, i64>, end: usize, name: &str| {
+        let values: Vec<usize> = values
+            .as_array()
+            .iter()
+            .map(|&v| usize::try_from(v).unwrap_or(usize::MAX))
+            .collect();
+        if values.first() != Some(&0)
+            || values.last() != Some(&end)
+            || values.windows(2).any(|w| w[0] > w[1])
+        {
+            return Err(PyValueError::new_err(format!(
+                "{name} must start at 0, be non-decreasing and end at {end}"
+            )));
+        }
+        Ok(values)
+    };
+    let rings = offsets(&ring_offsets, xy.nrows(), "ring_offsets")?;
+    let polygons = offsets(&poly_offsets, rings.len() - 1, "poly_offsets")?;
+    let coords: Vec<[f64; 2]> = xy.rows().into_iter().map(|r| [r[0], r[1]]).collect();
+    let out = py.detach(|| {
+        in_pool(n_threads, || {
+            skeleton::skeletons(&coords, &rings, &polygons)
+        })
+    });
+    let vertices = numpy::ndarray::Array2::from_shape_vec(
+        (out.vertices.len(), 3),
+        out.vertices.iter().flatten().copied().collect(),
+    )
+    .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    let arcs = numpy::ndarray::Array2::from_shape_vec(
+        (out.arcs.len(), 2),
+        out.arcs.iter().flatten().copied().collect(),
+    )
+    .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    Ok((
+        vertices.into_pyarray(py),
+        out.is_input.into_pyarray(py),
+        arcs.into_pyarray(py),
+        out.arc_polygon.into_pyarray(py),
+        out.face_vertices.into_pyarray(py),
+        out.face_offsets.into_pyarray(py),
+        out.face_polygon.into_pyarray(py),
+        out.face_ring.into_pyarray(py),
+        out.face_edge.into_pyarray(py),
+        out.errors.into_pyarray(py),
+    ))
+}
+
 #[pymodule]
 fn _rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(straight_skeletons, m)?)?;
     m.add_function(wrap_pyfunction!(keep_point_buffers, m)?)?;
     m.add_function(wrap_pyfunction!(classify_grid, m)?)?;
     m.add_function(wrap_pyfunction!(classify_points, m)?)?;

@@ -122,6 +122,15 @@ msgstr "Результаты на сетке в виде растров: рис�
 msgid ":func:`~objectnat.rasterize`, :class:`~objectnat.Raster`"
 msgstr ":func:`~objectnat.rasterize`, :class:`~objectnat.Raster`"
 
+msgid ":doc:`methods/skeleton`"
+msgstr ":doc:`methods/skeleton`"
+
+msgid "Straight skeleton of polygons: centre lines with the local width, faces of hipped roofs"
+msgstr "Прямой скелет полигонов: осевые линии с местной шириной, скаты вальмовых крыш"
+
+msgid ":func:`~objectnat.get_straight_skeleton`"
+msgstr ":func:`~objectnat.get_straight_skeleton`"
+
 msgid "The computationally intensive parts (exact visibility, 2.5D lines of sight, insolation, receiver-grid noise and provision allocation) run in parallel threads in a compiled Rust extension, ``objectnat._rust``; graph searches use IduEdu's Numba-accelerated Dijkstra routines. :doc:`methods/examples/index` contains an executable notebook for every method."
 msgstr "Ресурсоёмкие части (точная видимость, лучи зрения 2.5D, инсоляция, шум на сетке приёмников и распределение в модели обеспеченности) выполняются в параллельных потоках в скомпилированном расширении на Rust, ``objectnat._rust``; поиск по графу использует ускоренные Numba процедуры Дейкстры из IduEdu. В разделе :doc:`methods/examples/index` для каждого метода есть исполняемый ноутбук."
 

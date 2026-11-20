@@ -19,6 +19,7 @@ from .methods.provision import (
     recalculate_links,
 )
 from .methods.utils.raster import Raster, rasterize
+from .methods.utils.skeleton import get_straight_skeleton
 from .methods.visibility import (
     get_isovist_grid,
     get_observer_points,
