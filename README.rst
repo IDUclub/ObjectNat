@@ -124,6 +124,10 @@ With ``building_details=True``, both methods use OSM roof shapes, building parts
 ``get_isovist_grid``) are converted to rasters with ``rasterize``; a ``Raster`` can be drawn with matplotlib,
 written to a GeoTIFF file or shown on a folium web map with ``explore``.
 
+**Straight skeleton** (`docs <https://iduclub.github.io/ObjectNat/methods/skeleton.html>`__).
+``get_straight_skeleton`` returns the centre lines of polygons with the distance to the boundary (half the local
+width of a road or river polygon) or the faces of a hipped roof over building outlines, in 2D or 3D.
+
 ----
 
 Installation

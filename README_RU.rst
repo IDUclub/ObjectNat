@@ -131,6 +131,10 @@ Object-oriented Network Analysis Tools
 ``get_isovist_grid``) превращаются в растры функцией ``rasterize``: ``Raster`` можно нарисовать в matplotlib,
 записать в GeoTIFF или показать на веб-карте folium методом ``explore``.
 
+**Прямой скелет** (`документация <https://iduclub.github.io/ObjectNat/ru/methods/skeleton.html>`__).
+``get_straight_skeleton`` строит осевые линии полигонов с расстоянием до границы (половиной местной ширины полигона
+дороги или реки) или скаты вальмовой крыши над контурами зданий, в 2D или 3D.
+
 ----
 
 Установка

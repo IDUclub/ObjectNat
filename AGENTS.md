@@ -119,6 +119,7 @@ objectnat/
     utils/
       geom_utils.py  — geometry helpers shared across methods
       scene.py       — 2.5D scene for insolation and viewsheds: building heights, terrain, local CRS
+      skeleton.py    — get_straight_skeleton: centre lines (arcs with distances) and roof faces of polygons
       _building_details.py — OSM building parts, roof and height tags turned into volumes for the roof mesher
       raster.py      — Raster (values, transform, crs) and rasterize: grid points of insolation, noise, catchment
                        and isovist grids to rasters (matplotlib, GeoTIFF, folium); grid methods record their grid
@@ -129,6 +130,7 @@ rust/                — Rust crate compiled by maturin into the extension `obje
   src/insolation.rs  — 2.5D scene (walls with roof heights + terrain grid): sunlight rays, lines of sight (rayon)
   src/roofs.rs       — builds piecewise-planar roof meshes, using a straight skeleton for hipped roofs
   src/straight_skeleton/ — vendored straight skeleton (MIT)
+  src/skeleton.rs    — straight skeletons of many polygons in parallel, flattened for numpy (rayon)
   src/grid.rs        — classifies points against polygons and flags uncertain results for GEOS
   src/viewshed.rs    — footprint rasterization, per-observer visible cells and catchment counts (rayon)
   src/noise.rs       — receiver-grid noise: direct paths, first-order reflections and diffraction around one or
