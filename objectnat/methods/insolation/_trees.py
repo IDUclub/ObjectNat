@@ -10,6 +10,8 @@ import shapely
 from objectnat import config
 from objectnat.methods.utils._building_details import osm_numbers
 
+logger = config.logger
+
 
 def _month_day(value):
     """Validate a recurring date against a leap year (29 February is allowed)."""
@@ -99,7 +101,7 @@ def _expand(geometries, spacing):
     source = np.flatnonzero(np.isin(shapely.get_type_id(geometries), [0, 1, 3, 4, 5, 6]))
     skipped = len(geometries) - len(source)
     if skipped:
-        config.logger.warning(f"{skipped} unsupported tree geometries are skipped")
+        logger.warning(f"{skipped} unsupported tree geometries are skipped")
     parts, parent = shapely.get_parts(np.array(geometries[source], dtype=object, copy=True), return_index=True)
     parent = source[parent]
     kind = shapely.get_type_id(parts)
@@ -139,7 +141,7 @@ def prepare_trees(scene, trees, footprints, height, diameter, base, transmittanc
     valid = (heights > 0) & (diameters > 0)
     skipped = int((~valid).sum())
     if skipped:
-        config.logger.warning(f"{skipped} tree features with non-positive height or crown diameter are skipped")
+        logger.warning(f"{skipped} tree features with non-positive height or crown diameter are skipped")
     rows, heights, diameters = rows.iloc[np.flatnonzero(valid)], heights[valid], diameters[valid]
     steps = diameters if spacing is None else np.full(len(rows), spacing)
     xy, owner = _expand(rows.geometry.values, steps)
@@ -149,7 +151,7 @@ def prepare_trees(scene, trees, footprints, height, diameter, base, transmittanc
         inside, _ = shapely.STRtree(polygons.geometry.values).query(shapely.points(xy), predicate="within")
         inside = np.unique(inside)
         if len(inside):
-            config.logger.warning(f"{len(inside)} trees with trunks inside building footprints are skipped")
+            logger.warning(f"{len(inside)} trees with trunks inside building footprints are skipped")
             keep = np.ones(len(xy), dtype=bool)
             keep[inside] = False
             xy, owner = xy[keep], owner[keep]
