@@ -2,6 +2,85 @@
 
 <!-- version list -->
 
+## v3.1.0 (2026-11-20)
+
+### Bug Fixes
+
+- **accessibility**: Residual-time speed from the reached walk edges
+  ([`32ec51e`](https://github.com/IDUclub/ObjectNat/commit/32ec51e9d0e5cc58363e54a8fc0012e7ff497576))
+
+For weight_type="time_min" isochrones and coverage zones turn the time left at a reached node into a
+  buffer distance. The speed for that was the median length_meter / time_min over all edges of the
+  graph, transit edges of an intermodal graph included. Rounded lengths and times, steps and transit
+  speeds made that median move whenever edges were added or removed anywhere in the graph, so the
+  same reached nodes and times gave slightly different polygons.
+
+The speed is now the median over the geometry edges whose both ends were reached: walk edges on walk
+  and intermodal graphs, all edges on other graphs. get_graph_isochrones takes it per origin, the
+  stepped functions and the coverage zones from their combined search. Without such edges it falls
+  back to all geometry edges, then to all edges. Parts of the graph the search does not reach no
+  longer change the result. Polygons move by at most about 5e-5 of their area on the St Petersburg
+  intermodal graph (83.3333 instead of 83.3368 m/min there). The method pages and their Russian
+  translation describe the rule.
+
+### Documentation
+
+- **i18n**: Drop stale comment lines from the insolation catalogue
+  ([`d2158fb`](https://github.com/IDUclub/ObjectNat/commit/d2158fb588018b2c7e25f423ea1c822a76aa3a60))
+
+### Features
+
+- **insolation**: Building details from OSM tags and trees in 2.5D insolation
+  ([`88fe6df`](https://github.com/IDUclub/ObjectNat/commit/88fe6df0a36817a9c465f7a7d01eb389a6bfec0a))
+
+- building_details=True reads Simple 3D Buildings tags: roof shapes (exact flat, skillion, gabled,
+  hipped, pyramidal, cone; facets or fallbacks for the rest), building parts and raised volumes
+  (min_height). The part of an outline its parts do not cover stays a flat volume with the outline
+  height. - trees (points, rows, woods) shade ground and facades with Beer-Lambert crown
+  attenuation, deciduous season. - Faster: Rust grid classifier for receivers and facade points,
+  vectorized scene preparation, an exact reach clip of buildings that cannot shade the area,
+  per-cell height pruning in the ray kernel. - Flat 2.5D results are unchanged (bit-identical to
+  v3.0.1). - Example data buildings_osm3d.parquet rebuilt with building:part ways that GDAL exported
+  as lines.
+
+- **skeleton**: Get_straight_skeleton for centre lines and roof faces of polygons
+  ([`9e630b5`](https://github.com/IDUclub/ObjectNat/commit/9e630b583761b98e127ff7dbe703365dbcb6c945))
+
+get_straight_skeleton(gdf, output="arcs" | "faces") exposes the vendored straight skeleton for
+  GeoDataFrames: - "arcs": one LineString per skeleton arc with dist_start / dist_end, the distance
+  from the polygon boundary; include_bisectors=False keeps only the arcs between inner vertices, the
+  centre lines of road, river or corridor polygons with half their width as the distance; - "faces":
+  one Polygon per polygon edge with ring and edge numbers, covering the polygon exactly; roof_angle
+  returns them in 3D as the slopes of a hipped roof.
+
+Polygons and MultiPolygon parts run in parallel in the new Rust batch kernel rust/src/skeleton.rs,
+  exposed as straight_skeletons; polygons without a skeleton (crossing edges, zero-area rings, holes
+  outside) are skipped with one warning counting them by reason. Results keep the source index and
+  come back in the input CRS; a geographic CRS is projected to its UTM zone, so distances are in
+  metres. On the 6652 example buildings the faces of all footprints take 0.17 s and cover them
+  exactly. New docs page methods/skeleton with a figure, Russian translation, README entries.
+
+### Refactoring
+
+- **insolation**: Repository style for building details and trees
+  ([`c0d634a`](https://github.com/IDUclub/ObjectNat/commit/c0d634a156f7aab1b72d631f9ded7c50e15ad135))
+
+- Module-level logger in _trees.py and _building_details.py, as in the other modules. - Rust unit
+  tests of roofs.rs, grid.rs and the tree kernels inline in their modules instead of separate
+  *_tests.rs files included with #[path]. - tests/test_points_speed.py and tests/test_scene_speed.py
+  renamed to test_insolation_points.py and test_insolation_scene.py: they compare the fast paths
+  with reference results, they do not measure speed. - AGENTS.md lists the new modules; README and
+  README_RU mention building details and trees. - rust/Cargo.lock carries the crate version 3.0.2.
+
+- **rust**: Vendor the straight skeleton of geo-straight-skeleton 0.1.1
+  ([`c16832f`](https://github.com/IDUclub/ObjectNat/commit/c16832f49a6859c5e290f4422157486c578f4102))
+
+Hipped roofs used the crate geo-straight-skeleton 0.1.1, a young package with few users. Its code
+  (about 2400 lines, no runtime dependencies) now lives in rust/src/straight_skeleton/ with its MIT
+  licence and a header naming the source; only module paths changed and the optional geo-types
+  integration was left out. The external dependency is gone from Cargo.toml and Cargo.lock.
+
+
 ## v3.0.2 (2026-11-19)
 
 ### Performance Improvements
