@@ -5,19 +5,21 @@
 | Name                                                     |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |--------------------------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | objectnat/\_\_init\_\_.py                                |        3 |        0 |        0 |        0 |    100% |           |
-| objectnat/\_api.py                                       |        6 |        0 |        0 |        0 |    100% |           |
+| objectnat/\_api.py                                       |        7 |        0 |        0 |        0 |    100% |           |
 | objectnat/\_config.py                                    |       14 |        0 |        0 |        0 |    100% |           |
 | objectnat/\_version.py                                   |        1 |        0 |        0 |        0 |    100% |           |
 | objectnat/methods/\_\_init\_\_.py                        |        0 |        0 |        0 |        0 |    100% |           |
 | objectnat/methods/accessibility/\_\_init\_\_.py          |        3 |        0 |        0 |        0 |    100% |           |
 | objectnat/methods/accessibility/\_geometry.py            |      132 |        9 |       28 |        7 |     90% |42, 46, 107, 122, 134, 170, 176-178 |
-| objectnat/methods/accessibility/\_utils.py               |      194 |       31 |       76 |       31 |     77% |21, 23, 25, 54, 56, 58, 76, 107, 121-\>123, 130, 136, 140, 144, 147-148, 151, 157, 191-193, 205, 223-\>227, 225, 305, 307, 309, 311, 313, 320-\>324, 343, 363, 378, 404, 407 |
-| objectnat/methods/accessibility/coverage.py              |       45 |        4 |       14 |        4 |     86% |124, 126, 153, 181 |
-| objectnat/methods/accessibility/isochrones.py            |       65 |        6 |       20 |        6 |     86% |171, 173, 202, 208-\>219, 224-232, 243 |
+| objectnat/methods/accessibility/\_utils.py               |      223 |       37 |       80 |       31 |     76% |22, 24, 26, 55, 57, 59, 77, 114, 128-\>130, 137, 143, 147, 151, 154-155, 158, 164, 198-200, 213-216, 228-\>230, 246-248, 265-\>269, 267, 347, 349, 351, 353, 355, 362-\>366, 385, 405, 422, 448, 451 |
+| objectnat/methods/accessibility/coverage.py              |       44 |        4 |       14 |        4 |     86% |124, 126, 153, 184 |
+| objectnat/methods/accessibility/isochrones.py            |       66 |        6 |       20 |        6 |     86% |171, 173, 202, 209-\>220, 225-233, 244 |
 | objectnat/methods/accessibility/radius.py                |       14 |        0 |        0 |        0 |    100% |           |
 | objectnat/methods/insolation/\_\_init\_\_.py             |        1 |        0 |        0 |        0 |    100% |           |
+| objectnat/methods/insolation/\_points.py                 |       75 |        3 |       28 |        4 |     93% |28, 37, 67, 94-\>100 |
 | objectnat/methods/insolation/\_sun.py                    |       43 |        1 |        2 |        1 |     96% |        83 |
-| objectnat/methods/insolation/insolation.py               |      141 |        8 |       36 |       12 |     89% |134, 246-\>249, 250, 254-\>260, 261, 272, 275, 307-\>309, 380, 383, 385, 387-\>389 |
+| objectnat/methods/insolation/\_trees.py                  |      134 |        2 |       40 |        0 |     99% |     60-61 |
+| objectnat/methods/insolation/insolation.py               |      219 |        8 |       62 |       11 |     93% |204-\>210, 208-\>210, 224, 418, 429, 479-\>485, 486, 500, 644, 647, 649 |
 | objectnat/methods/noise/\_\_init\_\_.py                  |        4 |        0 |        0 |        0 |    100% |           |
 | objectnat/methods/noise/noise\_grid.py                   |      210 |       32 |       58 |       21 |     79% |31-36, 149, 151, 153, 155, 165, 168, 227-228, 230-233, 248-249, 280, 301-\>325, 311-\>322, 316-\>322, 326-331, 333-\>340, 347, 351, 385, 399, 427 |
 | objectnat/methods/noise/noise\_init\_data.py             |        3 |        0 |        0 |        0 |    100% |           |
@@ -31,16 +33,18 @@
 | objectnat/methods/provision/provision\_exceptions.py     |       36 |        0 |       16 |        0 |    100% |           |
 | objectnat/methods/provision/provision\_result.py         |       77 |        8 |       38 |        8 |     86% |56, 58, 60, 112, 134, 138, 140, 172 |
 | objectnat/methods/utils/\_\_init\_\_.py                  |        0 |        0 |        0 |        0 |    100% |           |
+| objectnat/methods/utils/\_building\_details.py           |      261 |        3 |       46 |        4 |     98% |204, 235-\>238, 336, 338 |
 | objectnat/methods/utils/geom\_utils.py                   |       94 |        8 |       22 |        5 |     89% |21, 62, 69-71, 81-82, 98 |
 | objectnat/methods/utils/raster.py                        |      177 |       90 |       44 |       10 |     49% |19, 47, 58, 71-\>68, 113-115, 120-121, 133-140, 144-163, 189-203, 242-262, 266-289, 321, 323, 329-336, 338, 341, 343 |
-| objectnat/methods/utils/scene.py                         |      162 |       29 |       62 |       22 |     77% |45, 54, 85-\>87, 92, 99, 101, 105-\>107, 108-109, 112, 115, 121, 123, 130, 133-139, 146, 148, 154, 159-160, 176, 178, 185, 187-188 |
+| objectnat/methods/utils/scene.py                         |      249 |       26 |       92 |       19 |     87% |133, 142, 178, 184-\>186, 256, 263, 265, 269-\>271, 272-273, 279, 294, 297-303, 310, 312, 318, 323-324, 340, 342, 351-352 |
+| objectnat/methods/utils/skeleton.py                      |       60 |       50 |       20 |        0 |     12% |    83-152 |
 | objectnat/methods/visibility/\_\_init\_\_.py             |        3 |        0 |        0 |        0 |    100% |           |
 | objectnat/methods/visibility/\_native.py                 |       83 |        2 |       24 |        3 |     95% |112-\>114, 132, 150 |
 | objectnat/methods/visibility/catchment.py                |      101 |       14 |       36 |       10 |     81% |73, 75, 77, 85, 88, 102, 112, 120, 163, 167, 209-212 |
 | objectnat/methods/visibility/isovist.py                  |       89 |        2 |        4 |        1 |     97% |     72-73 |
 | objectnat/methods/visibility/viewshed.py                 |      131 |       20 |       42 |       12 |     78% |122-\>119, 205-210, 215-\>220, 218, 221, 223, 253, 264, 266, 270, 285-290, 303 |
 | objectnat/methods/visibility/visibility\_analysis.py     |       93 |       10 |       34 |       11 |     83% |130, 133, 143, 209, 211, 214, 217, 220, 224, 233-\>240, 242 |
-| **TOTAL**                                                | **2614** |  **308** |  **790** |  **195** | **85%** |           |
+| **TOTAL**                                                | **3339** |  **369** |  **984** |  **199** | **86%** |           |
 
 
 ## Setup coverage badge
